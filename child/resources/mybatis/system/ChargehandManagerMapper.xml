@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ChargehandManagerMapper">
+
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into SYS_USER(
+			USERNAME,	
+			PASSWORD,	
+			NAME,	
+			ROLE_ID,	
+			PHONE,	
+			EMAIL,	
+			BZ,
+			U_TYPE,	
+			CREATE_TIME,	
+			USER_ID,
+			parent_id,
+			school_id
+		) values (
+			#{USERNAME},	
+			#{PASSWORD},	
+			#{NAME},	
+			#{ROLE_ID},	
+			#{PHONE},	
+			#{EMAIL},	
+			#{BZ},
+			#{type},	
+			SYSDATE(),	
+			#{USER_ID},
+			#{parent_id},
+			#{SCHOOL_ID}
+		)
+	</insert>
+	<!-- 新增-->
+	<insert id="saveArea" parameterType="pd">
+		insert into t_zone(
+			Z_NAME,	
+			Z_ORDER,	
+			Z_PARENT_ID,	
+			Z_TYPE,
+			create_time
+		) values (
+			#{AREA},	
+			(SELECT CASE WHEN ISNULL(MAX(z.Z_ORDER)) THEN 1 ELSE MAX(z.Z_ORDER)+1 END FROM t_zone z WHERE Z.Z_TYPE='1'),	
+			'0',	
+			'1',
+			SYSDATE()
+		)
+	</insert>
+	<!-- 新增关联-->
+	<insert id="saveRelation" parameterType="pd">
+		INSERT INTO t_user_area_manager(
+			UAM_USER_ID,	
+			UAM_ZONE_ID,
+			CREATE_TIME
+		) VALUES (
+			#{USER_ID},	
+			(SELECT Z_ID FROM t_zone z WHERE Z.Z_NAME= #{AREA}),
+			SYSDATE()
+		)
+	</insert>
+	
+	
+	<!-- 删除-->
+	<delete id="delete" parameterType="pd">
+		delete from SYS_USER
+		where 
+			USER_ID = #{USER_ID}
+	</delete>
+	
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update  SYS_USER
+			set 
+				NAME = #{NAME},
+				PHONE = #{PHONE},
+				EMAIL = #{EMAIL},
+				BZ = #{BZ}
+			where 
+				USER_ID = #{USER_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="editZone" parameterType="pd">
+		update  T_ZONE
+			set 
+				Z_NAME = #{AREA}
+			where 
+				Z_ID = #{Z_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="editRelation" parameterType="pd">
+	    UPDATE t_user_area_manager
+			SET uam_zone_id = #{AREA}
+		WHERE
+			uam_user_id = #{USER_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="editUserName" parameterType="pd">
+	    UPDATE SYS_USER
+			SET USERNAME = #{USERNAME},
+			PASSWORD = #{PASSWORD}
+		WHERE
+			USER_ID = #{USER_ID}
+	</update>
+	
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findByUserId" parameterType="pd" resultType="pd">
+	   SELECT
+			u.USER_ID,
+			u.`NAME`,
+			u.USERNAME,
+			u.`PASSWORD`,
+			u.EMAIL,
+			u.PHONE,
+			u.BZ
+		FROM
+			SYS_USER u
+		WHERE
+			u.USER_ID = #{USER_ID}
+	</select>
+	
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findJSRole" parameterType="pd" resultType="pd">
+		SELECT
+			r.ROLE_ID,
+			r.ROLE_NAME
+		FROM
+			sys_role r
+		WHERE
+			r.ROLE_CODE = #{role_code}
+	</select>
+	
+	
+	<!-- 学校 -->
+	<select id="findSchoolList" parameterType="pd" resultType="pd">
+		SELECT
+			Z.Z_ID as school_id,
+			Z.Z_NAME as school_name
+		FROM
+			T_ZONE Z
+		WHERE
+			Z.Z_TYPE = '2'
+			AND Z.create_id = #{create_id}
+		ORDER BY
+			Z.Z_ORDER
+	</select>
+	
+	<!-- 学校 -->
+	<select id="schoolList" parameterType="pd" resultType="pd">
+		SELECT
+			Z.Z_ID,
+			Z.Z_NAME
+		FROM
+			T_ZONE Z
+		WHERE
+			Z.Z_TYPE = '2'
+			AND Z.Z_PARENT_ID = #{Z_ID}
+		ORDER BY
+			Z.Z_ORDER
+	</select>
+	
+	<!-- 年级 -->
+	<select id="gradeList" parameterType="pd" resultType="pd">
+		SELECT
+			Z.Z_ID,
+			Z.Z_NAME
+		FROM
+			T_ZONE Z
+		WHERE
+			Z.Z_TYPE = '3'
+			AND Z.Z_PARENT_ID = #{Z_ID}
+		ORDER BY
+			Z.Z_ORDER
+	</select>
+	
+	
+	<!-- 班级 -->
+	<select id="classList" parameterType="pd" resultType="pd">
+		SELECT
+			Z.Z_ID,
+			Z.Z_NAME
+		FROM
+			T_ZONE Z
+		WHERE
+			Z.Z_TYPE = '4'
+			AND Z.Z_PARENT_ID = #{Z_ID}
+		ORDER BY
+			Z.Z_ORDER
+	</select>
+	
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT * FROM sys_user A
+		WHERE  A.parent_id =#{pd.parent_id}
+			and A.u_type=#{pd.type}
+			<if test="pd.nameParam != null and pd.nameParam !=''">
+			    AND A.`NAME` LIKE '%${pd.nameParam}%'
+			</if>
+		ORDER BY  A.NAME DESC
+	</select>
+	<!-- 校验用户名是否存在 -->
+	<select id="checkUsername" parameterType="pd" resultType="pd">
+		SELECT
+			u.USER_ID,
+			u.`NAME`,
+			u.USERNAME,
+			u.PHONE
+		FROM
+			sys_user u
+		WHERE
+			u.USERNAME = #{USERNAME}
+	</select>
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+				a.USERNAME,	
+				a.PASSWORD,	
+				a.NAME,	
+				a.ROLE_ID,	
+				a.PHONE,	
+				a.EMAIL,	
+				a.BZ,	
+				a.CREATE_TIME,	
+				a.USER_ID
+		from 
+				SYS_USER a
+	</select>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from SYS_USER
+		where 
+			USER_ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+</mapper>

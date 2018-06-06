@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MicroCampusMapper">
+     <!--查询全部微校园banner-->
+	<select id="selectmicrocampusbanner" parameterType="pd" resultType='pd'>
+        SELECT 
+        picture_url,move_url 
+        FROM guanai_microcampus_banner_info
+        WHERE SchoolID = #{schoolId}
+	</select>
+
+	     <!--查询全部微校园信息-->
+	<select id="selectmicrocampusinfo" parameterType="pd" resultType='pd'>
+        SELECT
+			content,
+			create_time,
+			icon,
+			title,
+			is_top,
+			author,
+			id 
+		FROM
+			guanai_microcampus_info 
+		WHERE
+			SchoolID = #{schoolId} 
+			AND type = #{type} 
+			AND info_state = 1 
+		ORDER BY
+			create_time DESC 
+			LIMIT #{minNum},#{page}
+	</select>
+		
+	<!--根据id查询微校园信息-->
+	<select id="singlemicrocampusinfo" parameterType="pd" resultType='pd'>
+        SELECT 
+            content,
+			create_time,
+			icon,
+			is_top,
+			author,
+			title
+        FROM guanai_microcampus_info
+        WHERE SchoolID = #{schoolId} AND
+        id = #{InfoId} AND info_state = 1
+	</select>
+		<!-- 查询当前人所在学校信息,并且查询是否申请过 -->
+	<select id="findSchoolInfo" parameterType="string" resultType="pd">
+		SELECT
+	s.school_id,
+	q.SchoolName,
+	a.path_string,
+	a.apply_user_id,
+	a.create_time
+	FROM
+	sys_user s
+	INNER JOIN
+	qry_batch_school q ON
+	q.SchoolID = s.school_id
+	LEFT JOIN
+	guanai_url_apply a ON a.school_id = q.SchoolID
+	WHERE
+	s.USER_ID = #{userId}
+	</select>
+	<!-- 插入Url申请信息 -->
+	<insert id="saveSchooUrlInfo" parameterType="pd">
+		insert into guanai_url_apply(
+			school_id,
+			school_name,
+			path_string,
+			apply_user_id,
+			create_time
+		)
+		values(
+			#{school_id},
+			#{school_name},
+			#{path_string},
+			#{apply_user_id},
+			SYSDATE()
+		)
+	</insert>
+	<!-- 更新Url申请信息 -->
+	<update id="updateSchooUrlInfo" parameterType="pd">
+		UPDATE 
+		guanai_url_apply 
+		SET apply_user_id=#{apply_user_id},create_time=SYSDATE()
+		WHERE school_id=#{school_id}
+	</update>
+	<!-- 插入评论 -->
+	<insert id="saveComment" parameterType="pd">
+	
+		INSERT INTO 
+			guanai_weixiaoyuan_comment(
+				InfoId,
+				content,
+				create_time
+			)
+		VALUES(
+			#{InfoId},
+			#{content},
+			SYSDATE()
+		)
+	
+		
+	</insert>
+	<!-- 查询当前文章所有评论 -->
+	<select id="selectComment" parameterType="pd" resultType="pd">
+		SELECT content,create_time
+		FROM guanai_weixiaoyuan_comment
+		WHERE InfoId=#{InfoId}
+		ORDER BY create_time DESC
+	</select>
+	
+</mapper>

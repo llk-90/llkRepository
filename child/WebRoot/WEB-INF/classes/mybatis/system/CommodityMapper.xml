@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CommodityMapper">
+	<!-- 查询 -->
+	<select id="find" parameterType="pd" resultType="pd">
+		SELECT
+		c.c_price price,
+		c.c_time
+		FROM t_commodity c
+		WHERE 1=2
+		<if test="commodity_id != null and commodity_id != ''">
+			OR c.c_id = #{commodity_id}
+		</if>
+	</select>
+<!-- 	根据课件查询商品 -->
+	<select id="findByCoursewareId" parameterType="pd" resultType="pd">
+		SELECT
+		    c.c_price price
+		FROM t_commodity c
+		INNER JOIN t_courseware o ON o.c_commodity_id = c.c_id
+		WHERE 1=2
+		<if test="coursewareId != null and coursewareId != ''">
+			OR o.c_id = #{coursewareId}
+		</if>
+	</select>
+<!-- 	根据课件id查询文件信息 -->
+	<select id="findFileByCoursewareId" parameterType="pd" resultType="pd">
+		SELECT
+		    f.f_disk_filename disk_filename
+		    ,f.f_disk_path disk_path
+		    ,f.f_mate_name mate_name
+		    ,f.f_ext_name ext_name
+		    ,f.create_time
+		FROM t_courseware c
+		INNER JOIN t_files f ON f.f_id = c.c_file_id
+		WHERE 1=2
+		<if test="coursewareId != null and coursewareId != ''">
+			OR c.c_id = #{coursewareId}
+		</if>
+	</select>
+
+	<!-- 查询订单 -->
+	<select id="findOrder" parameterType="pd" resultType="pd">
+		SELECT
+		    co.co_commodity_id commodity_id
+		    ,co.co_user_id user_id
+		    ,co.co_order_num order_num
+		FROM
+		    t_commodity_order co
+		WHERE 1=2
+		<if test="out_trade_no != null and out_trade_no != ''">
+			OR co.co_order_num = #{out_trade_no}
+		</if>
+	</select>
+	<!-- 订单已确认 -->
+	<select id="isResulted" parameterType="pd" resultType="pd">
+		SELECT
+		    co_id
+		FROM t_commodity_order co
+		WHERE co.co_order_num = #{out_trade_no}
+		AND 
+		    (co.co_pay_state = -1
+		        OR
+		     co.co_pay_state = 1
+		    )
+	</select>
+
+	<!-- 下单 -->
+	<insert id="order" parameterType="pd">
+		INSERT INTO
+		t_commodity_order(
+		co_order_num
+		,co_money
+		,co_user_id
+		,co_commodity_id
+		,co_pay_state
+		,create_time)
+		VALUES(
+		#{co_order_num}
+		,#{co_money}
+		,#{co_user_id}
+		,#{co_commodity_id}
+		,#{co_pay_state}
+		,SYSDATE()
+		)
+	</insert>
+	
+	<update id="updateOrder"  parameterType="pd">
+        UPDATE t_commodity_order
+		SET co_pay_state = #{co_pay_state}
+		WHERE co_order_num = #{out_trade_no}
+	</update>
+	
+	<insert id="addIbabyCommodityOrder" parameterType="pd">
+		INSERT ibaby_commodity_order (
+			ibaby_order_id,
+			ibaby_userId,
+			ibaby_nameInfo,
+			ibaby_telInfo,
+			ibaby_addressInfo,
+			ibaby_postCode,
+			ibaby_commodityId,
+			ibaby_commodityNam,
+			ibaby_commodityNum,
+			ibaby_commoditySum,
+			ibaby_commodityStat,
+			ibaby_commodityDatetime
+		)
+		VALUES
+		(
+	        #{co_order_num},
+			#{co_user_id},
+			#{nameInfo},
+			#{telInfo},
+			#{addressInfo},
+			#{mailboxInfo},
+			#{commodity_id},
+			#{commodity_nam},
+			#{CommodityNum},
+			#{co_money},
+			#{co_pay_state},
+			#{dateTime}
+		)
+	</insert>
+	
+	<update id="updateIbabyorder"  parameterType="pd">
+        UPDATE ibaby_commodity_order
+		SET ibaby_commodityStat = #{co_pay_state}
+		WHERE ibaby_order_id = #{out_trade_no}
+	</update>
+</mapper>

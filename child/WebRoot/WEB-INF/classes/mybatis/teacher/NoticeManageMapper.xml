@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NoticeManageMapper">
+	
+	<select id="findSchoolId" parameterType="String" resultType="String">
+		select school_id from sys_user where USER_ID=#{userId}
+	</select>
+	
+	<!-- 获取教育通知列表 -->
+	<select id="findNoticelistPage" parameterType="pd" resultType="pd">	
+		select
+			id,
+			title,
+			content,
+			picture,
+			author,
+			case type when 0 then '学校通知' 
+					  when 1 then '班级通知'
+					  when 2 then '作业通知'			
+			end as infoType,
+			date_format(create_time,'%Y-%m-%d %H:%i:%s') as create_time
+		from
+			guanai_notice_info
+		where 1=1
+		and schoolId = #{pd.schoolId}
+		<if test="pd.Title != null and pd.Title !=''">
+			and title LIKE '%${pd.Title}%'
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==0">
+			and type = 0
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==1">
+			and type = 1
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==2">
+			and type = 2
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='week'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=7]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='month'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=30]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='halfYear'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=183]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='year'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=365]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='overYear'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)>365]]>
+		</if>
+	</select>
+	
+	<!-- 根据id删除该info -->
+	<delete id="deleteById" parameterType="pd" flushCache="false">
+		delete from
+			<!-- guanai_microcampus_info -->
+			guanai_notice_info
+		where
+			id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 添加新通知 -->
+	<insert id="newNotice" parameterType="pd">
+		<!-- insert into guanai_microcampus_info( -->
+		insert into guanai_notice_info(
+			schoolID,
+			userId,
+			author,
+			type,
+			title,
+			content,
+			picture,
+			create_time
+		)values(
+			#{schoolId},
+			#{userId},
+			#{author},
+			#{Type},
+			#{title},
+			#{content},
+			#{imageUrl},
+			SYSDATE()
+		)
+	</insert>
+	
+</mapper>

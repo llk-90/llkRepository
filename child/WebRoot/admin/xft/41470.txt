@@ -1,0 +1,12 @@
+// 校付通申请订单接口网址(由校付通提供);
+http://ad.xft123.com/xftpay/gateway;
+// 校付通支付界面接口网址(由校付通提供);
+http://ad.xft123.com/xftpay/showpay;
+// 校付通子商户号(由校付通提供);
+xxxxxxx;
+// 校付通子商户号密钥(由校付通提供);
+xxxxxxx;
+// 密码;
+DLJ0521*;
+// 学校id;
+41470

@@ -1,0 +1,44 @@
+/*.icon-myorder{
+    background-image: url();
+}*/
+
+.icon-user {
+    background-image: url(svg/user.svg);
+    height: 30px;
+    width: 30px;
+}
+.icon-greenhouse {
+    background-image: url(svg/greenhouse.svg);
+    height: 30px;
+    width: 30px;
+}
+.icon-message {
+    background-image: url(svg/email.svg);
+    height: 30px;
+    width: 30px;
+}
+.icon-help {
+	background-image: url(svg/help.svg);
+    height: 30px;
+    width: 30px;
+}
+.icon-setting {
+	background-image: url(svg/setting.svg);
+    height: 30px;
+    width: 30px;
+}
+.icon-clock {
+	background-image: url(svg/clock.svg);
+    height: 20px;
+    width: 20px;
+}
+.icon-push {
+	background-image: url(svg/push.svg);
+    height: 20px;
+    width: 20px;
+}
+.icon-system {
+	background-image: url(svg/system.svg);
+    height: 20px;
+    width: 20px;
+}

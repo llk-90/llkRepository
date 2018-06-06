@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GradesListMapper">
+	
+	<!-- 查询成绩列表 -->
+	<select id="detailist"  parameterType="pd" resultType="pd">		
+		SELECT
+			grade.rc_phone number,			    <!-- 手机号 -->
+			grade.rc_chinese chinese,			<!-- 语文 -->
+			grade.rc_math maths,				<!-- 数学 -->
+			grade.rc_english english,			<!-- 英语 -->
+			grade.rc_hysics hysics,				<!-- 物理 -->
+			grade.rc_biology biology,			<!-- 生物 -->
+			grade.rc_chemistry chemistry,		<!-- 化学 -->
+			grade.rc_geography geography,		<!-- 地理 -->
+			grade.rc_history historys,			<!-- 历史 -->
+			grade.rc_politics politics,			<!-- 政治 -->
+			grade.rc_art art,					<!-- 美术 -->
+			grade.rc_music music,				<!-- 音乐 -->
+			grade.rc_sport sport,				<!-- 体育 -->
+			grade.rc_moral moral,				<!-- 德育考核 -->
+			grade.rc_labor labor,				<!-- 劳动技术 -->
+			grade.rc_computer computer,			<!-- 计算机 -->
+			grade.rc_phytest phytest,			<!-- 物理实验 -->
+			grade.rc_chetest chetest,			<!-- 化学实验 -->
+			grade.rc_biotest biotest,			<!-- 生物实验 -->
+			grade.create_time time,				<!-- 导入时间 -->	
+			grade.total	totals,					<!-- 总成绩 -->
+			grade.rc_batch
+		FROM
+			t_report_card grade					<!-- 成绩表 -->
+		WHERE
+			grade.rc_phone = (
+				SELECT
+					stu.s_phone				<!-- 学号 -->
+				FROM
+					sys_user users				<!-- 连接用户表 -->
+				INNER JOIN t_user_student tus ON tus.us_user_id = users.USER_ID	<!-- 连接家长孩子表 -->
+				INNER JOIN t_student stu ON stu.s_id = tus.us_stu_id			<!-- 连接学生表 -->
+				WHERE
+					users.USER_ID =  #{userId}
+			) 
+			<if test="pici != null and pici != ''">
+				AND grade.rc_batch = #{pici}
+			</if>
+		ORDER BY
+			time DESC
+		LIMIT 0,1
+					
+	</select>
+	
+	<select id="totallist"  parameterType="pd" resultType="pd">
+		SELECT
+			grades.rc_phone				
+		FROM
+			t_report_card grades
+		WHERE
+			grades.rc_phone IN (
+				SELECT
+					t_student.s_phone
+				FROM
+					t_student
+				WHERE
+					t_student.s_zone_id = (
+						SELECT
+							stu.s_zone_id
+						FROM
+							sys_user users
+						INNER JOIN t_user_student tus ON tus.us_user_id = users.USER_ID
+						INNER JOIN t_student stu ON stu.s_id = tus.us_stu_id
+						WHERE
+							users.USER_ID = #{userId}
+					)
+			)
+		AND grades.create_time = (
+			SELECT
+				report1.create_time
+			FROM
+				t_report_card report1
+			WHERE
+				report1.rc_phone IN (
+					SELECT
+						t_student.s_phone
+					FROM
+						t_student
+					WHERE
+						t_student.s_zone_id = (
+							SELECT
+								stu.s_zone_id
+							FROM
+								sys_user users
+							INNER JOIN t_user_student tus ON tus.us_user_id = users.USER_ID
+							INNER JOIN t_student stu ON stu.s_id = tus.us_stu_id
+							WHERE
+								users.USER_ID = #{userId}
+						)
+				)
+			ORDER BY
+				report1.create_time DESC
+			LIMIT 0,
+			1
+		)
+		GROUP BY grades.rc_phone
+		ORDER BY total DESC	
+						
+	</select>
+	
+	<select id="picillist"  parameterType="pd" resultType="pd">
+		SELECT
+			grades.rc_phone,
+		  	grades.rc_batch
+		FROM
+			t_report_card grades
+		WHERE
+			grades.rc_phone IN (
+				SELECT
+					t_student.s_phone
+				FROM
+					t_student
+				WHERE
+					t_student.s_zone_id = (
+						SELECT
+							stu.s_zone_id
+						FROM
+							sys_user users
+						INNER JOIN t_user_student tus ON tus.us_user_id = users.USER_ID
+						INNER JOIN t_student stu ON stu.s_id = tus.us_stu_id
+						WHERE
+							users.USER_ID = #{userId}
+					)
+			)<if test="pici != null and pici != ''">
+				AND grades.rc_batch = #{pici}
+			</if>
+			ORDER BY grades.total DESC			
+	</select>
+	
+	 
+	<select id="getselectbox" parameterType="pd" resultType="pd">
+		SELECT DISTINCT
+			report.rc_batch batch,
+			report.create_time newtime
+		FROM
+			t_report_card report
+		WHERE
+			report.rc_phone IN (
+				SELECT
+					stu1.s_phone
+				FROM
+					t_student stu1
+				WHERE
+					stu1.s_zone_id = (
+						SELECT
+							stu.s_zone_id
+						FROM
+							sys_user users
+						INNER JOIN t_user_student tus ON tus.us_user_id = users.USER_ID
+						INNER JOIN t_student stu ON stu.s_id = tus.us_stu_id
+						WHERE
+							users.USER_ID = #{userId}
+					)
+			)
+		ORDER BY newtime DESC
+	</select>
+	
+	
+	<!-- 单科成绩 -->
+	<select id="singleList"  parameterType="pd" resultType="pd">
+		SELECT
+			<if test="subject eq 'chinese'">
+				trc.rc_chinese as score,
+			</if>
+			<if test="subject eq 'maths'">
+				trc.rc_math as score,
+			</if>
+			<if test="subject eq 'english'">
+				trc.rc_english as score,
+			</if>
+			<if test="subject eq 'hysics'">
+				trc.rc_hysics as score,
+			</if>
+			<if test="subject eq 'biology'">
+				trc.rc_biology as score,
+			</if>
+			<if test="subject eq 'chemistry'">
+				trc.rc_chemistry as score,
+			</if>
+			<if test="subject eq 'geography'">
+				trc.rc_geography as score,
+			</if>
+			<if test="subject eq 'historys'">
+				trc.rc_history as score,
+			</if>
+			<if test="subject eq 'politics'">
+				trc.rc_politics as score,
+			</if>
+			<if test="subject eq 'art'">
+				trc.rc_art as score,
+			</if>
+			<if test="subject eq 'music'">
+				trc.rc_music as score,
+			</if>
+			<if test="subject eq 'sport'">
+				trc.rc_sport as score,
+			</if>
+			<if test="subject eq 'moral'">
+				trc.rc_moral as score,
+			</if>
+			<if test="subject eq 'labor'">
+				trc.rc_labor as score,
+			</if>
+			<if test="subject eq 'computer'">
+				trc.rc_computer as score,
+			</if>
+			<if test="subject eq 'phytest'">
+				trc.rc_phytest as score,
+			</if>
+			<if test="subject eq 'chetest'">
+				trc.rc_chetest as score,
+			</if>
+			<if test="subject eq 'biotest'">
+				trc.rc_biotest as score,
+			</if>
+			str_to_date(trc.create_time, '%Y-%m-%d') AS create_time
+		FROM
+			t_report_card trc
+		INNER JOIN t_student stu ON stu.s_phone = trc.rc_phone
+		INNER JOIN t_user_student tus ON tus.us_stu_id = stu.s_id
+		AND tus.us_user_id = #{userId}
+		WHERE
+			STR_TO_DATE(trc.create_time, '%Y-%m-%d') BETWEEN #{strDate}
+			AND #{endDate}
+			AND 
+			<if test="subject eq 'chinese'">
+				trc.rc_chinese IS NOT NULL
+			</if>
+			<if test="subject eq 'maths'">
+				trc.rc_math IS NOT NULL
+			</if>
+			<if test="subject eq 'english'">
+				trc.rc_english IS NOT NULL
+			</if>
+			<if test="subject eq 'hysics'">
+				trc.rc_hysics IS NOT NULL
+			</if>
+			<if test="subject eq 'biology'">
+				trc.rc_biology IS NOT NULL
+			</if>
+			<if test="subject eq 'chemistry'">
+				trc.rc_chemistry IS NOT NULL
+			</if>
+			<if test="subject eq 'geography'">
+				trc.rc_geography IS NOT NULL
+			</if>
+			<if test="subject eq 'historys'">
+				trc.rc_history IS NOT NULL
+			</if>
+			<if test="subject eq 'politics'">
+				trc.rc_politics IS NOT NULL
+			</if>
+			<if test="subject eq 'art'">
+				trc.rc_art IS NOT NULL
+			</if>
+			<if test="subject eq 'music'">
+				trc.rc_music IS NOT NULL
+			</if>
+			<if test="subject eq 'sport'">
+				trc.rc_sport IS NOT NULL
+			</if>
+			<if test="subject eq 'moral'">
+				trc.rc_moral IS NOT NULL
+			</if>
+			<if test="subject eq 'labor'">
+				trc.rc_labor IS NOT NULL
+			</if>
+			<if test="subject eq 'computer'">
+				trc.rc_computer IS NOT NULL
+			</if>
+			<if test="subject eq 'phytest'">
+				trc.rc_phytest IS NOT NULL
+			</if>
+			<if test="subject eq 'chetest'">
+				trc.rc_chetest IS NOT NULL
+			</if>
+			<if test="subject eq 'biotest'">
+				trc.rc_biotest IS NOT NULL
+			</if>
+		ORDER BY
+			trc.create_time
+	</select>
+	
+	
+	<!-- 根据家长查询学生班级 -->
+	<select id="stuClassName"  parameterType="pd" resultType="pd">
+	    SELECT DISTINCT
+			z.z_name AS className
+		FROM
+			t_zone z
+		INNER JOIN t_student s ON s.s_zone_id = z.z_id
+		INNER JOIN t_user_student u ON u.us_stu_id = s.s_id
+		AND u.us_user_id = #{userId}
+	</select>
+	<!-- 根据家长查询学生科目 -->
+	<select id="stuSubjectNotEmpty"  parameterType="pd" resultType="pd">
+	   SELECT DISTINCT
+			SUM(CASE WHEN ISNULL(trc.rc_chinese) THEN '0' ELSE '1'END)AS rc_chinese,
+			SUM(CASE WHEN ISNULL(trc.rc_math) THEN '0' ELSE '1'END)AS rc_math,
+			SUM(CASE WHEN ISNULL(trc.rc_english) THEN '0' ELSE '1'END)AS rc_english,
+			SUM(CASE WHEN ISNULL(trc.rc_hysics) THEN '0' ELSE '1'END)AS rc_hysics,
+			SUM(CASE WHEN ISNULL(trc.rc_biology) THEN '0' ELSE '1'END)AS rc_biology,
+			SUM(CASE WHEN ISNULL(trc.rc_chemistry) THEN '0' ELSE '1'END)AS rc_chemistry,
+			SUM(CASE WHEN ISNULL(trc.rc_geography) THEN '0' ELSE '1'END)AS rc_geography,
+			SUM(CASE WHEN ISNULL(trc.rc_history) THEN '0' ELSE '1'END)AS rc_history,
+			SUM(CASE WHEN ISNULL(trc.rc_politics) THEN '0' ELSE '1'END)AS rc_politics,
+			SUM(CASE WHEN ISNULL(trc.rc_art) THEN '0' ELSE '1'END)AS rc_art,
+			SUM(CASE WHEN ISNULL(trc.rc_music) THEN '0' ELSE '1'END)AS rc_music,
+			SUM(CASE WHEN ISNULL(trc.rc_sport) THEN '0' ELSE '1'END)AS rc_sport,
+			SUM(CASE WHEN ISNULL(trc.rc_moral) THEN '0' ELSE '1'END)AS rc_moral,
+			SUM(CASE WHEN ISNULL(trc.rc_labor) THEN '0' ELSE '1'END)AS rc_labor,
+			SUM(CASE WHEN ISNULL(trc.rc_computer) THEN '0' ELSE '1'END)AS rc_computer,
+			SUM(CASE WHEN ISNULL(trc.rc_phytest) THEN '0' ELSE '1'END)AS rc_phytest,
+			SUM(CASE WHEN ISNULL(trc.rc_chetest) THEN '0' ELSE '1'END)AS rc_chetest,
+			SUM(CASE WHEN ISNULL(trc.rc_biotest) THEN '0' ELSE '1'END)AS rc_biotest
+		FROM
+			t_report_card trc
+		INNER JOIN t_student ts ON ts.s_phone = trc.rc_phone
+		INNER JOIN t_user_student tus ON tus.us_stu_id = ts.s_id
+		AND tus.us_user_id = #{userId}
+	</select>
+</mapper>

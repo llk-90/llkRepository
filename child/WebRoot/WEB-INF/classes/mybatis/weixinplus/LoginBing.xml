@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LoginBing">
+	<!-- 获取根据页面信息得到的学生信息 -->
+
+	<select id="selecctStuInfo" parameterType="pd" resultType="pd">
+		SELECT
+		stu.IcNo IcNo,
+		stu.UserName UserName,
+		stu.StudentId StudentId,
+		par.ParentId ParentId,
+		par.ParUserName ParUserName
+		FROM
+		qry_student_info stu,
+		qry_stuparent_info par
+		WHERE
+		stu.UserName = #{name}
+		AND stu.StudentId = par.StudentId
+		AND stu.ClassId = #{classID}
+	</select>
+	<!-- 根据学生ic卡号进行查询 -->
+	<select id="selecctStuInfo_ic" parameterType="pd" resultType="pd">
+		SELECT
+		stu.IcNo IcNo,
+		stu.UserName UserName,
+		stu.StudentId StudentId,
+		par.ParentId ParentId,
+		par.ParUserName ParUserName
+		FROM
+		qry_student_info stu,
+		qry_stuparent_info par
+		WHERE
+		stu.StudentId = par.StudentId
+		AND stu.IcNo = #{ic_num}
+		ORDER BY
+		par.ModifyTime DESC;
+	</select>
+	<!-- 插入绑定信息 -->
+	<insert id="insertBingInfo" parameterType="pd">
+		INSERT INTO
+		t_user_weixin
+		(uw_user_id,uw_open_id,u_type,uw_parent_id,uw_parent_name,uw_student_id,phone_num)
+		VALUES(
+		#{user_Id},
+		#{openId},
+		#{u_type},
+		#{parent_Id},
+		#{parent_Name},
+		#{stuId},
+		#{phone_num}
+		)
+
+	</insert>
+	<!-- 插入绑定信息 -->
+	<insert id="insertBingInfoToStu" parameterType="pd">
+		<![CDATA[INSERT INTO t_user_student]]>
+		<trim prefix="(" suffixOverrides="," suffix=")">
+			<if test="user_Id!=null">
+				<![CDATA[us_user_id,]]>
+			</if>
+			<if test="stuId!=null">
+				<![CDATA[us_stu_id,]]>
+			</if>
+			<if test="IcNo!=null">
+				<![CDATA[IcNo,]]>
+			</if>
+		</trim>
+		<![CDATA[VALUES]]>
+		<trim prefix="(" suffixOverrides="," suffix=")">
+			<if test="user_Id!=null">
+				<![CDATA[#{user_Id},]]>
+			</if>
+			<if test="stuId!=null">
+				<![CDATA[#{stuId},]]>
+			</if>
+			<if test="IcNo!=null">
+				<![CDATA[#{IcNo},]]>
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 获取所有学校信息爱 -->
+	<select id="getAllSch" parameterType="pd" resultType="pd">
+		SELECT
+		SchoolID,
+		SchoolName
+		FROM
+		qry_batch_school
+		WHERE TownId = #{TownId}
+	</select>
+
+	<!-- 根据openid查询数据库中存在的验证码信息 -->
+	<select id="getVerifyCodeInfo" parameterType="pd" resultType="pd">
+		SELECT
+		*
+		FROM
+		guanai_verifycode
+		WHERE
+		openId = #{openId}
+		And
+		phone_num =
+		#{phone_num}
+		And
+		type = #{type}
+	</select>
+
+	<!-- 插入验证码信息到验证码信息表 -->
+	<select id="saveVerifyCodeInfo" parameterType="pd" resultType="pd">
+		INSERT INTO
+		guanai_verifycode(
+		openId,
+		type,
+		phone_num,
+		creat_time,
+		verifycode
+		)
+		VALUES(
+		#{openId},
+		#{type},
+		#{phone_num},
+		#{creat_time},
+		#{verifycode}
+		)
+	</select>
+
+	<!-- 删除原先的验证码 -->
+	<delete id="deloldcode" parameterType="String">
+		DELETE
+		FROM
+		guanai_verifycode
+		WHERE
+		openId = #{openId}
+		AND
+		phone_num = #{phone_num}
+		AND
+		type = #{type}
+	</delete>
+
+	<!-- -->
+	<select id="getstuInfo" parameterType="pd" resultType="pd">
+		SELECT
+		qspi.ParentId,
+		qsi.StudentId,
+		qci.CityId,
+		hjyf.marketingId
+		FROM
+		t_user_weixin tuw,
+		qry_stuparent_info qspi,
+		qry_student_info qsi,
+		qry_batch_school qbc,
+		qry_city_info qci,
+		hjy_firmoverview hjyf
+		WHERE
+		tuw.uw_parent_id = qspi.ParentId
+		AND qspi.StudentId = qsi.StudentId
+		AND qsi.SchoolId
+		=qbc.SchoolID
+		AND qbc.CityId = qci.CityId
+		AND qci.CityName =hjyf.area
+		AND tuw.uw_open_id
+		= #{openId}
+		AND hjyf.type='1'
+		limit 1
+	</select>
+
+
+	<select id="getStuAndParInfo" parameterType="pd" resultType="pd">
+		SELECT
+		qsi.StudentId,
+        qsi.phone,
+        qspi.parentId,
+        qspi.parUserName
+		FROM
+		qry_student_info qsi 
+	    LEFT JOIN qry_stuparent_info qspi
+		on qsi.StudentId = qspi.StudentId
+		WHERE
+		qsi.ClassId = #{classID}
+		AND qsi.UserName = #{name}
+		AND qsi.phone = #{phone_num}
+		limit 1
+	</select>
+</mapper>

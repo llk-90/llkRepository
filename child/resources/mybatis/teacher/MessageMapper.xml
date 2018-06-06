@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MessageMapper"> 
+	
+	<!-- 留言信息列表 -->
+	<select id="list" parameterType="page" resultType="pd">
+		SELECT
+		  msg.lm_content lm_content,
+		  msg.lm_send_user_id lm_send_user_id,
+		  msg.create_time createtime,
+		  DATE_FORMAT(msg.create_time, '%Y-%m-%d %H:%i') AS create_time,
+		  u.`NAME` NAME,
+		  u.head_photo photo,
+		  st.s_name sname
+		FROM
+			t_leave_message msg
+		  LEFT JOIN sys_user u ON msg.lm_send_user_id = u.user_id
+		  LEFT JOIN t_user_student tu ON tu.us_user_id = u.USER_ID
+			LEFT JOIN t_student st ON st.s_id = tu.us_stu_id
+		WHERE
+			msg.create_time IN (
+				SELECT
+					MAX(mll.createtime) maxtime
+				FROM
+					(
+						SELECT
+							ml.send_user_id lm_send_user_id,
+							createtime
+						FROM
+							(
+								SELECT
+									m.lm_send_user_id send_user_id,
+									m.create_time createtime
+								FROM
+									t_leave_message m
+								WHERE
+									m.lm_receive_user_id = '${pd.lm_receive_user_id}'
+							) ml
+						WHERE
+							1 = 1
+					) mll
+				GROUP BY
+					mll.lm_send_user_id
+			)
+				<if test="pd.Name != null and pd.Name != ''">
+						    	and st.s_name like '%${pd.Name}%'	
+				</if>
+				ORDER BY msg.create_time DESC 
+	</select>
+	
+	<!-- 查询 未读信息数量 -->
+	<select id="listcount" parameterType="page" resultType="pd">
+		SELECT
+			IFNULL(COUNT(ml.id), 0) msg_count,
+			ml.send_user_id lm_send_user_id
+		FROM
+			(
+				SELECT
+					m.lm_id id,
+					m.lm_content content,
+					m.lm_send_user_id send_user_id,
+					m.lm_receive_user_id receive_user_id,
+					m.lm_state state
+				FROM
+					t_leave_message m
+				WHERE
+					m.lm_receive_user_id = '${pd.lm_receive_user_id}'
+			) ml
+		WHERE
+			ml.state = 0
+		GROUP BY
+			ml.send_user_id
+	</select>
+	
+	<select id="findlist" parameterType="page" resultType="pd">
+		SELECT
+			lm.lm_content,
+			user1.`NAME` AS name,
+			DATE_FORMAT(lm.create_time, '%m-%d %H:%i') AS create_time,
+			lm.lm_send_user_id,
+			lm.lm_receive_user_id,
+			lm.lm_state,
+			CASE  WHEN lm.lm_send_user_id = '${pd.sendId}' THEN 1 ELSE 0
+			END AS fenkai
+		FROM
+			t_leave_message lm
+			INNER JOIN sys_user user1 ON user1.USER_ID = lm.lm_send_user_id
+		WHERE
+			(
+				lm.lm_receive_user_id = '${pd.sendId}'
+				AND lm.lm_send_user_id = '${pd.receiveId}'
+			)
+		OR (
+			lm.lm_receive_user_id = '${pd.receiveId}'
+			AND lm.lm_send_user_id = '${pd.sendId}'
+		)
+		ORDER BY
+			lm.create_time
+	</select>
+	
+	
+	<select id="namelistPage" parameterType="page" resultType="pd">
+		SELECT
+			
+			user1.`NAME` AS name,		
+			CASE  WHEN lm.lm_send_user_id = '${pd.sendId}' THEN 1 ELSE 0
+			END AS fenkai
+		FROM
+			t_leave_message lm
+			INNER JOIN sys_user user1 ON user1.USER_ID = lm.lm_send_user_id
+		WHERE
+			(
+				lm.lm_receive_user_id = '${pd.sendId}'
+				AND lm.lm_send_user_id = '${pd.receiveId}'	
+			)
+		OR (
+			lm.lm_receive_user_id = '${pd.receiveId}'
+			AND lm.lm_send_user_id = '${pd.sendId}'
+		)
+		GROUP BY name
+		ORDER BY
+		lm.create_time
+	</select>
+	
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		UPDATE t_leave_message  AS msg
+			SET msg.lm_state = #{lm_state_du}		    
+			WHERE
+				msg.lm_send_user_id = #{lm_send_user_id}
+				and msg.lm_state = '0'
+		   
+	</update>
+	
+	<!-- 回复内容 -->
+	<insert id="save" parameterType="pd">
+		insert into t_leave_message(  
+		  	lm_send_user_id,
+			lm_receive_user_id,
+			lm_content,
+			create_time,
+			lm_state
+		) values (		    
+    		#{lm_receive_user_id},	
+			#{lm_send_user_id},	
+			#{lm_content},				
+			SYSDATE(),
+			#{lm_state_weidu}	
+		)		
+
+	</insert>
+</mapper>

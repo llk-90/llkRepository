@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TeacherBingMapper">
+<!-- 获取根据页面信息得到的教师信息 -->
+	<!-- 插入绑定信息 -->
+	<insert id="insertTeacherBing" parameterType="pd">
+		  INSERT INTO 
+		  	teacher_bind_weixin
+		  	(
+		  	schoolID,
+		  	classID,
+		  	teacherName,
+		  	phone,
+		  	openid,
+		  	bingTime
+		  	)
+		  VALUES(
+		  	#{SchoolID},
+		  	#{classID},
+		  	#{contact_person},
+		  	#{phone_num},
+		  	#{openId},
+		  	SYSDATE()
+		  )    
+	</insert>
+	<insert id="insertQryPaBing" parameterType="pd">
+		  INSERT INTO 
+		  	qry_stuparent_info
+		  	(
+		  	StudentId,
+		  	ParentId,
+		  	ParUserName
+		  	)
+		  VALUES(
+		  	#{StudentId},
+		  	#{ParentId},
+		  	#{contact_person}
+		  )    
+	</insert>
+	<insert id="insertWeiBing" parameterType="pd">
+		  INSERT INTO 
+		  	t_user_weixin
+		  	(
+		  	u_type,
+		  	uw_user_id,
+		  	uw_open_id,
+		  	uw_parent_id
+		  	)
+		  VALUES(
+		  	2,
+		  	#{StudentId},
+		  	#{openId},
+		  	#{ParentId}
+		  )    
+	</insert>
+	<!-- 通过id获取学生和设备信息 -->
+	<select id="selTeacherBing" parameterType="pd" resultType="pd">
+		SELECT
+		teacherId 
+		FROM
+		teacher_bind_weixin
+		WHERE
+		openid = #{openId}
+		ORDER BY teacherId desc limit 1
+	</select>
+</mapper>

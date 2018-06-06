@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AttInterfaceMapper">
+	<select id="findParentList" parameterType="String" resultType="pd">		
+		SELECT
+			uw.uw_open_id,
+			us.us_user_id
+		FROM
+			t_user_student AS us
+		LEFT JOIN t_user_weixin AS uw ON uw_user_id = us.us_user_id
+		WHERE
+			us.IcNo = #{iid}
+	</select>
+	
+	<select id="findUserNameList" parameterType="String" resultType="pd">		
+		SELECT
+		DISTINCT
+		UserName
+		FROM
+		qry_student_info
+		WHERE
+		IcNo = #{iid}
+	</select>
+	
+	<insert id="save" parameterType="pd">
+	    INSERT INTO t_attendance_record (
+			ar_stu_id,
+			ar_date,
+			ar_time,
+			ar_type
+		)
+		VALUES
+		(	#{stu_id},
+			#{datetime}, 
+			#{datetime}, 
+			#{type}
+		)
+	</insert>
+	
+	<select id="findStuId" parameterType="pd" resultType="string">			
+		SELECT
+			StudentId
+		FROM
+			qry_student_info
+		WHERE
+			IcNo  = #{iid}
+	</select>
+	<select id="findSchool" parameterType="String" resultType="String">
+		SELECT
+		SchoolId
+		FROM
+		qry_student_info
+		WHERE
+		IcNo = #{iid}
+	</select>
+	
+	<select id="findZoneInfo" parameterType="pd" resultType="pd">
+		SELECT
+			f.z_name city,
+			g.z_id school_id,
+			h.z_name grade,
+			i.z_id class_id
+		FROM
+			(
+				SELECT
+					d.z_parent_id
+				FROM
+					(
+						SELECT
+							b.z_parent_id
+						FROM
+							(
+								SELECT
+									z_parent_id
+								FROM
+									t_zone AS z
+								INNER JOIN t_student AS s ON s.s_device_u_id = #{iid}
+								AND s.s_zone_id = z.z_id
+							) AS a,
+							t_zone AS b
+						WHERE
+							b.z_id = a.z_parent_id
+					) AS c,
+					t_zone AS d
+				WHERE
+					d.z_id = c.z_parent_id
+			) AS e,
+			t_zone AS f,
+			(
+				SELECT
+					d.z_parent_id,
+					d.z_id
+				FROM
+					(
+						SELECT
+							b.z_parent_id
+						FROM
+							(
+								SELECT
+									z_parent_id
+								FROM
+									t_zone AS z
+								INNER JOIN t_student AS s ON s.s_device_u_id = #{iid}
+								AND s.s_zone_id = z.z_id
+							) AS a,
+							t_zone AS b
+						WHERE
+							b.z_id = a.z_parent_id
+					) AS c,
+					t_zone AS d
+				WHERE
+					d.z_id = c.z_parent_id
+			) AS g,
+			(
+				SELECT
+					b.z_parent_id,
+					b.z_name
+				FROM
+					(
+						SELECT
+							z_parent_id
+						FROM
+							t_zone AS z
+						INNER JOIN t_student AS s ON s.s_device_u_id = #{iid}
+						AND s.s_zone_id = z.z_id
+					) AS a,
+					t_zone AS b
+				WHERE
+					b.z_id = a.z_parent_id
+			) AS h,
+			(
+				SELECT
+					z_id,
+					z_parent_id
+				FROM
+					t_zone AS z
+				INNER JOIN t_student AS s ON s.s_device_u_id = #{iid}
+				AND s.s_zone_id = z.z_id
+			) AS i
+		WHERE
+			f.z_id = e.z_parent_id
+	</select>
+
+	<select id="findStuInfo" parameterType="pd" resultType="pd">
+	    SELECT
+			*
+		FROM
+			t_student
+		WHERE
+			s_device_u_id = #{iid}
+	</select>
+	
+	<select id="findAttendanceTime" parameterType="pd" resultType="pd">
+	    SELECT
+			a.*
+		FROM
+			t_attendance_record a
+		INNER JOIN t_student AS s ON s.s_device_u_id = #{iid}
+		AND s.s_id = a.ar_stu_id
+		order by a.ar_id desc 
+		LIMIT 1 
+	</select>
+	
+	<select id="findIdInfomations" parameterType="pd" resultType="pd">
+<!-- 	    SELECT 
+		    a.CityId as cityId, 
+		    a.TownId as townId,
+		    a.SchoolID as schoolId, 
+	    	b.StudentId as studentId,
+	    	b.ClassId as classId 
+	    from 
+	    	qry_batch_school a, 
+	    	qry_student_info b 
+	    where 
+	    	a.SchoolID = b.SchoolId 
+	    	and b.IcNo = #{icId} -->
+	    
+		SELECT
+			CityId
+		FROM
+			qry_batch_school
+		WHERE
+			SchoolId=#{schoolid}
+	    	
+	</select>
+	<!-- 根据IC卡号查找姓名 -->
+	<select id="findName" parameterType="pd" resultType="pd">
+		SELECT
+			UserName
+		FROM
+			qry_student_info
+		WHERE
+			IcNo=#{IcNo}
+	</select>
+	<!-- 根据IC卡号查找班级名 -->
+	<select id="findClassName" parameterType="pd" resultType="pd">
+		SELECT
+			ClassName
+		FROM
+			qry_batch_class
+		WHERE
+			ClassId=(
+				SELECT 
+					ClassId
+				FROM
+					qry_student_info
+				WHERE
+					IcNo=#{IcNo}
+			)
+	</select>
+
+	<!-- 插入上午考勤数据 -->
+	
+<insert id="saveattence" parameterType="pd">
+	INSERT INTO guanai_attendance_info(IcNo,times,type,modify_time)
+	VALUE(#{icId},#{datetime},#{type},SYSDATE())	
+</insert>
+	
+	
+<insert id="saveattemorning" parameterType="pd">
+	INSERT INTO guanai_attendance_info(IcNo,signin_time,type,modify_time)
+	VALUE(#{icId},#{datetime},#{type},SYSDATE())	
+</insert>
+
+	<!-- 插入下午考勤数据(上午无记录) -->
+<insert id="saveatteafternoon" parameterType="pd">
+	INSERT INTO guanai_attendance_info(IcNo,signout_time,type,modify_time)
+	VALUE(#{icId},#{datetime},#{type},SYSDATE())	
+</insert>
+
+	<!-- 插入下午考勤数据(上午有记录) -->
+<update id="updateatteafternoon" parameterType="pd">
+	UPDATE guanai_attendance_info
+	SET 
+		signout_time=#{datetime},
+		type = #{type}
+	WHERE DATE_FORMAT(modify_time,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d');
+</update>
+	
+	<!-- 根据IC卡号查询当天的考勤记录 -->
+<select id="selectatte" parameterType="pd" resultType="pd">
+	SELECT * 
+	FROM guanai_attendance_info
+	WHERE IcNo=#{icId} AND DATE_FORMAT(modify_time,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d');
+</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NewDataMapper">
+    <select id="before" parameterType="pd" resultType="Integer" flushCache="false">
+        SELECT
+        	COUNT(*) AS count
+        FROM
+        	t_zone
+        WHERE
+        	1=1
+        	AND z_type = #{type}
+        	<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') < DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+    </select>
+    <!--新增学校班级日统计 -->
+    <select id="daylist" parameterType="pd" resultType="pd" flushCache="false">
+		SELECT
+			DATE_FORMAT(create_time, '%m-%d') AS dt,
+			COUNT(*) AS count
+		FROM
+			t_zone
+		WHERE
+			1 = 1
+			AND z_type = #{type}
+			<if test="time_start != null and time_start != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+			</if>
+			<if test="time_end != null and time_end != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+			</if>
+		GROUP BY dt
+	</select>
+	    <!--新增学校班级周统计 -->
+    <select id="weeklist" parameterType="pd" resultType="pd" flushCache="false">
+		SELECT
+			concat(date_format(create_time,'%Y年'),'第',(date_format(create_time,'%u')+1),"周") dt,
+			<!-- DATE_FORMAT(create_time, '%Y年第%v周') AS dt, -->
+			COUNT(*) AS count
+		FROM
+			t_zone
+		WHERE
+			1 = 1
+			AND z_type = #{type}
+			<if test="time_start != null and time_start != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+			</if>
+			<if test="time_end != null and time_end != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+			</if>
+		GROUP BY dt
+	</select>
+	    <!--新增学校班级月统计 -->
+    <select id="monthlist" parameterType="pd" resultType="pd" flushCache="false">
+		SELECT
+			DATE_FORMAT(create_time, '%Y-%m') AS dt,
+			COUNT(*) AS count
+		FROM
+			t_zone
+		WHERE
+			1 = 1
+			AND z_type = #{type}
+			<if test="time_start != null and time_start != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+			</if>
+			<if test="time_end != null and time_end != ''">
+				<![CDATA[AND DATE_FORMAT(create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+			</if>
+		GROUP BY dt
+	</select>
+	<select id="selectIP">
+	</select>
+</mapper>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NoticeAppMapper">
+	
+	<select id="list" parameterType="pd" resultType="pd">
+	    SELECT
+			n.n_id,
+			n.n_title,
+			n.n_content,
+			n.n_type,
+			n.n_zone_id,
+			n.n_pic_url,
+			DATE_FORMAT(n.create_time,'%Y-%m-%d') AS create_time
+		FROM
+			t_notice AS n
+		INNER JOIN t_user_student AS us ON us.us_user_id = #{user_id}
+		INNER JOIN t_student AS s ON s.s_id = us.us_stu_id
+		INNER JOIN t_zone AS z ON z.z_id = s.s_zone_id
+		INNER JOIN t_zone	AS z1 ON z1.z_id = z.z_parent_id
+			AND (n.n_zone_id = s.s_zone_id OR n.n_zone_id = z1.z_parent_id)
+		GROUP BY n.n_id
+		ORDER BY n.create_time ASC;
+	</select>
+	    	
+	<select id="findSchool" parameterType="String" resultType="String">
+	SELECT
+		z_name
+	FROM
+		t_zone
+	WHERE
+		z_id = (
+			SELECT
+				z_parent_id
+			FROM
+				t_zone
+			WHERE
+				z_id = (
+					SELECT
+						z_parent_id
+					FROM
+						t_zone
+					WHERE
+						z_id = (
+							SELECT
+								s_zone_id
+							FROM
+								t_student
+							WHERE
+								s_id = (
+									SELECT
+										us_stu_id
+									FROM
+										t_user_student
+									WHERE
+										us_user_id = #{user_id}
+								)
+						)
+				)
+		)
+	</select>
+	<select id="findClass" parameterType="String" resultType="pd">
+   			SELECT
+				z_parent_id,
+				z_name
+			FROM
+				t_zone
+			WHERE
+				z_id = (
+					SELECT
+						s_zone_id
+					FROM
+						t_student
+					WHERE
+						s_id = (
+							SELECT
+								us_stu_id
+							FROM
+								t_user_student
+							WHERE
+								us_user_id = #{user_id}
+						)
+				)
+	</select>
+	<insert id="addNotice" parameterType="pd">
+		INSERT t_notice (
+			n_title,
+			n_content,
+			n_type,
+			n_zone_id,
+			n_pic_url,
+			create_time
+		)
+		VALUES
+		(
+			#{title},
+			#{content},
+			'1',
+			#{n_zone_id},
+			#{n_pic_url},
+			#{create_time}
+		)	    
+	</insert>
+	
+	<select id="getZoneByOpenid" parameterType="String" resultType="String">
+	    SELECT
+			ut.ut_zone_id
+		FROM
+			t_user_teacher AS ut
+		INNER JOIN t_user_weixin AS uw ON uw.uw_open_id = #{openid}
+		AND uw.uw_user_id = ut.ut_user_id
+	</select>
+	<select id="listTempUser" parameterType="String" resultType="pd">
+	   SELECT
+			s.*,
+			uw.uw_open_id
+		FROM
+			t_student AS s
+		INNER JOIN t_user_teacher AS ut ON ut.ut_user_id = #{teacher_id}
+		AND s.s_zone_id = ut.ut_zone_id
+		INNER JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		INNER JOIN t_user_weixin AS uw ON uw.uw_user_id = us.us_user_id
+	</select>
+	<select id="listSchoolTempUser" parameterType="String" resultType="pd">
+	    SELECT
+			s.*,
+			uw.uw_open_id
+		FROM
+			t_student AS s
+			INNER JOIN sys_user AS u ON USER_ID = #{teacher_id}
+			INNER JOIN t_zone AS z ON z.z_parent_id = u.school_id
+			INNER JOIN t_zone AS z1 ON z1.z_parent_id = z.z_id AND s.s_zone_id = z1.z_id
+			INNER JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+			INNER JOIN t_user_weixin AS uw ON uw.uw_user_id = us.us_user_id	
+	</select>
+	<select id="findClassAndTeacher"  parameterType="String" resultType="pd">
+    
+	    SELECT
+			u.name,
+			z.z_name
+		FROM
+			t_user_teacher AS ut
+		INNER JOIN sys_user AS u ON u.USER_ID = ut.ut_user_id
+		AND ut.ut_user_id = #{teacher_id}
+		INNER JOIN t_zone AS z ON z.z_id = ut.ut_zone_id
+	</select>
+	
+	<select id="findSchoolAndTeacher"  parameterType="String" resultType="pd">
+	    SELECT
+			u.name
+		FROM
+			sys_user AS u
+			INNER JOIN t_zone AS z ON z.z_id = u.school_id
+		WHERE
+			u.USER_ID = #{teacher_id}
+	</select>
+</mapper>

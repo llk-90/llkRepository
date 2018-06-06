@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Hello MUI</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+        <!--标准mui.css-->
+        <link rel="stylesheet" href="../css/mui.min.css">
+        <link rel="stylesheet" type="text/css" href="../css/common.css" />
+        <!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../css/personal_center.css" />
+        <link rel="stylesheet" type="text/css" href="../css/list-active.css" />
+        <style>
+            .user-head-pic-bdr {
+                height: 100px;
+              	width: 100px;
+                margin-top: 40px;
+                margin-left: 10px;
+               	border-radius: 50%;
+                background-image: url(../images/headpic.jpg);
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+            .mui-table-view-cell{
+            	height: 60px !important;
+            	line-height: 40px;
+            }
+            .mui-navigate-right {
+                padding-left: 30px !important;
+            }
+            
+            .mui-navigate-right span {
+                margin-left: 25px;
+                display: block;
+                line-height: 30px;
+            }
+            
+            .mui-navigate-right span,
+            .mui-navigate-right div,
+            .mui-navigate-right img {
+                float: left;
+            }
+            
+            .btn {
+				width: 90%;
+				height: 50px;
+				border: 0;
+				background-color: #F45250;
+				color: #FFFFFF;
+				font-size: larger;
+				border-radius: 5px;
+				margin-top: 20%;
+				margin-left: 5%;
+			}
+			.mui-content ul{
+            	background-color: #EBEBEB;
+            }
+        </style>
+        <script src="../js/mui.min.js"></script>
+        <script type="text/javascript" src="../js/app.js" ></script>
+    </head>
+
+    <body>
+        <div class="mui-content">
+            <div style="height: 180px; background-color: #3FD47A;">
+            	<div class="user-head-pic-bdr mui-col-xs-4" style="float: left;">
+            	</div>
+            	<div style="float: left;margin-top: 40px;padding-left: 10px;" class="mui-col-xs-84">
+            		<h3 style="font-weight: 500; color: #FFFFFF;">Sarah Green</h3>
+                    <h4 style="font-weight: 500; color: #EBEBEB; padding-top: 5px;">Sarah Green@163.com</h4>
+                    <h5 style="padding-top: 20px;">18&nbsp;&nbsp;大棚&emsp;&emsp;&emsp;0&nbsp;&nbsp;危害</h5> 
+            	</div>
+
+            </div>
+            <ul class="mui-table-view" style="padding-top: 5px;">
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="personal_info/personal_info.html">
+                        <div class="icon-user"></div>
+                        <span>个人资料</span>
+                    </a>
+                </li>
+                 <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="greenhouse/greenhouse_list.html">
+                        <div class="icon-greenhouse"></div>
+                        <span>大棚</span>
+                    </a>
+                </li>
+                  <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="message/message_list.html">
+                        <div class="icon-message"></div>
+                        <span>消息</span>
+                        <span id="info" style="display: none; background-color: #FF0000; line-height: 15px; color: #FFFFFF; height:20px;" class="mui-badge"></span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="settings/setting.html">
+                        <div class="icon-setting"></div>
+                        <span>设置</span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="help.html">
+                        <div class="icon-help"></div>
+                        <span>帮助</span>
+                    </a>
+                </li>
+            </ul>
+           <button id="logout" class="btn">退出登录</button>
+        </div>
+    </body>
+
+    <script>
+        mui.init({
+            swipeBack: false //启用右滑关闭功能
+        });
+        var aniShow = "pop-in";
+        if (mui.os.android) {
+            var list = document.querySelectorAll('.ios-only');
+            if (list) {
+                for (var i = 0; i < list.length; i++) {
+                    list[i].style.display = 'none';
+                }
+            }
+            if (parseFloat(mui.os.version) < 4.4) {
+                aniShow = "slide-in-right";
+            }
+        }
+        //主列表点击事件
+        mui('.mui-content').on('tap', 'a', function() {
+            var id = this.getAttribute('href');
+            var href = this.href;
+            var type = this.getAttribute("open-type");
+            //不使用父子模板方案的页面
+            var webview_style = {
+                popGesture: "close"
+            };
+            mui.openWindow({
+                id: id,
+                url: href,
+                styles: webview_style,
+                show: {
+                    aniShow: aniShow
+                },
+                waiting: {
+                    autoShow: false
+                }
+            });
+        });
+	</script>
+</html>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EnvironmentMapper">
+	<!-- 列表 -->
+	<!-- 页面初期化查询第一个垮 -->
+	<select id="findFirst" parameterType="pd" resultType="String">
+		SELECT
+			zd_id
+		FROM
+			tb_area
+		WHERE
+			parent_id IN (
+				SELECT
+					zd_id
+				FROM
+					tb_area
+				WHERE
+					parent_id = #{farmId}
+			)
+		ORDER BY
+			zd_id
+		LIMIT 1
+	</select>
+	
+	<select id="showpd" parameterType="pd" resultType="pd">
+		SELECT
+			info_id,
+			equ_parameter,
+			equ_threshold,
+			equ_plan,
+			cycle,
+			area_kid
+		FROM
+			tb_threshold_plan
+		WHERE
+			area_kid = #{zd_id}
+	</select>
+	
+	<!-- 获取今天之前30天的数据 -->
+	<select id="listMonthData" parameterType="pd" resultType="Chart">
+		SELECT
+			DATE_FORMAT(ei.create_date, '%Y-%m-%d') AS create_date,
+			CASE
+		WHEN FORMAT(AVG(ei.equ_data), 2) IS NULL THEN
+			'-'
+		WHEN FORMAT(AVG(ei.equ_data), 2) = '' THEN
+			'-'
+		ELSE
+			FORMAT(AVG(ei.equ_data), 2)
+		END AS equ_data,
+		 ae.equ_id,
+		 ei.info_id,
+		 ei.equ_parameter,
+		 tp.equ_threshold,
+		 tp.low_threshold,
+		 tp.equ_plan,
+		 tp.cycle,
+		 tp.area_kid
+		FROM
+			tb_area_equ AS ae
+		INNER JOIN tb_equipment_info AS ei ON ae.equ_id = ei.equ_id
+		<if test="type != null and type != ''">
+		AND equ_parameter = #{type}
+		</if>
+		<if test="type == null or type == ''">
+		AND equ_parameter = '0'
+		</if>
+		AND ei.create_date BETWEEN date_sub(now(), INTERVAL 30 DAY)
+		AND now()
+		AND ae.area_kid = #{zd_id}
+		LEFT JOIN tb_threshold_plan AS tp ON tp.area_kid = ae.area_kid AND ei.equ_parameter = tp.equ_parameter
+		GROUP BY
+			DATE_FORMAT(ei.create_date, '%Y-%m-%d');
+	</select>
+	
+	<!-- 获取今天的数据 -->
+	<select id="listDayDate" parameterType="pd" resultType="Chart">
+		SELECT
+			DATE_FORMAT(ei.create_date, '%H') AS create_date,
+			CASE
+			WHEN FORMAT(avg(ei.equ_data),2) IS NULL THEN
+				'-'
+			WHEN FORMAT(avg(ei.equ_data),2) = '' THEN 
+				'-'
+			ELSE
+				FORMAT(avg(ei.equ_data),2)
+			END AS equ_data,
+			ae.equ_id,
+			ei.info_id,
+			ei.equ_parameter,
+			tp.equ_threshold,
+			tp.low_threshold,
+			tp.equ_plan,
+			tp.cycle,
+			ae.area_kid
+		FROM
+			tb_area_equ AS ae
+			INNER JOIN tb_equipment_info AS ei ON ae.equ_id = ei.equ_id
+			AND	ae.area_kid = #{zd_id}
+			AND DATE_FORMAT(ei.create_date, '%y-%m-%d') = DATE_FORMAT(now(), '%y-%m-%d')	
+			<if test="type != null and type != ''">
+				AND equ_parameter = #{type}
+			</if>
+			<if test="type == null or type == ''">
+				AND equ_parameter = '0'
+			</if>
+			LEFT JOIN tb_threshold_plan AS tp ON tp.area_kid = ae.area_kid AND ei.equ_parameter = tp.equ_parameter
+			GROUP BY 1
+	</select>
+	
+	<select id="findName" parameterType="String" resultType="String">
+	    SELECT
+			NAME
+		FROM
+			tb_area
+		WHERE
+			zd_id = #{id}
+	</select>
+
+	<select id="listYearData" parameterType="pd" resultType="Chart">
+		SELECT
+			DATE_FORMAT(ei.create_date, '%Y-%m') AS create_date,
+			CASE
+		WHEN FORMAT(AVG(ei.equ_data), 2) IS NULL THEN
+			'-'
+		WHEN FORMAT(AVG(ei.equ_data), 2) = '' THEN
+			'-'
+		ELSE
+			FORMAT(AVG(ei.equ_data), 2)
+		END AS equ_data,
+		 ae.equ_id,
+		 ei.info_id,
+		 ei.equ_parameter,
+		 tp.equ_threshold,
+		 tp.low_threshold,
+		 tp.equ_plan,
+		 tp.cycle,
+		 tp.area_kid
+		FROM
+			tb_area_equ AS ae
+		INNER JOIN tb_equipment_info AS ei ON ae.equ_id = ei.equ_id
+		<if test="type != null and type != ''">
+		AND equ_parameter = #{type}
+		</if>
+		<if test="type == null or type == ''">
+		AND equ_parameter = '0'
+		</if>
+		AND ei.create_date BETWEEN date_sub(now(), INTERVAL 12 MONTH)
+		AND now()
+		AND ae.area_kid = #{zd_id}
+		LEFT JOIN tb_threshold_plan AS tp ON tp.area_kid = ae.area_kid AND ei.equ_parameter = tp.equ_parameter
+		GROUP BY
+			DATE_FORMAT(ei.create_date, '%Y-%m');
+	</select>
+	
+	<select id="listQuYu" resultType="pd">
+		select
+		a.zd_id,
+		a.name
+		from
+		tb_area AS a
+		where
+		parent_id = #{parent_id}
+	</select>
+
+	<select id="findColumnById" parameterType="page" resultType="pd">
+		SELECT
+		a.zd_id,
+		a.name,
+		a.parent_id as parentID,
+		a.column_bm AS population
+		FROM
+		tb_area AS a
+	</select>
+
+	<!-- -->
+	<insert id="save" parameterType="pd">
+		insert into tb_area(
+		name,
+		bianma,
+		parent_id
+		) values (
+		#{name},
+		#{bianma},
+		#{parent_id}
+		)
+	</insert>
+
+	<!-- 删除节点 -->
+	<delete id="delete" parameterType="pd">
+		delete from tb_area
+		where
+		zd_id= #{zd_id}
+	</delete>
+
+	<!-- 删除子节点 -->
+	<delete id="deleteparent" parameterType="pd">
+		delete from tb_area
+		where
+		parent_id = #{zd_id}
+	</delete>
+    
+    <delete id="deleteAll" parameterType="String">
+		delete from tb_area
+		where
+		parent_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update tb_area
+		set
+		name = #{name},
+		bianma = #{bianma}
+		where
+		zd_id = #{id}
+	</update>
+
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+		a.zd_id,
+		a.name,
+		a.bianma,
+		a.parent_id,
+		FROM
+		tb_area AS a
+		WHERE
+		a.zd_id =
+		#{zd_id}
+	</select>
+
+	<update id="saveSetUp" parameterType="pd">
+	    UPDATE tb_threshold_plan
+		SET
+			equ_threshold = #{max},
+			low_threshold = #{min},
+			cycle = #{cycle}
+		WHERE area_kid = #{area_kid}
+		AND equ_parameter = #{type}
+	</update>
+	
+	<insert id="newSetUp" parameterType="pd">
+		INSERT INTO tb_threshold_plan
+		(
+			equ_parameter,
+			equ_threshold,
+			equ_plan,
+			create_date,
+			create_user,
+			cycle,
+			area_kid,
+			low_threshold
+		)
+		VALUES(
+			#{type},
+			#{max},
+			'',
+			sysdate(),
+			#{user_id},
+			#{cycle},
+			#{area_kid},
+			#{min}
+		)
+	</insert>
+	
+	<select id="checkPlan" parameterType="pd" resultType="Integer">
+	    SELECT
+			count(*)
+		FROM
+			tb_threshold_plan
+		WHERE
+			area_kid = #{id}
+		AND equ_parameter = #{type}
+	</select>
+	
+	<update id="savePlan" parameterType="pd">
+		UPDATE tb_threshold_plan
+		SET equ_plan = #{plan}
+		WHERE
+			area_kid = #{id}
+		AND equ_parameter = #{type}
+	</update>
+	<select id="getLimit" parameterType="pd" resultType="pd">
+		SELECT
+			tp.equ_parameter,
+			tp.equ_threshold,
+		tp.cycle,
+		 tp.low_threshold,
+		 a. NAME
+		FROM
+			tb_threshold_plan AS tp
+		INNER JOIN tb_area AS a ON a.zd_id = tp.area_kid
+		WHERE
+			tp.area_kid = #{id}
+			AND tp.equ_parameter = #{type}
+	</select>
+</mapper>

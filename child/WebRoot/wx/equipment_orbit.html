@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=a02pEGsWRFx9MaX2Yfw3fAPAGExcek1c"></script>
+    <script type="text/javascript" src="js/iBaby2.jquery-2.1.0.min.js"></script>
+    <title>轨迹展示</title>
+
+<script type="text/javascript">
+var map;//地图
+var locArray =[];//定位数组
+var playBtn;
+var playBtn, pauseBtn, resetBtn,amapInfoDiv; //几个控制按钮
+var restart;
+var index = 0;
+var car;
+var map;
+var timer; //定时器
+
+    //获取URL中的参数
+    function GetQueryString(name) {
+
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+
+        var r = window.location.search.substr(1).match(reg);
+
+        if (r!=null) return unescape(r[2]); return null;
+
+    }
+// 定义一个控件类,即function
+    function ZoomControl(){
+        // 默认停靠位置和偏移量
+        this.defaultAnchor = BMAP_ANCHOR_TOP_LEFT;
+        this.defaultOffset = new BMap.Size(10, 10);
+    }
+    
+    
+    function init(){
+    	
+		playBtn = document.getElementById("play");
+		resetBtn = document.getElementById("restart");
+		
+		var stuid = GetQueryString('s_id');
+		var d = {
+			stuId: stuid
+		};
+		//$.ajax("/terminalStatusApp/terminalStatus.webapp", {
+		$.ajax("/child/terminalStatusApp/terminalStatus.webapp", {
+			data: d,
+			dataType: 'json', //服务器返回json格式数据
+			type: 'post', //HTTP请求类型
+			timeout: 10000, //超时时间设置为10秒；
+			success: function(data) {
+				var statCode = data.statCode;
+				if ( statCode == '200' ) {
+			       	locArray[0] = new BMap.Point(data.lng, data.lat);
+			       	createMap();
+                }else{
+                    alert("获取信息失败");
+                }
+			},
+			error: function(xhr, type, errorThrown) {
+				alert("获取信息失败");
+			}
+		});	
+    	
+    }
+// 创建地图
+    function createMap() {
+		
+        map = new BMap.Map("allmap");
+		map.centerAndZoom(locArray[0], 17);
+		map.panTo(locArray[0]);
+		car = new BMap.Marker(locArray[0]);
+		map.addOverlay(car);
+		
+		map.enableScrollWheelZoom(true);
+        // 通过JavaScript的prototype属性继承于BMap.Control
+        ZoomControl.prototype = new BMap.Control();
+
+        // 自定义控件必须实现自己的initialize方法,并且将控件的DOM元素返回
+        // 在本方法中创建个div元素作为控件的容器,并将其添加到地图容器中
+        ZoomControl.prototype.initialize = function(map){
+            // 创建一个DOM元素
+            var div = document.createElement("div");
+            // 设置样式
+            // div.style.display = "inline-flex";
+            // div.style.justifyContent = "space-between";
+            div.style.width = "100%";
+            div.style.height = "40px";
+            div.style.backgroundColor = "rgba(0,0,0,0)";
+
+            var lab1 = document.createElement("LABLE");
+            lab1.innerText = "开始时间:";
+            lab1.style.color = "black";
+            div.appendChild(lab1);
+
+            var input1 = document.createElement("INPUT");
+            input1.type = "datetime-local";
+            input1.id = "date-choose";
+            // 设置样式
+            input1.style.cursor = "pointer";
+            input1.style.border = "1px solid gray";
+            input1.style.backgroundColor = "white";
+            div.appendChild(input1);
+
+            var lab2 = document.createElement("LABLE");
+            lab2.innerText = "结束时间:";
+            lab2.style.color = "black";
+            div.appendChild(lab2);
+
+            var input2 = document.createElement("INPUT");
+            input2.type = "datetime-local";
+            input2.id = "date-choose1";
+            // 设置样式
+            input2.style.cursor = "pointer";
+            input2.style.border = "1px solid gray";
+            input2.style.backgroundColor = "white";
+            div.appendChild(input2);
+
+            // 添加DOM元素到地图中
+            map.getContainer().appendChild(div);
+            // 将DOM元素返回
+            return div;
+        }
+        // 创建控件
+        var myZoomCtrl = new ZoomControl();
+        // 添加到地图当中
+        map.addControl(myZoomCtrl);
+    }
+    //播放或停止按钮
+    function plyaorPause(temp) {
+        playBtn = document.getElementById("play");
+        restart = document.getElementById("restart");
+        var chooseDate
+        var chooseDate1
+        if (temp=='play')
+        {
+            var chooseDate = document.getElementById("date-choose").value;
+            var chooseDate1 = document.getElementById("date-choose1").value;
+            if (chooseDate.length==0||chooseDate1.length==0)
+            {
+                alert("请选择日期");
+            }
+            else {
+                    var yetstr = document.getElementById("date-choose").value.split("T")[0];
+                    var yetstr1 = document.getElementById("date-choose1").value.split("T")[0];
+                    var timstr = document.getElementById("date-choose").value.split("T")[1];
+                    var timstr1 = document.getElementById("date-choose1").value.split("T")[1];
+                    var now = new Date();
+                    var nowstr = now.getFullYear()+"-" + (now.getMonth()+1)+"-" +now.getDate();
+                    if ((DateDiff(nowstr,yetstr)>0)&&(DateDiff(nowstr,yetstr)<7)&&(DateDiff(nowstr,yetstr1)>=0)&&(DateDiff(nowstr,yetstr1)<7)&&(DateDiff(yetstr1,yetstr)>=0))
+                    {
+                        $.ajax("/child/historyTrackApp/detailTrack.webapp", {
+                        //     $.ajax("/historyTrackApp/detailTrack.webapp", {
+                            data:{
+                                stuId: GetQueryString("s_id"),
+                                startTime:yetstr + " " +timstr + ":00",
+                                endTime: yetstr1 + " " +timstr1 + ":00"
+                            },
+                            dataType: 'json', //服务器返回json格式数据
+                            type: 'post', //HTTP请求类型
+                            timeout: 10000, //超时时间设置为10秒；
+                            success: function(data) {
+                                if(data.statCode  == '200' ){
+                                    locArray.splice(0,locArray.length);
+                                    for (var i = 0;i<data.trackList.length;i++)
+                                    {
+                                        locArray[i] = new BMap.Point(data.trackList[i].lng, data.trackList[i].lat);
+                                    }
+                                    play();
+                                }
+                                else {
+                                    alert("获取信息失败");
+                                }
+                            },
+                            error: function(xhr, type, errorThrown) {
+                            	alert("获取信息失败");
+                            }
+
+                        });
+                           //play();
+                    }
+                    else
+                        {
+                            alert("只能选择当前日期前七天,且结束时间需大于开始时间");
+                        }
+
+                }
+
+
+        }
+        else
+        {
+                  reset();
+        }
+    }
+    //计算天数差的函数，通用
+    function  DateDiff(sDate1,  sDate2){    //sDate1和sDate2是2006-12-18格式
+        var  aDate,  oDate1,  oDate2,  iDays
+        aDate  =  sDate1.split("-")
+        oDate1  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0])    //转换为12-18-2006格式
+        aDate  =  sDate2.split("-")
+        oDate2  =  new  Date(aDate[1]  +  '-'  +  aDate[2]  +  '-'  +  aDate[0])
+        iDays  =  parseInt(Math.abs(oDate1  -  oDate2)  /  1000  /  60  /  60  /24)    //把相差的毫秒数转换为天数
+        return  iDays
+    }
+
+    //停止播放
+    function reset() {
+
+        playBtn.disabled = false;
+        if (timer) {
+            window.clearTimeout(timer);
+        }
+        index = 0;
+    }
+
+    //开始播放
+    function play() {
+
+        if (playBtn.disabled == false){
+            map.clearOverlays();
+        }
+        playBtn.disabled = true;
+
+        var icon = new BMap.Icon("images/redPoint.png",new BMap.Size(25,25));
+        var point = locArray[index];//获取定位数组长度
+
+        if (index > 0) {
+            map.addOverlay(new BMap.Marker(point,{icon:icon}));
+            map.panTo(point);
+        }
+
+        index++;
+        if (index < locArray.length) {
+            timer = window.setTimeout("play(" + index + ")", 200);
+        } else {
+			playBtn.disabled = false;
+			index = 0;
+			alert("播放完成");
+		}
+    }
+</script>
+</head>
+<body onload="init();">
+<div id="allmap"></div>
+
+<div style="position: fixed;display : inline-flex;justify-content:space-between;width: 100%;height:40px;bottom:0px;left: 0px;z-index: 999;background-color: rgba(0,0,0,0)">
+    <input id="play" type="button" style="background-color:#96d1ba;height: 40px;width: 50%;border-width: 0px;border-color: rgba(0,0,0,0);color: white" value="开始播放" onclick="plyaorPause('play')">
+    <input id="restart" type="button" style="background-color:lightgray;height: 40px;width: 50%;border-width: 0px;border-color: rgba(0,0,0,0);color: black;" value="停止播放" onclick="plyaorPause('stop')">
+</div>
+
+</body>
+</html>

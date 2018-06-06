@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="personal">
+	
+	<!--获取所有城市 -->
+	<select id="getallcity" parameterType="pd" resultType="pd">
+	    SELECT 
+	     CityId,
+	     CityName 
+	    FROM 
+	     qry_city_info
+	     WHERE 
+	     ProvinceId=#{ProvinceId}
+	</select>
+	
+	<!--获取所有省份 -->
+	<select id="getallprovince" parameterType="pd" resultType="pd">
+	    SELECT 
+	     ProvinceId,
+	     ProvinceName 
+	    FROM 
+	     qry_province_info
+	</select>
+		<!--获取所有班级 -->
+	<select id="getallclass" parameterType="pd" resultType="pd">
+	    SELECT 
+	      ClassId,
+	      ClassName 
+	    FROM 
+	      qry_batch_class 
+	        WHERE SchoolId = #{SchoolId}
+	</select>
+	<!--根據城市id直接查詢市轄區 -->
+	<select id="getDistrict" parameterType="pd" resultType="pd">
+	    SELECT 
+	     TownId,
+	     TownName 
+	    FROM 
+	     qry_town
+	    WHERE 
+	     CityId=#{CityId}
+	</select>
+	<!-- 获取所有学校信息爱 -->
+	<select id="getAllSch" parameterType="pd" resultType="pd">
+		SELECT
+		 (case when SchoolID='41670' then 0 else 1 end) as flag,
+		 SchoolID,
+		 SchoolName 
+		FROM 
+	     qry_batch_school 
+	    WHERE TownId = #{TownId}
+	    ORDER BY flag
+	</select>
+
+
+</mapper>

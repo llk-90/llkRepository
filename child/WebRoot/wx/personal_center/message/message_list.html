@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="../../css/mui.min.css">
+        <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/personal_center.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/list-active.css" />
+        <style>
+			.btn {
+	            width: 100%;
+	            height: 50px;
+	            border: 0;
+	            color: #FE8687;
+	            font-size: larger;
+	            border-radius:0 ;
+	            }
+           .mui-checkbox span {
+                margin-left: 10px;
+                display: block;
+                line-height: 20px;
+            }
+            
+            .mui-checkbox span,
+            .mui-checkbox div,
+            .mui-checkbox img {
+                float: left;
+            }
+            .mui-bar{
+            	box-shadow: 0 0 0px #FFFFFF;
+            }
+            .mui-content ul{
+            	background-color: #EBEBEB;
+            }
+            .mui-checkbox input[type=checkbox]:checked:before {
+                color: #FE8687;
+            }
+        </style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+            <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+            <span class="mui-btn-link mui-pull-right" id="selectAll" style="color: #FFFFFF;">全选</span>
+            <h2 class="mui-title">消息</h2>
+        </header>
+        <div class="mui-content">
+        	<div class="mui-input-row mui-checkbox">
+	        	<h5 style="font-weight: 300;font-size: larger;line-height: 40px; margin-left: 15px;width: 150px;">5月，9号</h5>
+	        	<input name="checkbox" type="checkbox" style="right:15px; top:35%" />
+        	</div>
+        	<ul class="mui-table-view mui-table-view-striped mui-table-view-condensed" >
+		        <li class="mui-table-view-cell">
+                    <div id="cart" class="mui-input-row mui-checkbox">
+                        <h4 style="font-weight: 600;font-size: larger;margin-bottom: 15px;">农场消息</h4>
+                        <input name="checkbox" type="checkbox" style="right: 0px;top:40%" />
+                   		<div class="icon-clock"></div>
+                        <span>08:30&nbsp;上午</span>
+                        <span>&emsp;&emsp;&emsp;</span>
+                        <div class="icon-push"></div>
+                        <span>推送</span>
+                    </div>
+                </li>
+                <li class="mui-table-view-cell">
+                    <div id="cart" class="mui-input-row mui-checkbox">
+                        <h4 style="font-weight: 600;font-size: larger;margin-bottom: 15px;">设备信息</h4>
+                        <input name="checkbox" type="checkbox" style="right: 0px;top:45%" />
+                   		<div class="icon-clock"></div>
+                        <span>08:30&nbsp;上午</span>
+                        <span>&emsp;&emsp;&emsp;</span>
+                        <div class="icon-push"></div>
+                        <span>推送</span>
+                    </div>
+                </li>
+		    </ul>
+		    <div class="mui-input-row mui-checkbox">
+	        	<h5 style="font-weight: 300;font-size: larger;line-height: 40px; margin-left: 15px;width: 150px;">4月，30号</h5>
+	        	<input name="checkbox" type="checkbox" style="right:15px; top:35%" />
+        	</div>
+        	<ul class="mui-table-view mui-table-view-striped mui-table-view-condensed" >
+		        <li class="mui-table-view-cell">
+                    <div id="cart" class="mui-input-row mui-checkbox">
+                        <h4 style="font-weight: 600;font-size: larger;margin-bottom: 15px;">推送信息</h4>
+                        <input name="checkbox" type="checkbox" style="right: 0px;top:40%" />
+                   		<div class="icon-clock"></div>
+                        <span>08:30&nbsp;上午</span>
+                        <span>&emsp;&emsp;&emsp;</span>
+                        <div class="icon-system"></div>
+                        <span>系统</span>
+                    </div>
+                </li>
+                <li class="mui-table-view-cell">
+                    <div id="cart" class="mui-input-row mui-checkbox">
+                        <h4 style="font-weight: 600;font-size: larger;margin-bottom: 15px;">推送信息</h4>
+                        <input name="checkbox" type="checkbox" style="right: 0px;top:45%" />
+                   		<div class="icon-clock"></div>
+                        <span>08:30&nbsp;上午</span>
+                        <span>&emsp;&emsp;&emsp;</span>
+                        <div class="icon-push"></div>
+                        <span>推送</span>
+                    </div>
+                </li>
+                <li class="mui-table-view-cell">
+                    <div id="cart" class="mui-input-row mui-checkbox">
+                        <h4 style="font-weight: 600;font-size: larger;margin-bottom: 15px;">推送信息</h4>
+                        <input name="checkbox" type="checkbox" style="right: 0px;top:45%" />
+                   		<div class="icon-clock"></div>
+                        <span>08:30&nbsp;上午</span>
+                        <span>&emsp;&emsp;&emsp;</span>
+                        <div class="icon-push"></div>
+                        <span>推送</span>
+                    </div>
+                </li>
+		      </ul>
+        </div>
+        <nav class="mui-bar mui-bar-tab mui-hidden">
+            <div style="margin-bottom: 0%;">
+                <button id="deleteBtn" class="btn">删&emsp;除</button>
+            </div>
+        </nav>
+        <script src="../../js/mui.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script src="../../js/common.js"></script>
+	</body>
+</html>

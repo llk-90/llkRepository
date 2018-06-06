@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        
+		<link rel="stylesheet" href="../../css/mui.min.css">
+		<link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+		<!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/personal_center.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/list-active.css" />
+        <style>
+        	
+        	.mui-col-xs-2{
+            	text;
+            	float: left;
+            	width: 50px; 
+            	height: 50px; 
+            	background-color: #A8DD59; 
+            	border-radius: 50%; 
+            	text-align: center;
+            }
+            
+        </style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h2 class="mui-title">大棚</h2>
+		</header>
+		<div class="mui-content">
+		<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">
+				<a class="mui-navigate-right">
+					<div class="mui-col-xs-2">
+            			<span style="line-height: 50px;color: #FFFFFF;">100</span>
+					</div>
+					<div style="float: left;margin-left: 20px;" class="mui-col-xs-8">
+						葡萄架1号
+						<p class='mui-ellipsis'>能和心爱的人一起睡觉，是件幸福的事情；可是，打呼噜怎么办？</p>
+					</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media">
+				<a class="mui-navigate-right">
+					<div class="mui-col-xs-2" style="background-color: #F3CE41;">
+            			<span style="line-height: 50px;color: #FFFFFF;">80</span>
+					</div>
+					<div style="float: left;margin-left: 20px;" class="mui-col-xs-8">
+						葡萄架2号
+						<p class='mui-ellipsis'>想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.</p>
+					</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media">
+				<a class="mui-navigate-right">
+					<div class="mui-col-xs-2" style="background-color: #D42D27;">
+            			<span style="line-height: 50px;color: #FFFFFF;">60</span>
+					</div>
+					<div style="float: left;margin-left: 20px;" class="mui-col-xs-8">
+						葡萄架3号
+						<p class='mui-ellipsis'>烤炉模式的城，到黄昏，如同打翻的调色盘一般.</p>
+					</div>
+				</a>
+			</li>
+		</ul>
+	</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			mui('.mui-table-view').on('tap','li',function(){
+				mui.openWindow({
+					url:'column_list.html',
+					id:'column_list'
+				})
+			})
+			
+			
+		</script>
+	</body>
+</html>

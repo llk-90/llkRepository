@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        
+		<link rel="stylesheet" href="../../css/mui.min.css">
+		<link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+		<!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/personal_center.css" />
+        <link rel="stylesheet" type="text/css" href="../../css/list-active.css" />
+        <style>
+        	 .mui-navigate-right {
+                padding-left: 20px !important;
+            }
+            
+            .mui-navigate-right span {
+                margin-left: 25px;
+                display: block;
+                line-height: 30px;
+            }
+            
+            .mui-navigate-right span,
+            .mui-navigate-right div,
+            .mui-navigate-right img {
+                float: left;
+            }
+            .mui-col-xs-2{
+            	text;
+            	float: left;
+            	width: 50px; 
+            	height: 50px; 
+            	background-color: #A8DD59; 
+            	border-radius: 50%; 
+            	text-align: center;
+            }
+        </style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h2 class="mui-title">环境参数</h2>
+		</header>
+		
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell mui-media">
+					<div class="mui-col-xs-2">
+            			<span style="line-height: 50px;color: #FFFFFF;">100</span>
+					</div>
+					<div style="float: left;margin-left: 20px;" class="mui-col-xs-8">
+						葡萄架1号
+						<p class='mui-ellipsis'>能和心爱的人一起睡觉，是件幸福的事情；可是，打呼噜怎么办？</p>
+					</div>
+				</li>
+			</ul>
+			<br />
+			<ul class="mui-table-view">
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="">
+                        <div class="icon-greenhouse"></div>
+                        <span>1号垮</span>
+                    </a>
+                </li>
+                 <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="">
+                         <div class="icon-greenhouse"></div>
+                        <span>2号垮</span>
+                    </a>
+                </li>
+                  <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="">
+                         <div class="icon-greenhouse"></div>
+                        <span>3号垮</span>
+                        <span id="info" style="display: none; background-color: #FF0000; line-height: 15px; color: #FFFFFF; height:20px;" class="mui-badge"></span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="">
+                         <div class="icon-greenhouse"></div>
+                        <span>4号垮</span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="">
+                         <div class="icon-greenhouse"></div>
+                        <span>5号垮</span>
+                    </a>
+                </li>
+            </ul>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			mui('.mui-table-view').on('tap','li',function(){
+				mui.openWindow({
+					url:'param_details.html',
+					id:'param_details'
+				})
+			})
+			
+			
+		</script>
+	</body>
+</html>

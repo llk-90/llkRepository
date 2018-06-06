@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ClassMomentMapper">
+	<!-- get one parent information -->
+	<select id="getParInfo" parameterType="integer" resultType="pd">
+		SELECT
+		DISTINCT p.ParentId AS ParentId,
+		p.ParUserName AS ParUserName,
+		p.HeadImage AS HeadImage
+		FROM
+		qry_stuparent_info p
+		WHERE p.ParentId =
+		#{parentId}
+	</select>
+
+	<select id="getInfoByTeaOpenId" parameterType="java.lang.String"
+		resultType="pd">
+		SELECT
+		DISTINCT par.teacherId uid,
+		par.classID classId
+		FROM
+		teacher_bind_weixin par
+		WHERE
+		par.openid=#{openid}
+	</select>
+
+	<!-- get one teacher information , keep method -->
+	<select id="getTeaInfo" parameterType="integer" resultType="pd">
+		SELECT
+		DISTINCT p.teacherId AS ParentId,
+		p.teacherName AS ParUserName,
+		p.HeadImage AS HeadImage,
+		p.classID AS classId
+		FROM
+		teacher_bind_weixin p
+		WHERE p.teacherId =
+		#{teacherId}
+	</select>
+	<!-- get classMoment information from mysql it's not in redis -->
+	<select id="getClassMomentInfo" parameterType="pd"
+		resultType="pd">
+		<![CDATA[
+			SELECT m.*,
+			p.ParUserName,
+			p.HeadImage
+			FROM moment m
+			LEFT JOIN
+			qry_stuparent_info p
+			ON m.uid = p.ParentId
+			WHERE m.ClassId=#{classId}
+			AND m.is_delete=0
+			ORDER BY m.create_time DESC 
+			LIMIT #{offset},#{pageSize}
+		]]>
+	</select>
+
+	<!-- get all comment information -->
+	<select id="getAllCommentInfo" parameterType="integer"
+		resultType="pd">
+		SELECT c.id,
+		c.mid,
+		c.uid,
+		p1.ParUserName postUsername,
+		c.reply_id,
+		p2.ParUserName replyUsername,
+		c.content,
+		c.create_time,
+		c.is_delete
+		FROM `comment` c
+		LEFT JOIN qry_stuparent_info p1
+		ON c.uid =
+		p1.ParentId
+		LEFT JOIN qry_stuparent_info p2
+		ON c.reply_id=p2.ParentId
+		WHERE c.mid = #{momentId} AND c.is_delete=0
+		ORDER BY c.create_time DESC
+	</select>
+
+	<update id="ChangeMoment" parameterType="com.fh.entity.Moment">
+		<![CDATA[UPDATE moment]]>
+		<set>
+			<trim suffixOverrides=",">
+				<if test="uid!=null">
+					<![CDATA[uid=#{uid},]]>
+				</if>
+				<if test="title!=null">
+					<![CDATA[title=#{title},]]>
+				</if>
+				<if test="content!=null">
+					<![CDATA[content=#{content},]]>
+				</if>
+				<if test="picture!=null">
+					<![CDATA[picture=#{picture},]]>
+				</if>
+				<if test="create_time!=null">
+					<![CDATA[create_time=#{create_time},]]>
+				</if>
+				<if test="is_delete!=null">
+					<![CDATA[is_delete=#{is_delete},]]>
+				</if>
+				<if test="usertype!=null">
+					<![CDATA[usertype=#{usertype},]]>
+				</if>
+				<if test="upvote_id!=null">
+					<![CDATA[upvote_id=#{upvote_id},]]>
+				</if>
+			</trim>
+		</set>
+		<where>
+			<![CDATA[id=#{id}]]>
+		</where>
+	</update>
+
+
+	<update id="ChangeComment" parameterType="com.fh.entity.Comment">
+		<![CDATA[UPDATE `comment`]]>
+		<set>
+			<trim suffixOverrides=",">
+				<if test="mid!=null">
+					<![CDATA[mid=#{mid},]]>
+				</if>
+				<if test="uid!=null">
+					<![CDATA[uid=#{uid},]]>
+				</if>
+				<if test="reply_id!=null">
+					<![CDATA[reply_id=#{reply_id},]]>
+				</if>
+				<if test="content!=null">
+					<![CDATA[content=#{content},]]>
+				</if>
+				<if test="create_time!=null">
+					<![CDATA[create_time=#{create_time},]]>
+				</if>
+				<if test="usertype!=null">
+					<![CDATA[usertype=#{usertype},]]>
+				</if>
+			</trim>
+		</set>
+		<where>
+			<![CDATA[id=#{id}]]>
+		</where>
+	</update>
+
+	<select id="SearchComment" parameterType="com.fh.entity.Comment"
+		resultType="com.fh.entity.Comment">
+		<![CDATA[SELECT * FROM `comment`]]>
+		<where>
+			<trim suffixOverrides=",">
+				<if test="mid!=null">
+					<![CDATA[mid LIKE CONCAT(CONCAT('%',#{mid}),'%'),]]>
+				</if>
+				<if test="uid!=null">
+					<![CDATA[uid LIKE CONCAT(CONCAT('%',#{uid}),'%'),]]>
+				</if>
+				<if test="reply_id!=null">
+					<![CDATA[reply_id LIKE CONCAT(CONCAT('%',#{reply_id}),'%'),]]>
+				</if>
+				<if test="content!=null">
+					<![CDATA[content LIKE CONCAT(CONCAT('%',#{content}),'%'),]]>
+				</if>
+				<if test="create_time!=null">
+					<![CDATA[create_time LIKE CONCAT(CONCAT('%',#{create_time}),'%'),]]>
+				</if>
+				<if test="classId!=null">
+					<![CDATA[classId=#{classId},]]>
+				</if>
+				<if test="usertype!=null">
+					<![CDATA[usertype LIKE CONCAT(CONCAT('%',#{usertype}),'%'),]]>
+				</if>
+				<if test="id!=null">
+					<![CDATA[id=#{id},]]>
+				</if>
+			</trim>
+		</where>
+	</select>
+
+	<select id="SearchMoment" parameterType="com.fh.entity.Moment"
+		resultType="java.lang.Integer">
+		<![CDATA[
+			SELECT
+				NO
+			FROM
+				(
+					SELECT
+						*, (@i :=@i + 1) AS NO
+					FROM
+						moment,
+						(SELECT @i := 0) AS it
+					ORDER BY
+						create_time DESC
+				) t
+			WHERE
+				t.`key` = #{key}
+		]]>
+	</select>
+
+	<insert id="AddComment" parameterType="com.fh.entity.Comment">
+		<![CDATA[INSERT INTO `comment` ]]>
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="mid!=null">
+				<![CDATA[mid,]]>
+			</if>
+			<if test="uid!=null">
+				<![CDATA[uid,]]>
+			</if>
+			<if test="reply_id!=null">
+				<![CDATA[reply_id,]]>
+			</if>
+			<if test="content!=null">
+				<![CDATA[content,]]>
+			</if>
+			<if test="create_time!=null">
+				<![CDATA[create_time,]]>
+			</if>
+			<if test="classId!=null">
+				<![CDATA[classId,]]>
+			</if>
+			<if test="usertype!=null">
+				<![CDATA[usertype,]]>
+			</if>
+		</trim>
+		<![CDATA[values]]>
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="mid!=null">
+				<![CDATA[#{mid},]]>
+			</if>
+			<if test="uid!=null">
+				<![CDATA[#{uid},]]>
+			</if>
+			<if test="reply_id!=null">
+				<![CDATA[#{reply_id},]]>
+			</if>
+			<if test="content!=null">
+				<![CDATA[#{content},]]>
+			</if>
+			<if test="create_time!=null">
+				<![CDATA[#{create_time},]]>
+			</if>
+			<if test="classId!=null">
+				<![CDATA[#{classId},]]>
+			</if>
+			<if test="usertype!=null">
+				<![CDATA[#{usertype},]]>
+			</if>
+		</trim>
+	</insert>
+	<select id="getParentClass" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		<![CDATA[SELECT ClassId FROM qry_stuparent_info WHERE ParentId=#{uid}]]>
+	</select>
+
+	<select id="getInfoByOpenId" parameterType="java.lang.String"
+		resultType="pd">
+		<![CDATA[
+			SELECT
+				DISTINCT par.ParentId uid,
+				stu.ClassId classId
+			FROM
+				t_user_weixin topenid,
+				qry_stuparent_info par,
+				qry_student_info stu
+			WHERE
+				par.ParentId = topenid.uw_parent_id
+			AND par.StudentId = stu.StudentId
+			AND topenid.uw_open_id=#{openid}
+			ORDER BY
+				topenid.create_time DESC LIMIT 1
+		]]>
+	</select>
+	<select id="getSchoolIdByOpenId" parameterType="java.lang.String"
+		resultType="pd">
+		<![CDATA[
+			SELECT
+				DISTINCT stu.SchoolId AS SchoolId
+			FROM
+				t_user_weixin topenid,
+				qry_stuparent_info par,
+				qry_student_info stu
+			WHERE
+				par.ParentId = topenid.uw_parent_id
+			AND par.StudentId = stu.StudentId
+			AND topenid.uw_open_id=#{openid}
+			ORDER BY
+				topenid.create_time DESC LIMIT 1
+		]]>
+	</select>
+</mapper>

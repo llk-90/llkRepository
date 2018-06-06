@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MemberAuthMapper">
+	<!-- 新增会员权限 -->
+	<insert id="addAuth" parameterType="pd">
+		INSERT INTO t_commodity(
+			c_name,
+			c_time,
+			c_price,
+			c_remark,
+			create_time,
+			create_user
+		)VALUES(
+			#{c_name},
+			#{c_time},
+			#{c_price},
+			#{c_remark},
+			SYSDATE(),
+			#{create_user}
+		)
+	</insert>
+	
+	<!-- 会员权限列表 -->
+	<select id="findAuthlistPage" parameterType="page" resultType="pd">
+		SELECT 
+			c_id,
+			c_name,
+		ROUND(c_time/24) AS c_time,
+			c_price,
+			c_remark,
+			create_time
+		FROM 
+			t_commodity
+		WHERE 
+			1=1
+     	<if test="pd.keyword != null and pd.keyword != ''">
+             AND c_name LIKE '%${pd.keyword}%'
+         </if>
+       ORDER BY create_time  DESC
+	</select> 
+	
+	<!-- 会员权限列表App -->
+	<select id="findAuthListApp" parameterType="pd" resultType="pd">
+		SELECT
+		    c.c_id id,
+		    CONCAT(c.c_name,'-',FLOOR(c.c_time/24),'天') type,
+		    c.c_name name,
+		    c.c_remark remark,
+		    c.c_price price
+		FROM t_commodity c
+		WHERE c.c_price > 0
+		ORDER BY c.create_time
+	</select> 
+	<!-- 会员权限列表有免费App -->
+	<select id="findAuthListHasFreeApp" parameterType="pd" resultType="pd">
+		SELECT
+		    c.c_id id,
+		    CONCAT(c.c_name,'-',FLOOR(c.c_time/24),'天') type,
+		    c.c_name name,
+		    c.c_remark remark,
+		    c.c_price price
+		FROM t_commodity c
+		ORDER BY c.create_time
+	</select> 
+	
+	<!-- 权限文件查询App -->
+	<select id="fileInfoListApp" parameterType="pd" resultType="pd">
+		SELECT
+		    c.c_name 课件名_测试用,
+		    co.c_name 权限名_测试用,
+		    uc.uc_endtime 结束时间_测试用,
+		    c.c_id 课件id_测试用
+		FROM t_user_commodity uc
+		INNER JOIN t_commodity co ON co.c_id = uc.uc_commodity_id
+		INNER JOIN t_courseware c ON uc.uc_commodity_id = c.c_commodity_id
+		WHERE uc.uc_user_id = (
+		    SELECT
+		        uw.uw_user_id
+		    FROM t_user_weixin uw
+		    WHERE uw.uw_open_id = #{openId}
+		)
+		AND uc.uc_endtime >= SYSDATE()
+		AND c.c_id = #{coursewareId}
+	</select> 
+	
+	<!-- 根据id查找 -->
+	<select id="findById" parameterType="String" resultType="pd">
+		SELECT 
+			c_id,
+			c_name,
+		ROUND(c_time/24) AS c_time,
+			c_price,
+			c_remark,
+			create_time
+		FROM 
+			t_commodity 
+		WHERE 
+			c_id = #{c_id}
+	</select>
+	
+	<!-- 更新 -->
+	<update id="editAuth" parameterType="pd">
+		UPDATE 
+			t_commodity
+		SET
+			c_name = #{c_name},
+			c_time = #{c_time},
+			c_price = #{c_price},
+			c_remark = #{c_remark},
+			create_time = SYSDATE(),
+			create_user = #{create_user}
+		WHERE
+			c_id = #{c_id}
+	</update>
+	
+	<!-- 删除 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM t_commodity WHERE c_id = #{c_id}
+	</delete>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		DELETE FROM t_commodity
+		WHERE 
+			c_id in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+	<!-- 查询是否已发布该权限的课件 -->
+	<select id="findIsPublish" parameterType="String" resultType="Integer">
+		SELECT
+			count(*)
+		FROM
+			t_courseware
+		WHERE
+			c_commodity_id = #{c_id}
+	</select>
+	<!-- 根据id查询权限名称 -->
+	<select id="findNameById" parameterType="String" resultType="pd">
+		SELECT
+			c_name
+		FROM
+			t_commodity
+		WHERE
+			c_id = #{c_id}
+	</select>
+	
+	<!-- check权限名重复 -->
+	<select id="findByName" parameterType="pd" resultType="Integer">
+		SELECT
+			count(*)
+		FROM
+			t_commodity
+		WHERE
+			c_name = #{c_name}
+	
+	</select>
+	
+	
+</mapper>

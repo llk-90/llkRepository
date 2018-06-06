@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CommodityAppMapper">
+	<!-- 查询商品信息 -->	
+	<select id="findlistPage" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		ibaby_commodity_id
+		,ibaby_commodity_imgurl
+		,ibaby_commodity_name
+		,ibaby_commodity_price
+		,ibaby_commodity_detail
+		,ibaby_create_time
+		,ibaby_update_time
+		from
+		ibaby_commodity
+		order by ibaby_commodity_id ASC
+	</select>
+
+	<!-- 根据商品id查询商品信息 -->	
+	<select id="findBycommodityId" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		ibaby_commodity_id
+		,ibaby_commodity_imgurl
+		,ibaby_commodity_name
+		,ibaby_commodity_price
+		,ibaby_commodity_detail
+		,ibaby_create_time
+		,ibaby_update_time
+		from
+		ibaby_commodity
+		where ibaby_commodity_id = #{commodity_id}
+	</select>
+	
+	<!-- 根据商品id查询商品信息 -->	
+	<select id="findMaxId" parameterType="pd" resultType="String"
+		useCache="false">
+		SELECT
+		max(ibaby_commodity_id)+1 as commodity_id
+		from
+		ibaby_commodity
+	</select>
+	
+	<!-- 添加商品信息 -->
+	<insert id="add" parameterType="pd">
+		INSERT INTO
+		ibaby_commodity
+		(
+		ibaby_commodity_id
+		,ibaby_commodity_imgurl
+		,ibaby_commodity_name
+		,ibaby_commodity_price
+		,ibaby_commodity_detail
+		,ibaby_create_time
+		,ibaby_update_time)
+		VALUES(
+		#{ibaby_commodity_id}
+		,#{ibaby_commodity_imgurl}
+		,#{ibaby_commodity_name}
+		,#{ibaby_commodity_price}
+		,#{ibaby_commodity_detail}
+		,#{ibaby_create_time}
+		,#{ibaby_update_time}
+		)
+	</insert>
+	
+	<!-- 编辑商品信息 -->	
+	<update id="updateCommodity"  parameterType="pd">
+        UPDATE
+        ibaby_commodity
+		SET
+		ibaby_commodity_imgurl = #{ibaby_commodity_imgurl}
+		,ibaby_commodity_name = #{ibaby_commodity_name}
+		,ibaby_commodity_price = #{ibaby_commodity_price}
+		,ibaby_commodity_detail = #{ibaby_commodity_detail}
+		,ibaby_update_time = #{ibaby_update_time}
+		WHERE
+		ibaby_commodity_id = #{ibaby_commodity_id}
+	</update>
+</mapper>

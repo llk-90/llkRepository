@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CityMapper">
+
+<!--=获取城市-->
+<select id="listAllCitylistPage" parameterType="Page" resultType="pd">
+	select
+		qci.CityId,
+		qci.CityName,
+		qpi.ProvinceName
+	from 
+	qry_city_info qci INNER JOIN qry_province_info qpi
+	on qci.ProvinceId =qpi.ProvinceId
+	where 
+	1=1
+	 <if test="pd.cityName !=null and pd.cityName !=''">
+	   and qci.CityName = #{pd.cityName}
+	 </if>
+	 <if test="pd.cityAliasName !=null and pd.cityAliasName !=''">
+	  and qci.CityId = #{pd.cityAliasName}
+	 </if>
+</select>
+
+
+<!--获取省份信息-->
+<select id="getProvince" resultType="pd">
+  select 
+	  ProvinceId,
+	  ProvinceName
+  from 
+  qry_province_info
+</select>
+
+<!-- 添加城市 -->
+<insert id="saveCity" parameterType="pd">
+  insert into 
+  qry_city_info
+  (
+  CityId,
+  CityName,
+  ProvinceId
+  )
+  values
+  (
+    #{cityAlaisName},
+    #{cityName},
+    #{provinceParam}
+  )
+</insert>
+
+
+<delete id="deleteCity" parameterType="pd">
+  delete 
+  from qry_city_info
+  where CityId in
+  <foreach collection="array" item="item" open="(" close=")" separator=",">
+     #{item}
+  </foreach> 
+</delete>
+</mapper>

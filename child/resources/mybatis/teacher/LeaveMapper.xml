@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LeaveMapper">
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT
+			s.s_id,
+			s.s_stu_no,
+			s.s_name,
+			s.s_age,
+			CASE s.s_sex
+			WHEN '1' THEN '男'
+			WHEN '0' THEN '女'
+			END AS s_sex,
+			s.s_addr,
+			l.l_id,
+			l.l_stu_id,
+			l.l_reason,
+			CASE l.l_state
+			WHEN '-1' THEN '已驳回'
+			WHEN '0' THEN '未处理'
+			WHEN '1' THEN '已通过'
+			END AS l_state,
+			l.create_time,
+			CASE l.l_leave_type
+			WHEN '1' THEN '上午'
+			WHEN '-1' THEN '下午'
+			WHEN '0' THEN '全天'
+			END AS l_leave_type,
+			<!-- DATE_FORMAT(l.l_time, '%Y-%m-%d') AS l_time, -->
+			DATE_FORMAT(l.l_start_time, '%Y-%m-%d') AS l_start_time,
+			DATE_FORMAT(l.l_end_time, '%Y-%m-%d') AS l_end_time,
+			TIMESTAMPDIFF(DAY,l_start_time,l_end_time)+1 AS days,
+			u.name,
+			u.phone
+		FROM
+			t_student AS s
+			INNER JOIN t_leave AS l ON s.s_id = l.l_stu_id
+			INNER JOIN t_user_teacher AS ut ON ut.ut_user_id = #{pd.user_id} AND s.s_zone_id = ut.ut_zone_id
+			INNER JOIN t_user_student AS us ON us.us_stu_id = s.s_id 
+			INNER JOIN sys_user AS u ON u.USER_ID = us.us_user_id
+		WHERE
+			1 = 1
+       <if test="pd.time_start != null and pd.time_start != '' and pd.time_end != null and pd.time_end != ''">
+           <!-- AND l.l_time BETWEEN '${pd.time_start}' AND '${pd.time_end}' -->
+           <!-- AND DATE_FORMAT(l.l_start_time, '%Y-%m-%d')  <![CDATA[ <= ]]>   DATE_FORMAT('${pd.time_end}', '%Y-%m-%d') 
+           AND DATE_FORMAT(l.l_end_time, '%Y-%m-%d') <![CDATA[ >= ]]> DATE_FORMAT('${pd.time_start}', '%Y-%m-%d') -->
+           AND DATE_FORMAT(l.l_end_time, '%Y-%m-%d') BETWEEN '${pd.time_start}' AND '${pd.time_end}'
+       </if> 
+       <if test="pd.keyword != null and pd.keyword != ''">
+           AND s.s_name LIKE '%${pd.keyword}%'
+       </if>
+       <if test="pd.state != null and pd.state != ''">
+           AND l.l_state = #{pd.state}
+       </if>
+       	   ORDER BY FIELD(l_state, 0,1,-1),l.create_time DESC
+	</select>
+	
+	<select id="getAnno" parameterType="String" resultType="pd">
+	    SELECT
+	    	n_id,
+	    	create_time,
+	    	n_title,
+	    	n_type,
+	    	n_content
+	    FROM
+	    	t_notice
+	    WHERE
+	    	n_id = #{id}
+	</select>
+	
+	<update id="aproval" parameterType="pd">
+	    update t_leave set 
+			l_state = #{flag},
+			l_replay_reason = #{replayReason},
+			l_approval_time = sysdate()	
+		where l_id = #{id}
+	</update>
+	
+	<delete id="delAnno" parameterType="String">
+	    DELETE
+		FROM
+			t_notice
+		WHERE
+			n_id = #{id}
+	</delete>
+</mapper>

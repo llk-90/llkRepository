@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="schoolPayMapper">
+	<!--保存活动信息 -->
+	<insert id="InsertOrder" parameterType="pd">
+	 INSERT INTO xft_orderhistory(
+		open_id,
+		out_trade_no,
+		order_id,
+		token_id,
+		total_fee,
+		order_status,
+		mch_id,
+		order_time
+	 ) VALUES (
+	 	#{open_id},
+	 	#{out_trade_no},
+	 	#{order_id},
+	 	#{token_id},
+	 	#{total_fee},
+	 	#{status},
+	 	#{mch_id},
+	 	#{order_time}
+	 ) 
+	</insert>
+</mapper>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="StuOpenCardMapper">
+	 
+	 <!-- 获取学校学生开卡信息 -->
+	 <select id="datalistPage" parameterType="pd" resultType="pd">
+		SELECT
+			u.`name` AS stuName,
+			u.user_sex AS sex,
+			s.SchoolName AS schoolName,
+			u.grade AS stuGrade,
+			u.class AS stuClass,
+			u.IcNo AS IcNo,
+			CASE u.updUserFlg
+			WHEN '0' THEN '未同步'
+			WHEN '1' THEN '已同步'
+			END AS updUserFlg
+		FROM
+			xft_user_syn u
+		INNER JOIN
+			qry_batch_school s ON u.schoolId = s.SchoolID
+    	INNER JOIN
+			sys_user y ON s.SchoolID = y.school_id
+		WHERE 1=1
+		<if test="pd.stuName != null and pd.stuName !=''">
+			AND u.`name`LIKE '%${pd.stuName}%'						
+		</if>
+			AND y.USER_ID = #{pd.userId}
+	</select>
+		
+	<!-- 根据登录学校管理员账号找到对应学校名称 -->
+	<select id="findSchoolName" parameterType="pd" resultType="pd">
+	   SELECT
+			u.school_id,
+			s.SchoolName
+		FROM
+			SYS_USER u
+		INNER JOIN
+			qry_batch_school s ON u.school_id = s.SchoolID
+		WHERE
+			u.USER_ID = #{userId}			
+	</select>
+	
+	<!-- 根据学校id找对应学校的年级List -->
+	<select id="findGradeList" parameterType="pd" resultType="pd">
+		SELECT
+			DISTINCT
+			GradeId,
+			GradeName
+		FROM
+			qry_batch_class
+		WHERE
+			SchoolId = #{school_id}		
+	</select>
+	
+	<!-- 根据年级id找对应的班级List -->
+	<select id="findClassList" parameterType="pd" resultType="pd">
+		SELECT
+			ClassId,
+			ClassName
+		FROM
+			qry_batch_class
+		WHERE
+			SchoolId = #{school_id}
+		AND
+		  GradeId = #{GradeId}	
+	</select>
+	
+	<!-- xft_user_syn表插入 -->
+	<insert id="saveUserSyn" parameterType="pd">
+		INSERT INTO xft_user_syn(
+			schoolId,
+			dlj_id,
+			IcNo,
+			name,
+			class,
+			action,
+			dlj_seq,
+			grade,
+			user_sex,
+			updUserFlg
+		)VALUES(
+			#{school_id},
+			#{AccNoMax},
+			#{IcNo},
+			#{stuName},
+			#{ClassName},
+			'0',
+			null,
+			#{GradeName},
+			#{sex},
+			'0'
+		)
+	</insert>
+	
+	<!-- xft_customer表插入 -->
+	<insert id="saveCustomer" parameterType="pd">
+		INSERT INTO xft_customer(
+			AccountNo,
+			CardNo,
+			CustomerName,
+			Sex,
+			CardIDH
+		)VALUES(
+			#{AccNoMax},
+			#{IcNo},
+			#{stuName},
+			#{sex},
+			#{CardIDH}
+		)
+	</insert>
+	
+	<!-- 找到对应的年级和班级 -->
+	<select id="findGradeClaName" parameterType="pd" resultType="pd">
+			SELECT
+			GradeName,
+			ClassName
+			FROM
+			qry_batch_class
+			WHERE
+			GradeId = #{gradeParam}
+			AND
+			ClassId = #{classParam}	
+	</select>
+	
+    <!-- 通过StudentId获取数据 -->
+	<select id="findByStudentId" parameterType="pd" resultType="pd">
+		SELECT
+					u.`name` AS stuName,
+					u.user_sex AS sex,
+					u.grade AS stuGrade,
+					u.class AS stuClass,
+					u.IcNo AS IcNo,
+					CASE u.updUserFlg
+					WHEN '0' THEN '未同步'
+					WHEN '1' THEN '已同步'
+					END AS updUserFlg
+		FROM
+					xft_user_syn u
+		WHERE
+					IcNo = #{IcNo}	
+	</select>
+	
+    <!-- 更新xft_user_syn表-->
+	<update id="editUserSyn" parameterType="pd">
+		UPDATE
+		xft_user_syn
+		SET
+		`name` = #{stuName},
+		class = #{ClassName},
+		action = '1',
+		grade = #{GradeName},
+		user_sex = #{sex}
+		WHERE
+		IcNo = #{IcNo}
+	</update>
+	
+	<!-- 更新xft_customer表 -->
+	<update id="editCustomer" parameterType="pd">
+		UPDATE
+		xft_customer
+		SET
+		CustomerName = #{stuName},
+		Sex = #{sex}
+		WHERE
+		CardNo = #{IcNo}
+	</update>
+	
+	<!-- 批量删除开卡号码  xft_user_syn表-->
+	<delete id="deleteStuCard" parameterType="String" flushCache="false">
+		delete from xft_user_syn
+		where
+		IcNo in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 批量删除开卡号码  xft_customer表-->
+	<delete id="deleteStuCustomer" parameterType="String" flushCache="false">
+		delete from xft_customer
+		where
+		CardNo in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 检验卡号是否存在 -->
+	<select id="checkStuNo" parameterType="pd" resultType="pd">
+		SELECT
+		    s.IcNo
+		FROM xft_user_syn s
+		WHERE s.IcNo = #{IcNo}
+	</select>
+	
+	<!-- 通过StudentId获取数据 -->
+	<select id="findMaxAccountNo" parameterType="pd" resultType="pd">
+		SELECT
+		MAX(AccountNo) AS AccountNo
+		FROM
+		xft_customer
+	</select>
+	
+	<!-- IcNo验证 -->
+	<select id="check_IcNO" parameterType="String" resultType="Integer">
+		SELECT
+			COUNT(s.IcNo) as rowNum
+		FROM
+			xft_user_syn s
+		WHERE
+			s.IcNo = #{IcNo}
+	</select>
+	
+    <!-- 根据学校id找对应学校的年级和年级List -->
+	<select id="findGradeClassList" parameterType="pd" resultType="pd">
+		SELECT
+			SchoolId,
+			GradeId,
+			GradeName,
+			ClassId,
+			ClassName
+		FROM
+			qry_batch_class
+		WHERE
+			SchoolId = #{school_id}
+	</select>
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TeacherUnBindMapper">
+	<select id="SelectInTeacherTableByOpenId" parameterType="pd"
+		resultType="pd">
+		<![CDATA[
+			SELECT
+				* 
+			FROM
+				teacher_bind_weixin 
+			WHERE
+				openid=#{openId}
+		]]>
+	</select>
+	<delete id="DeleteByTeacherOpenIdInQryTable" parameterType="pd">
+		<![CDATA[
+			DELETE 
+			FROM
+				qry_stuparent_info 
+			WHERE
+				ParentId IN (
+				SELECT
+					t.abc 
+				FROM
+					( 
+						SELECT 
+							tea.teacherId AS abc 
+						FROM teacher_bind_weixin tea,
+							 qry_stuparent_info par 
+						WHERE 
+							par.ParentId = tea.teacherId 
+						AND openid = #{openId} 
+					) t 
+				)
+		]]>
+	</delete>
+	<delete id="DeleteByTeacherOpenIdInWeixinTable" parameterType="pd">
+		<![CDATA[
+			DELETE 
+			FROM
+				t_user_weixin
+			WHERE
+				uw_open_id = #{openId} 
+		]]>
+	</delete>
+	<delete id="DeleteByTeacherOpenIdInTeacherTable" parameterType="pd">
+		<![CDATA[
+			DELETE 
+			FROM
+				teacher_bind_weixin 
+			WHERE
+				openid=#{openId}
+		]]>
+	</delete>
+</mapper>

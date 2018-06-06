@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SchoolMapper">
+
+
+<sql id="getCityIdByUserId">
+		SELECT
+		city.CityId
+		FROM
+		qry_city_info city
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = city.ID
+		AND
+		T.UAM_USER_ID =(
+		SELECT K.PARENT_ID
+		FROM SYS_USER X,
+		SYS_USER K
+		WHERE X.PARENT_ID=K.USER_ID AND X.USER_ID=
+	</sql>
+
+<!--=获取学校-->
+<select id="listAllSchlistPage" parameterType="Page" resultType="pd">
+	select 
+		*
+	from  qry_batch_school 
+	where
+       CityId =
+	 (
+	 <include refid="getCityIdByUserId"/>
+		#{pd.userId})
+	 )
+	 <if test="pd.schName !=null and pd.schName !=''">
+	     and SchoolName like #{pd.schName}
+	 </if>
+</select>
+
+<!--获取区县-->
+ <select id="getTown" parameterType="pd" resultType="pd">
+ select
+    TownId,
+    TownName
+ from qry_town 
+ where
+     CityId =
+     (  
+     <include refid="getCityIdByUserId"/>
+		#{userId})
+	 )
+ </select>
+ 
+ 
+ <select id="getCityAndTown" parameterType="pd" resultType="pd">
+   select 
+     qci.CityId,
+     qci.CityName,
+     qt.TownName,
+     qt.TownId
+   from
+    qry_town qt 
+    inner join qry_city_info qci
+    on qt.CityId  = qci.CityId
+    where
+     qt.TownId = #{TownParam}
+     and qt.CityId =
+     (  
+     <include refid="getCityIdByUserId"/>
+		#{userId})
+	 )
+ </select>
+ 
+ 
+ <!--添加学校-->
+ <insert id="saveSch" parameterType="pd">
+   insert into qry_batch_school
+   (
+     CityId,
+     TownId,
+     TownName,
+     AreaName,
+     SchoolID,
+     SchoolName,
+     ModifyTime
+   )
+   values
+   (
+    #{CityId},
+    #{TownId},
+    #{TownName},
+    #{CityName},
+    #{schoolId},
+    #{schoolName},
+    #{modifyTime}
+   )
+ </insert>
+ 
+<!--获取通过关爱后台新增的schoolId-->
+<select id="gethoutaiAddSchId" parameterType="pd" resultType="String">
+	  select SchoolId
+	   from qry_batch_school
+	    where 
+	    SchoolId like
+	    #{StrSchId}
+	    ORDER BY ModifyTime DESC
+</select>
+ 
+ <!--删除-->
+ <delete id="deleteSch" parameterType="pd">
+  delete 
+  from qry_batch_school
+  where SchoolId in
+  <foreach collection="array" item="item" open="(" close=")" separator=",">
+     #{item}
+  </foreach> 
+</delete>
+ 
+</mapper>

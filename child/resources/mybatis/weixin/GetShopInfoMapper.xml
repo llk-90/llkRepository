@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GetShopInfoMapper">
+
+	<select id="list" parameterType="pd" resultType="pd">
+	    SELECT
+			i.ibaby_commodity_id,
+			i.ibaby_commodity_imgurl,
+			i.ibaby_commodity_name,
+			i.ibaby_commodity_price,
+			i.ibaby_commodity_detail,
+			i.ibaby_create_time,
+			i.ibaby_update_time
+		FROM
+			ibaby_commodity AS i
+		ORDER BY 
+			i.ibaby_commodity_id ASC
+	</select>
+	
+	<!-- 查询 -->
+	<select id="find" parameterType="pd" resultType="pd">
+		SELECT
+		c.ibaby_commodity_price
+		FROM ibaby_commodity c
+		WHERE 1=2
+		<if test="commodity_id != null and commodity_id != ''">
+			OR c.ibaby_commodity_id = #{commodity_id}
+		</if>
+	</select>
+	
+		<!-- 查询 -->
+	<select id="findComNam" parameterType="pd" resultType="String">
+		SELECT
+		c.ibaby_commodity_name
+		FROM ibaby_commodity c
+		WHERE 1=2
+		<if test="commodity_id != null and commodity_id != ''">
+			OR c.ibaby_commodity_id = #{commodity_id}
+		</if>
+	</select>
+	
+</mapper>
+	

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EquipmentMapper">
+
+	<!-- 修改设备 -->
+	<update id="editE" parameterType="pd" flushCache="false">
+		update
+		tb_equipment
+		set equ_number = #{equ_number},
+		equ_name = #{equ_name},
+		equ_manufactor = #{equ_manufactor},
+		create_date =SYSDATE(),
+		create_user = #{create_user}
+		where
+		equ_id = #{equ_id}
+	</update>
+
+	<!-- 修改农场设备 -->
+	<update id="editEq" parameterType="pd" flushCache="false">
+		update
+		tb_area_equ
+		set area_kid = #{zd_id},
+		equ_id = #{equ_id}
+		where
+		area_kid = #{zd_id}
+	</update>
+
+	<!-- 通过id获取数据 -->
+	<select id="findByEId" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		e.equ_id,e.equ_name,e.equ_number,e.equ_manufactor,e.equ_type,e.create_date,
+		a.`name` kname,b.`name` pname,c.`name` fname,q.area_kid
+		from
+		tb_equipment e
+		left join tb_area_equ q on e.equ_id=q.equ_id
+		left join tb_area a on q.area_kid=a.zd_id
+		left JOIN tb_area b on b.zd_id=a.parent_id
+		left JOIN tb_area c on c.zd_id=b.parent_id and c.parent_id=0
+		where 1=1
+		and
+		e.equ_id = #{equ_id}
+	</select>
+
+	<!-- 新增设备信息 -->
+	<insert id="saveEq" parameterType="pd" flushCache="false">
+		insert into tb_equipment (
+		equ_number,
+		equ_name,
+		equ_manufactor,
+		create_date,
+		create_user
+		) values (
+		#{equ_number},
+		#{equ_name},
+		#{equ_manufactor},
+		SYSDATE(),
+		#{create_user}
+		)
+		<selectKey resultType="long" keyProperty="equ_id">
+			SELECT @@IDENTITY
+		</selectKey>
+	</insert>
+
+	<!-- 新增农场设备信息 -->
+	<insert id="saveAreaEq" parameterType="pd" flushCache="false">
+		insert
+		into tb_area_equ (
+		area_kid,
+		equ_id
+		) values (
+		#{zd_id},
+		#{equ_id}
+		)
+	</insert>
+
+	<!-- 设备列表 -->
+	<select id="listPageEqlist" parameterType="page" resultType="pd">
+			SELECT
+		e.equ_id,e.equ_name,e.equ_number,e.equ_manufactor,e.equ_type,e.create_date,
+		y.`name` yname,a.`name` kname,b.`name` pname,c.`name` fname,q.area_kid
+		from
+		tb_equipment e
+		left join tb_area_equ q on e.equ_id=q.equ_id
+        left JOIN tb_area y on q.equ_id=y.parent_id
+		left join tb_area a on q.area_kid=a.zd_id
+		left JOIN tb_area b on b.zd_id=a.parent_id
+		left JOIN tb_area c on c.zd_id=b.parent_id and c.parent_id=0
+		where 1=1
+		<if test="pd.fid != null and pd.fid != ''">
+			and q.equ_id= #{pd.fid}
+		</if>
+		<if test="pd.kid != null and pd.kid != ''">
+			and q.area_kid= #{pd.kid}
+		</if>
+		<if test="pd.pid != null and pd.pid != ''">
+			and b.zd_id= #{pd.pid}
+		</if>
+		<if test="pd.fid != null and pd.fid != ''">
+			and c.zd_id=#{pd.fid}
+		</if>
+		<if test="pd.equ_name != null and pd.equ_name != ''">
+			and e.equ_name LIKE CONCAT(CONCAT('%',
+			#{pd.equ_name}),'%')
+		</if>
+		order by a.zd_id
+	</select>
+
+	<!-- 批量删除用户 -->
+	<delete id="deleteAllE" parameterType="String" flushCache="false">
+		delete from tb_equipment
+		where
+		equ_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 批量删除用户 -->
+	<delete id="deleteAllEQ" parameterType="String" flushCache="false">
+		delete from tb_area_equ
+		where
+		equ_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+</mapper>

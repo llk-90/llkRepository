@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EquipMapper2">
+	<!--  根据openId查询对应班级的所有学生list -->
+	 <select id="selectClassStus" parameterType="pd" resultType="pd">
+		SELECT
+			UserName,
+			StudentId 
+		FROM
+			qry_student_info 
+		WHERE
+			ClassId = (
+			SELECT
+				stu.ClassId 
+			FROM
+				qry_student_info stu,
+				qry_stuparent_info par 
+			WHERE
+				stu.StudentId = par.StudentId 
+			AND par.ParentId = 
+				( 
+					SELECT 
+						uw_parent_id 
+					FROM 
+						t_user_weixin 
+					WHERE 
+						uw_open_id = #{openId} 
+					ORDER BY create_time DESC 
+					LIMIT 1 
+				) 
+			)
+	</select>
+	
+	<select id="selectStuByClass" parameterType="pd" resultType="pd">
+		select UserName,StudentId
+		from qry_student_info
+		where ClassId=#{classID}
+	 
+	
+	</select>
+	
+	 <select id="selectClassStus2" parameterType="pd" resultType="pd">
+		SELECT
+			stu.StudentId,
+			stu.UserName,
+			stu.ClassId 
+		FROM
+			qry_student_info stu,
+			qry_stuparent_info par 
+		WHERE
+			stu.StudentId = par.StudentId 
+			AND par.ParentId = 
+			( 
+				SELECT 
+					uw_parent_id 
+				FROM 
+					t_user_weixin 
+				WHERE 
+					uw_open_id = #{openId} 
+				ORDER BY create_time DESC 
+				LIMIT 1 
+			)
+	</select>
+	
+	<select id="selectTeaInfo" parameterType="pd" resultType="pd" >
+	 SELECT
+		teacherId as StudentId,
+		schoolID  ,
+		classID,
+		teacherName as UserName,
+		phone
+		FROM
+		teacher_bind_weixin
+	 WHERE
+	   openid=#{openId}
+  </select>	
+	
+	<select id="slectTinfoByclass" parameterType="pd" resultType="pd">
+	SELECT
+		teacherId as StudentId,
+		teacherName as UserName
+    FROM
+		teacher_bind_weixin
+	  WHERE
+	 classID=#{classID}
+	   
+	</select>
+	
+</mapper>

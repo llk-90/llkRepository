@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OrderMapper">
+	<!-- 查询订单列表 -->
+	<select id="findOrderlistPage" parameterType="page" resultType="pd">
+		SELECT
+			o.co_id,
+			o.co_order_num,
+			s.name,
+			s.phone,
+			tc.c_name,
+			o.co_money,
+			o.co_pay_state,
+		(CASE o.co_pay_state 
+			WHEN 0 THEN '支付中'
+			WHEN 1 THEN '支付成功'
+			WHEN 2 THEN '未支付'
+			ELSE '支付失败' END) AS state,
+		DATE_FORMAT(o.create_time,'%Y-%m-%d %H:%i:%s') AS date
+		FROM
+			t_commodity_order o
+		INNER JOIN sys_user s ON s.user_id = o.co_user_id
+		INNER JOIN t_commodity tc ON tc.c_id = o.co_commodity_id
+		WHERE
+			1=1
+		<if test="pd.name != null and pd.name != ''">
+             AND s.name LIKE '%${pd.name}%'
+        </if>
+        <if test="pd.select != null and pd.select != ''">
+        	AND tc.c_id = #{pd.select}
+        </if>
+        <if test="pd.co_pay_state != null and pd.co_pay_state != ''">
+        	AND o.co_pay_state = #{pd.co_pay_state}
+        </if>
+        ORDER BY FIELD(co_pay_state,-1,2,0,1),date DESC
+	</select>
+	
+	<!-- 查询所有的会员权限 -->
+	<select id="findAllAuthName" resultType="pd">
+		SELECT
+			c_id,
+			c_name
+		FROM
+			t_commodity
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+			o.co_id,
+			o.co_order_num,
+			s.name,
+			s.phone,
+			s.user_id,
+			tc.c_id,
+			tc.c_name,
+			tc.c_time,
+			o.co_money,
+			o.co_pay_state,
+		(CASE o.co_pay_state 
+			WHEN 0 THEN '支付中'
+			WHEN 1 THEN '支付成功'
+			WHEN 2 THEN '支付'
+			ELSE '支付失败' END) AS state,
+		DATE_FORMAT(o.create_time,'%Y-%d-%m %H:%i:%s') AS date
+		FROM
+			t_commodity_order o
+		INNER JOIN sys_user s ON s.user_id = o.co_user_id
+		INNER JOIN t_commodity tc ON tc.c_id = o.co_commodity_id
+		WHERE
+			o.co_id = #{co_id}
+	</select>
+	
+	<!-- 线下支付-更新支付状态 -->
+	<update id="updatePayState" parameterType="pd">
+		UPDATE
+			t_commodity_order
+		SET
+			co_pay_state = '1'
+		WHERE
+			co_id = #{co_id}
+	</update>
+	
+	<!-- 线下支付-插入数据 -->
+	<insert id="offLinePay" parameterType="pd">
+		INSERT INTO t_user_commodity(
+			uc_user_id,
+			uc_commodity_id,
+			uc_endtime,
+			create_time
+		)VALUES(
+			#{user_id},
+			#{c_id},
+			DATE_ADD(SYSDATE(),INTERVAL #{c_time} hour),
+			SYSDATE()
+		)
+	</insert>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		DELETE FROM t_commodity_order
+		WHERE 
+			co_id in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+            #{item}
+		</foreach>
+	</delete>
+	
+</mapper>

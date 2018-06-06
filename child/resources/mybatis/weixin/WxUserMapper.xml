@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WxUserMapper">
+
+	<!-- 获取密码 -->
+	<select id="findPwd" parameterType="pd" resultType="pd">
+		select
+			password,
+			phone  
+		from 
+			sys_user 
+		where 
+			user_id = #{user_id}
+	</select>
+
+	<!-- 更新密码 -->
+	<update id="updatePwd" parameterType="pd">
+		UPDATE 
+			sys_user
+		SET
+			password = #{password}
+		WHERE 
+		 	user_id = #{user_id}
+	</update>
+	
+	<!-- 获取用户未读留言数量 -->
+	<select id="findInfoCount" parameterType="pd" resultType="pd">
+	SELECT
+		IFNULL(COUNT(ml.id),0) ant
+		FROM(
+		SELECT
+		 m.lm_id id
+		,m.lm_content content
+		,m.lm_send_user_id send_user_id
+		,m.lm_receive_user_id receive_user_id
+		,m.lm_state state
+		FROM
+		t_leave_message m left join sys_user u on m.lm_receive_user_id=u.USER_ID
+                      left join t_user_weixin w on u.USER_ID=w.uw_user_id
+		WHERE 1=1
+		<if test="user_id != null and user_id != ''">
+		and m.lm_receive_user_id =#{user_id} 
+		</if>
+	    <if test="uw_open_id != null and uw_open_id != ''">
+	    and w.uw_user_id=#{uw_open_id}
+		</if>
+		)ml
+		WHERE ml.state = 0
+	</select>
+	
+	<!-- 获取用户信息 -->
+	<select id="findUserInfo" parameterType="pd" resultType="pd">
+		SELECT
+			sys.user_id,
+			sys.name,
+			sys.head_photo,
+			sys.sex,
+			stu.s_name AS s_name,
+			CASE WHEN stu.s_sex = '0' THEN '女' ELSE '男'  END AS s_sex
+		FROM
+			sys_user sys
+		LEFT JOIN t_user_student tus ON tus.us_user_id = sys.user_id
+		LEFT JOIN t_student stu ON stu.s_id = tus.us_stu_id
+		WHERE 
+			<!-- uw_open_id = #{uw_open_id}-->
+			sys.user_id = #{USER_ID}
+	</select>
+	
+	<select id="findAd" resultType="pd">
+		SELECT
+			phone
+		FROM
+			sys_user
+		WHERE 
+			u_type = '0'
+	</select>
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LeaveApplicationMapper">
+	
+<!-- 新增申请-->
+	<insert id="save" parameterType="pd">
+		INSERT INTO t_leave (
+			l_stu_id,			<!-- 学生id -->
+			l_state,			<!-- 审批状态 (已驳回:-1、 未处理:0、  已通过:1) -->
+			create_time,		<!-- 创建时间 -->
+			l_leave_type,		<!-- 请假时长类型 (上午:1、下午:-1、全天:0 )-->
+			l_start_time,		<!-- 请假开始时间 -->
+			l_end_time,			<!-- 请假结束时间 -->
+			l_reason         	<!-- 请假理由 -->
+		)
+		VALUES
+			(
+				(
+					SELECT
+						tus.us_stu_id
+					FROM
+						t_user_student tus			<!-- 连接家长学生表 -->
+					WHERE
+						tus.us_user_id = #{userId}	<!-- 家长Id -->
+				),
+				
+				'0',
+				SYSDATE(),
+				#{leave_type},
+				#{start_time},
+				#{end_time},
+				#{leave_reason}
+			)
+	</insert>
+	
+	<!-- 已经请了假的时间右上角标红 -->
+	<select id="listTime" parameterType="pd" resultType="pd">
+		SELECT
+			lea.l_stu_id,
+			date_format(lea.l_start_time, '%Y-%m-%d') AS l_start_time,	<!-- 请假开始时间 -->
+			date_format(lea.l_end_time, '%Y-%m-%d') AS l_end_time		<!-- 请假结束时间 -->
+		FROM					
+			t_leave lea													<!-- 请假表 -->
+		INNER JOIN t_user_student tus ON tus.us_stu_id = lea.l_stu_id	<!-- 连接家长学生表 -->
+		WHERE
+			tus.us_user_id = #{userId}									<!-- 家长Id -->
+			AND lea.l_state  != '-1'
+		
+	</select>	
+	
+	<!-- 通过家长openId查找老师openId -->
+	<select id="findTeacherByOpenid" parameterType="pd" resultType="pd">
+		SELECT
+			wei.uw_open_id openTeaId
+		FROM
+			t_user_teacher teacher
+		  INNER JOIN t_user_weixin wei ON wei.uw_user_id = teacher.ut_user_id
+		WHERE
+			teacher.ut_zone_id = (
+				SELECT
+					stu.s_zone_id
+				FROM
+					t_student stu
+				WHERE
+					stu.s_id = (
+						SELECT
+							ust.us_stu_id
+						FROM
+							t_user_student ust
+						WHERE
+							ust.us_user_id = (
+								SELECT
+									wei.uw_user_id
+								FROM
+									t_user_weixin wei
+								WHERE
+									wei.uw_open_id = #{openid} AND
+									wei.u_type = 3
+							)
+					)
+			)
+	</select>
+	
+	<!-- 查询学生请假情况 -->
+	<select id="findByOpenId" parameterType="pd" resultType="pd">
+		SELECT
+		 date_format(leav.l_start_time, '%Y-%m-%d') stime,
+		 date_format(leav.l_end_time, '%Y-%m-%d') etime,
+		 datediff(leav.l_end_time,leav.l_start_time) day,
+		 stu1.s_name name,
+		 leav.l_leave_type state,
+		 leav.l_reason reason
+		FROM
+			t_leave leav
+		INNER JOIN t_student  stu1 ON stu1.s_id = leav.l_stu_id 
+		WHERE
+			leav.l_stu_id = (
+				SELECT
+					stu.s_id
+				FROM
+					t_student stu
+				WHERE
+					stu.s_id = (
+						SELECT
+							ust.us_stu_id
+						FROM
+							t_user_student ust
+						WHERE
+							ust.us_user_id = (
+								SELECT
+									wei.uw_user_id
+								FROM
+									t_user_weixin wei
+								WHERE
+									wei.uw_open_id = #{openid} AND
+									wei.u_type = 3
+							)
+					)
+			)
+		ORDER BY leav.create_time DESC LIMIT 0,1
+	</select>
+	
+	<!-- 查询时间 -->
+	<select id="getCheckList" parameterType="pd" resultType="pd">
+		SELECT
+		 date_format(leav.l_start_time, '%Y-%m-%d') stime, <!-- 请假开始时间 -->
+		 date_format(leav.l_end_time, '%Y-%m-%d') etime	   <!-- 请假结束时间 -->
+		FROM
+			t_leave leav									<!-- 请假表 -->
+		INNER JOIN t_student stu1 ON stu1.s_id = leav.l_stu_id<!-- 连接学生表 -->
+		WHERE
+			leav.l_stu_id = (
+				SELECT
+					stu.s_id
+				FROM
+					t_student stu
+				WHERE
+					stu.s_id = (
+						SELECT
+							ust.us_stu_id
+						FROM
+							t_user_student ust
+						WHERE
+							ust.us_user_id = (
+								SELECT
+									wei.uw_user_id
+								FROM
+									t_user_weixin wei
+								WHERE
+									wei.uw_open_id = #{openid} AND
+									wei.u_type = 3
+							)
+					)
+			)
+		AND leav.l_state <![CDATA[ <> ]]> '-1'	 
+	</select>
+</mapper>

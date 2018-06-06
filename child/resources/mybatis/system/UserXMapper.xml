@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserXMapper">
+	
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>  
+	
+	<!-- 换皮肤-->
+	<update id="setSKIN" parameterType="pd" flushCache="false">
+		update SYS_USER set 
+		SKIN = #{SKIN} 
+		where USERNAME = #{USERNAME}
+	</update>
+	
+	<!-- 更新登录时间 -->
+	<update id="updateLastLogin" parameterType="pd" flushCache="false">
+		update SYS_USER set 
+		LAST_LOGIN = #{LAST_LOGIN} 
+		where USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="pd" resultType="pd" useCache="false"><!-- insert update delete (flushCache="true/false") -->
+		select * from SYS_USER 
+		where 1=1
+		<if test="USERNAME != null and PASSWORD != null">
+	  	and	(
+	  		(USERNAME = #{USERNAME} and PASSWORD = #{PASSWORD})
+	  		or
+	  		(EMAIL = #{USERNAME} and PASSWORD = #{PASSWORD})
+	  		)
+		</if>
+		<if test="USER_ID != null and USER_ID != ''">
+		and USER_ID = #{USER_ID}
+		</if>
+	</select>
+	
+
+	
+	<!-- 存入IP -->
+	<update id="saveIP" parameterType="pd" flushCache="false">
+		update SYS_USER 
+			set 
+				IP = #{IP}
+			where 
+				USERNAME = #{USERNAME}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="editU" parameterType="pd" flushCache="false">
+		update  SYS_USER
+			set USERNAME				= #{USERNAME},
+				NAME 					= #{NAME},
+				ROLE_ID 				= #{ROLE_ID},
+				BZ						= #{BZ},
+				EMAIL					= #{EMAIL},
+				PHONE					= #{PHONE}
+			<if test="PASSWORD != null and PASSWORD != ''">
+				,PASSWORD				= #{PASSWORD}
+			</if>
+			where 
+				USER_ID = #{USER_ID}
+	</update>
+	<!-- 修改个人资料 -->
+	<update id="editInfo" parameterType="pd" flushCache="false">
+		update  SYS_USER
+			set USERNAME				= #{USERNAME},
+				NAME 					= #{NAME},
+				BZ						= #{BZ},
+				EMAIL					= #{EMAIL},
+				PHONE					= #{PHONE}
+			<if test="PASSWORD != null and PASSWORD != ''">
+				,PASSWORD				= #{PASSWORD}
+			</if>
+			where 
+				USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 通过user_id获取数据 -->
+	<select id="findByUiId" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			EMAIL,
+			PHONE
+		from 
+			SYS_USER
+		where 
+			USER_ID = #{USER_ID}
+	</select>
+	
+	<select id="loginCk" parameterType="pd" resultType="pd">
+	    select 
+			USER_ID,
+			NAME
+		from 
+			SYS_USER
+		where 
+			PHONE = #{PHONE}
+			and PASSWORD = #{PASSWORD}
+			and U_TYPE =  #{U_TYPE}
+	</select>
+	
+	<select id="loginCk_getParentInfo" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			us.us_user_id,
+			z.z_name as class,
+			z2.z_name as grade,
+			z3.z_name as school
+		FROM
+			t_zone z
+		INNER JOIN t_student s ON s.s_zone_id = z.z_id
+		INNER JOIN t_user_student us ON us.us_stu_id = s.s_id
+		AND us.us_user_id = #{USER_ID}
+		INNER JOIN t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_zone z3 ON z3.z_id = z2.z_parent_id
+	</select>
+	
+	<select id="loginCk_getTeacherInfo" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			ut.ut_user_id,
+			z.z_name AS class,
+			z2.z_name AS grade,
+			z3.z_name AS school
+		FROM
+			t_zone z
+		
+		INNER JOIN t_user_teacher ut ON ut.ut_zone_id = z.z_id
+		AND ut.ut_user_id = #{USER_ID}
+		INNER JOIN t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_zone z3 ON z3.z_id = z2.z_parent_id
+	</select>
+	
+	<!-- 微信绑定获取数据 -->
+	<select id="getUserByPhoneAndPwd" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			PHONE,
+			U_TYPE
+		from 
+			SYS_USER
+		where 
+			PHONE = #{PHONE}
+			and PASSWORD =#{PASSWORD}
+			and (u_type='3' or u_type='2' or u_type='0' or u_type ='1' or u_type ='4' or u_type ='5' or u_type ='6')
+	</select>
+	
+	<select id="getUserByPhone" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			PHONE,
+			U_TYPE
+		from 
+			SYS_USER
+		where 
+			PHONE = #{PHONE}
+	</select>
+	<!-- 根据userid查询关联 -->
+	<select id="getOpenByUser" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			u.create_time,
+			u.uw_open_id,
+			u.uw_user_id
+		FROM
+			t_user_weixin u
+		WHERE 
+			u.uw_user_id = #{USER_ID}
+	</select>
+	<!-- 根据Openid查询关联 -->
+	<select id="getUserByOpen" parameterType="pd" resultType="pd" useCache="false">
+		<!-- SELECT
+			u.create_time,
+			u.uw_open_id,
+			u.uw_user_id
+		FROM
+			t_user_weixin u
+		WHERE 
+			u.uw_open_id = #{OPENID} -->
+			SELECT
+			u.create_time,
+			u.uw_open_id,
+			u.uw_user_id
+		FROM
+			t_user_weixin u,
+			sys_user su
+		WHERE 
+		  u.uw_user_id = su.USER_ID AND
+			u.uw_open_id = #{OPENID}
+			and u.u_type = '7'
+	</select>
+	<!-- 添加微信和用户关联 -->
+	<insert id="saveUserWx" parameterType="pd" flushCache="false">
+		insert into t_user_weixin (
+			uw_user_id,
+			uw_open_id,
+			u_type,
+			create_time
+		) values (
+			#{USER_ID},
+			#{OPENID},
+			#{U_TYPE},
+			SYSDATE()
+		)
+	</insert>
+	<!-- 查询微信和用户关联 -->
+	<select id="getUserByWx" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			t.uw_user_id AS USER_ID,
+			t.u_type
+			,t.isLock
+			,t.count
+			,t.reportCount
+			,s.schoolId
+			,s.ClassId
+		FROM
+			t_user_weixin t
+		LEFT JOIN qry_stuparent_info u ON t.uw_parent_id = u.ParentId
+		LEFT JOIN qry_student_info s ON s.StudentId = u.StudentId
+		WHERE
+			t.uw_open_id = #{OPENID}
+	</select>
+	<!-- 查询教师微信和用户关联 -->
+	<select id="getUserByTeaWx" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			t.uw_user_id AS USER_ID,
+			t.u_type
+			,t.isLock
+			,t.count
+			,t.reportCount
+			,u.schoolID
+			,u.classID
+		FROM
+			t_user_weixin t
+		INNER JOIN teacher_bind_weixin u ON t.uw_parent_id = u.teacherId
+		WHERE
+			t.uw_open_id = #{OPENID}
+			and t.u_type = '2'
+	</select>
+	<!-- 和教育用户 -->
+	<select id="getHJYUser" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			t.uw_user_id AS USER_ID
+		FROM
+			t_user_weixin t
+		WHERE
+			t.uw_open_id = #{OPENID}
+	</select>
+	<update id="updateUserImg" parameterType="pd" flushCache="false">
+		update SYS_USER set 
+		head_photo = #{head_photo} 
+		where USER_ID = #{USER_ID} AND ISNULL(head_photo)
+	</update>
+	
+	<!-- 通过邮箱获取数据 -->
+	<select id="findByUE" parameterType="pd" resultType="pd" useCache="false">
+		select u.USER_ID,
+			u.USERNAME,
+			u.PASSWORD,
+			u.NAME,
+			u.RIGHTS,
+			u.ROLE_ID,
+			u.LAST_LOGIN,
+			u.IP,
+			u.BZ,
+			u.SKIN,
+			u.EMAIL,
+			u.PHONE
+		from SYS_USER u, SYS_ROLE r 
+		where u.ROLE_ID = r.ROLE_ID 
+		and r.PARENT_ID='1'   
+		<if test="EMAIL != null and EMAIL != ''">
+			and u.EMAIL = #{EMAIL}
+		</if>
+	</select>
+	
+	<!-- 通过编号获取数据 -->
+	<select id="findByUN" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			EMAIL,
+			PHONE
+		from 
+			SYS_USER
+		where 
+			1=1
+		<if test="USERNAME != null and USERNAME != ''">
+			and USERNAME != #{USERNAME} 
+		</if>
+	</select>
+	
+	<!-- 通过USERNAME获取数据 -->
+	<select id="findByUId" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			EMAIL,
+			PHONE
+		from 
+			SYS_USER
+		where 
+			USERNAME = #{USERNAME}
+	</select>
+	
+	
+	<!-- 新增用户 -->
+	<insert id="saveU" parameterType="pd" flushCache="false">
+		insert into SYS_USER (
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			EMAIL,
+			PHONE,
+			create_time
+		) values (
+			#{USER_ID},
+			#{USERNAME},
+			#{PASSWORD},
+			#{NAME},
+			#{RIGHTS},
+			#{ROLE_ID},
+			#{LAST_LOGIN},
+			#{IP},
+			#{BZ},
+			#{SKIN},
+			#{EMAIL},
+			#{PHONE},
+			SYSDATE()
+		)
+	</insert>
+	<!-- 用户列表(用户组) -->
+	<select id="userlistPage" parameterType="page" resultType="pd" useCache="false">
+		select  u.USER_ID,
+				u.USERNAME,
+				u.PASSWORD,
+				u.LAST_LOGIN,
+				u.NAME,
+				u.IP,
+				u.BZ,
+				u.EMAIL,
+				u.PHONE,
+				u.create_time,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from SYS_USER u, SYS_ROLE r 
+		where u.ROLE_ID = r.ROLE_ID 
+		and r.PARENT_ID=	#{pd.PARENT_ID}
+		<if test="pd.USERNAME != null and pd.USERNAME != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.USERNAME LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+					 or 
+					 u.EMAIL LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%') 
+					 or
+					 u.NAME LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+					 or
+					 u.PHONE LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+				)
+		</if>
+		<if test="pd.ROLE_ID != null and pd.ROLE_ID != ''"><!-- 角色检索 -->
+			and u.ROLE_ID=#{pd.ROLE_ID} 
+		</if>
+		<if test="pd.lastLoginStart!=null and pd.lastLoginStart!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &gt;= #{pd.lastLoginStart} 
+		</if>
+		<if test="pd.lastLoginEnd!=null and pd.lastLoginEnd!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &lt;= #{pd.lastLoginEnd} 
+		</if>
+		order by u.create_time 
+	</select>
+	
+	<!-- 用户列表(全部) -->
+	<select id="listAllUser" parameterType="pd" resultType="pd" useCache="false">
+		select  u.USER_ID,
+				u.USERNAME,
+				u.PASSWORD,
+				u.LAST_LOGIN,
+				u.NAME,
+				u.IP,
+				u.BZ,
+				u.EMAIL,
+				u.PHONE,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from SYS_USER u, SYS_ROLE r 
+		where u.ROLE_ID = r.ROLE_ID 
+		and u.USERNAME != 'admin'
+		and (r.ROLE_ID != '7' and r.PARENT_ID != '7')
+		<if test="USERNAME != null and USERNAME != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.USERNAME LIKE CONCAT(CONCAT('%', #{USERNAME}),'%')
+					 or 
+					 u.EMAIL LIKE CONCAT(CONCAT('%', #{USERNAME}),'%') 
+					 or
+					 u.NAME LIKE CONCAT(CONCAT('%', #{USERNAME}),'%')
+					  or
+					 u.PHONE LIKE CONCAT(CONCAT('%', #{USERNAME}),'%')
+				)
+		</if>
+		<if test="ROLE_ID != null and ROLE_ID != ''"><!-- 角色检索 -->
+			and u.ROLE_ID=#{ROLE_ID} 
+		</if>
+		<if test="lastLoginStart!=null and lastLoginStart!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &gt;= #{lastLoginStart} 
+		</if>
+		<if test="lastLoginEnd!=null and lastLoginEnd!=''"><!-- 登录时间检索 -->
+			and u.LAST_LOGIN &lt;= #{lastLoginEnd} 
+		</if>
+		order by u.create_time desc
+	</select>
+	
+	<!-- 删除用户 -->
+	<delete id="deleteU" parameterType="pd" flushCache="false">
+		delete from SYS_USER
+		where 
+			USER_ID = #{USER_ID}
+	</delete>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteAllU" parameterType="String" flushCache="false">
+		delete from SYS_USER
+		where 
+			USER_ID in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	<!-- 获取用户绑定设备 -->
+	<select id="findUidByParent" parameterType="pd" resultType="pd" flushCache="false">
+		SELECT
+		DISTINCT
+			t.s_device_u_id
+		FROM
+			t_student t
+		INNER JOIN t_user_student tus ON tus.us_stu_id = t.s_id
+		AND tus.us_user_id = #{USER_ID}
+	</select>
+	<!-- 修改绑定设备 -->
+	<update id="updateUid" parameterType="pd" flushCache="false">
+		UPDATE t_student SET 
+			s_device_u_id = #{uid}
+		WHERE
+			s_id = (
+				SELECT
+					tus.us_stu_id
+				FROM
+					t_user_student tus
+				WHERE
+					tus.us_user_id = #{USER_ID}
+			)
+	</update>
+	<!-- 查询用户类型 -->
+	<select id="findUserTypeByOpenId" parameterType="pd" resultType="pd">
+		SELECT
+			u.u_type
+		FROM
+			sys_user u
+		INNER JOIN t_user_weixin tuw ON tuw.uw_user_id = u.USER_ID
+		AND tuw.uw_open_id = #{openid}
+	</select>
+	<!-- 查询UID -->
+	<select id="checkUid" parameterType="pd" resultType="pd">
+		SELECT
+			s.s_device_u_id
+		FROM
+			t_student s
+		WHERE
+			s.s_device_u_id = #{uid}
+			AND s.s_device_u_id <![CDATA[ <> ]]> #{uid_old}
+	</select>
+</mapper>

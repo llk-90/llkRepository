@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HistoryTrackMapper">
+
+<select id="findBabyInfo" parameterType="pd" resultType="pd">
+	    SELECT
+			i.ibaby_s_id,
+			i.ibaby_s_img,
+			i.ibaby_s_name,
+			i.ibaby_s_sex,
+			i.ibaby_equ_accout,
+			i.ibaby_equ_password,
+			i.ibaby_phone_num,
+			i.ibaby_imei_code,
+			i.ibaby_ic_code_type,
+			i.ibaby_ic_code,
+			i.ibaby_ic_name
+		FROM
+			ibaby_equipment AS i
+		where
+			i.ibaby_s_id = #{stuId}
+</select>
+
+</mapper>
+	

@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CoursewarePublishMapper">
+	<!--课件列表查询 -->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+		SELECT
+		t.c_id,
+		t.c_name,
+		t.c_detail,
+		case
+		t.c_type when '1' then '图文' when '2' then '视频' when '3'then '文档' end
+		as c_type,
+		case t.c_grade
+		when '1' then '一年级' when '2' then '二年级' when
+		'3' then '三年级' when '4' then
+		'四年级'
+		when '5' then '五年级' when '6' then
+		'六年级' when '7' then '初一' when
+		'8' then '初二'
+		when '9' then '初三' when '10'
+		then '高一' when '11' then
+		'高二' when '12' then '高三'
+		end as c_grade,
+		case
+		t.c_subject
+		when '1' then '语文' when '2' then '数学' when '3'then '英语'
+		when '4' then '政治' when '5' then '物理' when '6' then '化学'
+		when '7' then
+		'地理'
+		when '8' then '历史' when '9' then '生物'
+		when '10' then '美术' when '11'
+		then '音乐' when '12' then '体育'
+		when '13' then '德育考核' when '14' then
+		'劳动技术' when '15' then '计算机'
+		when '16' then '物理实验' when '17' then '化学实验'
+		when '18' then '生物实验'
+		end as c_subject,
+		t.c_commodity_id,
+		c.c_name
+		cdname,
+		t.create_time
+		FROM
+		t_courseware t left
+		join t_commodity c on
+		t.c_commodity_id=c.c_id
+		where
+		1=1
+		<if test="pd.c_name != null and pd.c_name != ''">
+			AND t.c_name LIKE '%${pd.c_name}%'
+		</if>
+		<if test="pd.c_type != null and pd.c_type != ''">
+			AND t.c_type =#{pd.c_type}
+		</if>
+		<if test="pd.c_grade != null and pd.c_grade != ''">
+			AND t.c_grade =#{pd.c_grade}
+		</if>
+		<if test="pd.c_subject != null and pd.c_subject != ''">
+			AND t.c_subject =#{pd.c_subject}
+		</if>
+		<if test="pd.powers != null and pd.powers != ''">
+			AND c.c_name =#{pd.powers}
+		</if>
+		order by t.create_time desc
+	</select>
+
+	<!--会员权限查询 -->
+	<select id="powersList" resultType="pd">
+		SELECT
+		c_id,
+		c_name,
+		c_time,
+		c_price,
+		c_remark,
+		create_time
+		FROM
+		t_commodity
+		ORDER BY create_time
+	</select>
+	<!--文件表文件查询 -->
+	<select id="fileList" parameterType="String" resultType="pd">
+		SELECT
+		f_id,
+		f_disk_filename,
+		f_disk_path,
+		f_mate_name,
+		f_ext_name,
+		create_time
+		FROM
+		t_files
+		where f_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		ORDER BY create_time
+	</select>
+	<!-- 根据id获取对象 -->
+	<select id="findObject" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		t.c_id,
+		t.c_name,
+		t.c_detail,
+		t.c_type,
+		t.c_grade,
+		t.c_subject,
+		t.c_commodity_id,
+		t.create_time
+		FROM
+		t_courseware t
+		where 1=1
+		<if test="c_id != null and c_id != ''">
+			AND t.c_id =#{c_id}
+		</if>
+	</select>
+
+	<!--保存课件附件 -->
+	<insert id="filesave" parameterType="pd" flushCache="false">
+		insert into t_files (
+		f_disk_filename,
+		f_disk_path,
+		f_mate_name,
+		f_ext_name,
+		create_time
+		) values (
+		#{f_disk_filename},
+		#{f_disk_path},
+		#{f_mate_name},
+		#{f_ext_name},
+		SYSDATE()
+		)
+		<selectKey resultType="long" keyProperty="f_id">
+			SELECT @@IDENTITY
+		</selectKey>
+	</insert>
+	<!--保存课件 -->
+	<insert id="save" parameterType="pd">
+		insert into t_courseware (
+		c_name,
+		c_detail,
+		c_type,
+		c_grade,
+		c_subject,
+		c_commodity_id,
+		create_time
+		) values (
+		#{c_name},
+		#{c_detail},
+		#{c_type},
+		#{c_grade},
+		#{c_subject},
+		#{c_commodity_id},
+		SYSDATE()
+		)
+
+	</insert>
+	<!-- 新增浏览记录 -->
+	<insert id="insertBrowseCountRecord" parameterType="pd">
+		INSERT INTO t_browse_count_record(
+		    bcr_courseware_id
+		    ,bcr_browse_count
+		    ,create_time
+		)
+		VALUES(
+		    #{coursewareId}
+		    ,#{count}
+		    ,SYSDATE()
+		)
+	</insert>
+	<!-- 更新 -->
+	<update id="edit" parameterType="pd">
+		UPDATE
+		t_courseware
+		SET
+		c_name=#{c_name},
+		c_detail=#{c_detail},
+		c_type=#{c_type},
+		c_grade=#{c_grade},
+		c_subject=#{c_subject},
+		c_commodity_id=#{c_commodity_id},
+		create_time=SYSDATE()
+		WHERE c_id = #{c_id}
+	</update>
+	<!-- 更新浏览量 -->
+	<update id="updateCount" parameterType="pd">
+		UPDATE
+		t_browse_count_record b
+		SET
+		b.bcr_browse_count = b.bcr_browse_count+1
+		WHERE b.bcr_id = #{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM t_courseware WHERE
+		c_id = #{c_id}
+	</delete>
+
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		DELETE FROM t_courseware
+		WHERE
+		c_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 删除浏览量表中的数据 -->
+	<delete id="deletecount" parameterType="String">
+		DELETE FROM t_browse_count_record WHERE
+		bcr_courseware_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- app课件列表 -->
+	<select id="list" parameterType="pd" resultType="pd">
+		SELECT
+		c.c_id id,
+		c.c_name title,
+		CONCAT(
+		DATE_FORMAT(c.create_time,'%Y-%m-%d'),
+		IF(DATE_FORMAT(c.create_time,'%p')='AM','上午','下午')
+		) time,
+		o.c_name
+		auth_name
+		,c.c_subject subject
+		FROM t_courseware c
+		INNER JOIN t_commodity o ON
+		c.c_commodity_id = o.c_id
+		WHERE
+		1=1
+		<if test="type != null and type != ''">
+			AND c.c_type = #{type}
+		</if>
+		<if test="grade != null and grade != ''">
+			AND c.c_grade = #{grade}
+		</if>
+		<if test="commodityId != null and commodityId != ''">
+			AND c.c_commodity_id = #{commodityId}
+		</if>
+		ORDER BY c.create_time DESC
+	</select>
+	<!-- app课件详情 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+		c.c_id id,
+		c.c_name title,
+		c.c_detail detail,
+		CONCAT(
+		DATE_FORMAT(c.create_time, '%Y-%m-%d'),
+
+		IF (
+		DATE_FORMAT(c.create_time,
+		'%p') = 'AM',
+		'上午',
+		'下午'
+		)
+		) time,
+		o.c_name auth_name
+		,c.c_subject subject
+		FROM
+		t_courseware c
+		INNER JOIN t_commodity o ON c.c_commodity_id = o.c_id
+		WHERE
+		1=2
+		<if test="id != null and id != ''">
+			OR c.c_id = #{id}
+		</if>
+	</select>
+	<!-- 查询今天是否有记录 -->
+	<select id="todayCount" parameterType="pd" resultType="pd">
+		SELECT
+		b.bcr_id id
+		,b.bcr_browse_count browse_count
+		FROM t_browse_count_record
+		b
+		WHERE DATE(b.create_time) =
+		curdate()
+		AND b.bcr_courseware_id = #{coursewareId}
+	</select>
+    <!-- 	根据用户id查询学生 -->
+	<select id="findStuByUserId" parameterType="pd" resultType="pd">		
+		SELECT
+		    s.StudentId
+		FROM qry_student_info s
+		INNER JOIN t_user_student us ON us.us_stu_id = s.StudentId
+		INNER JOIN sys_user su ON su.USER_ID = us.us_user_id
+		WHERE 1=2
+		OR(
+		    su.USER_ID = #{userId}
+		)
+	</select>
+</mapper>

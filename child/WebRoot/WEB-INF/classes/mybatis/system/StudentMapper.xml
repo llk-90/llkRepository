@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="StudentMapper">
+
+	<!-- 修改学生 -->
+	<update id="editE" parameterType="pd" flushCache="false">
+		update
+		t_student
+		set
+		s_stu_no = #{s_stu_no},
+		s_name = #{s_name},
+		s_sex = #{s_sex},
+		s_addr = #{s_addr},
+		s_zone_id = #{s_zone_id},
+		s_device_u_id = #{device_no}
+		where
+		s_id = #{s_id}
+	</update>
+
+	<!-- 修改家长 -->
+	<update id="editUser" parameterType="pd" flushCache="false">
+		update
+		sys_user
+		set
+		NAME = #{NAME},
+		PHONE = #{PHONE},
+		EMAIL = #{EMAIL}
+		<if test="PASSWORD != null and PASSWORD != ''">
+		,PASSWORD = #{PASSWORD}
+		</if>
+		where
+		USER_ID =
+		#{USER_ID}
+	</update>
+
+	<!-- 通过id获取学生数据 -->
+	<select id="findByEId" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		s.s_id,
+		s.s_stu_no
+		,s.s_name
+		,s.s_addr
+		,s_sex
+		,s.s_device_u_id
+		,u.`NAME`
+		,u.PHONE
+		,u.phone2
+		,u.phone3
+		,s.s_zone_id
+		,s.s_start_time
+		,s.s_end_time
+		,u.EMAIL
+		,u.u_type
+		,u.USER_ID
+		,u.PASSWORD
+		,u.password2
+		,u.password3
+		,case s.s_status when '1' then '开通' else '未开通' end  as commodity_names ,
+		z.z_name AS className,
+		z2.z_name AS gradeName,
+		z3.z_name AS schoolName
+		FROM
+		t_student s	
+		INNER JOIN t_user_student us ON us.us_stu_id = s.s_id
+		 INNER JOIN t_zone z ON z.z_id = s.s_zone_id 
+	    INNER JOIN t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_zone z3 ON z3.z_id = z2.z_parent_id
+		INNER JOIN sys_user u ON u.USER_ID = us.us_user_id
+		LEFT JOIN (
+		SELECT
+		GROUP_CONCAT(c_name) commodity_names
+		,USER_ID
+		FROM(
+		SELECT
+		ic.c_name
+		,iu.USER_ID
+		FROM sys_user iu
+		INNER JOIN t_user_commodity iuc ON iuc.uc_user_id =
+		iu.USER_ID
+		INNER JOIN t_commodity ic ON ic.c_id = iuc.uc_commodity_id
+		GROUP BY iu.USER_ID,ic.c_name
+		ORDER BY iu.USER_ID
+		)inc
+		GROUP BY USER_ID
+		) outc ON outc.USER_ID = u.USER_ID
+		where
+		s.s_id = #{s_id}
+	</select>
+
+
+	<!-- 通过id获取家长数据 -->
+	<select id="findByUId" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		USER_ID,
+		`NAME`,
+		PHONE,
+		EMAIL
+		FROM
+		sys_user
+		WHERE
+		USER_ID = #{USER_ID}
+	</select>
+
+
+
+	<!-- 新增学生信息 -->
+	<insert id="saveEq" parameterType="pd">
+		insert into
+		t_student (
+		s_stu_no,
+		s_phone,
+		s_name,
+		s_sex,
+		s_zone_id,
+		s_addr,
+		s_device_u_id,
+		s_status,
+		s_start_time,
+		s_end_time
+		)
+		values (
+		#{s_stu_no},
+		#{PHONE},
+		#{s_name},
+		#{s_sex},
+		#{s_zone_id},
+		#{s_addr},
+		#{device_no},
+		#{s_status},
+		#{time_start},
+		#{time_end}
+		)
+		<selectKey resultType="long" keyProperty="s_id">
+			SELECT @@IDENTITY
+		</selectKey>
+	</insert>
+
+	<!-- 新增家长信息 -->
+	<insert id="saveUser" parameterType="pd" flushCache="false">
+		insert into
+		sys_user(
+		USER_ID,
+		NAME,
+		PHONE,
+		phone2,
+		phone3,
+		EMAIL,
+		PASSWORD,
+		password2,
+		password3,
+		u_type
+		)
+		values (
+		#{USER_ID},
+		#{NAME},
+		#{PHONE},
+		#{phone2},
+		#{phone3},
+		#{EMAIL},
+		#{PASSWORD},
+		#{password2},
+		#{password3},
+		3
+		)
+	</insert>
+
+	<!-- 新增家长学生信息 -->
+	<insert id="saveUS" parameterType="pd" flushCache="false">
+		insert into
+		t_user_student(
+		us_user_id,
+		us_stu_id
+		)
+		values (
+		#{USER_ID},
+		#{s_id}
+		)
+	</insert>
+
+
+	<!-- 学生列表 -->
+	<select id="listPageEqlist" parameterType="page" resultType="pd">
+		SELECT
+		s.s_id,
+		s.s_stu_no
+		,s.s_name
+		,s.s_zone_id
+		,s.s_addr
+		,case s.s_sex when '1' then '男' when '0' then '女' end as s_sex
+		,u.`NAME`
+		,u.PHONE
+		,u.EMAIL
+		,u.u_type
+		,u.USER_ID
+		,u.PASSWORD
+		,case s.s_status when '1' then '开通' else '未开通' end  as commodity_names ,
+		z.z_name AS className,
+		z2.z_name AS gradeName,
+		z3.z_name AS schoolName,
+		CASE WHEN w.uw_user_id IS NULL THEN '未绑定' 
+		ELSE '已绑定' 
+		END AS WEIXIN
+		FROM
+		t_student s
+		INNER JOIN t_user_student us ON us.us_stu_id = s.s_id
+		 INNER JOIN t_zone z ON z.z_id = s.s_zone_id 
+	    INNER JOIN t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN (select * from t_zone where create_id=#{pd.userId}) z3 ON z3.z_id = z2.z_parent_id
+		INNER JOIN t_zone area ON area.z_id = z3.z_parent_id
+		INNER JOIN sys_user u ON u.USER_ID = us.us_user_id AND u.u_type = '3'
+		LEFT JOIN (
+		SELECT
+		GROUP_CONCAT(c_name) commodity_names
+		,USER_ID
+		FROM(
+		SELECT
+		ic.c_name
+		,iu.USER_ID
+		FROM sys_user iu
+		INNER JOIN t_user_commodity iuc ON iuc.uc_user_id =
+		iu.USER_ID
+		INNER JOIN t_commodity ic ON ic.c_id = iuc.uc_commodity_id
+		GROUP BY iu.USER_ID,ic.c_name
+		ORDER BY iu.USER_ID
+		)inc
+		GROUP BY USER_ID
+		) outc ON outc.USER_ID = u.USER_ID
+		LEFT JOIN
+		t_user_weixin W ON W.uw_user_id = u.user_id
+		where 1=1
+		<if test="pd.bid != null and pd.bid != ''">
+			and s.s_zone_id= #{pd.bid}
+		</if>
+		<if test="pd.kid != null and pd.kid != ''">
+			and z.z_parent_id= #{pd.kid}
+		</if>
+		<if test="pd.pid != null and pd.pid != ''">
+			and z2.z_parent_id= #{pd.pid}
+		</if>
+		 <if test="pd.fid != null and pd.fid != ''"> 
+		     and z3.z_parent_id= #{pd.fid}
+		 </if> 
+		<if test="pd.s_name != null and pd.s_name != ''">
+			AND s.s_name LIKE '%${pd.s_name}%'
+		</if>
+		<if test="pd.areaId != null and pd.areaId != ''">
+			AND area.z_id = #{pd.areaId}
+		</if>
+		order by z.z_id
+	</select>
+
+	<!-- 校验手机号是否存在 -->
+	<select id="checkTel" parameterType="pd" resultType="pd">
+		SELECT
+		u.USER_ID,
+		u.`NAME`,
+		u.PHONE
+		FROM
+		sys_user u
+		WHERE
+		u.PHONE = #{PHONE}
+	</select>
+<!-- 	根据区域经理的ID查询区域 -->
+	<select id="findAreaByUserId" parameterType="pd" resultType="pd">
+		SELECT
+		T.uam_zone_id areaId
+		    ,T.uam_user_id userId
+		FROM
+		T_ZONE Z
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = Z.Z_ID
+		AND
+		T.UAM_USER_ID =(SELECT K.PARENT_ID
+       FROM SYS_USER X, 
+             SYS_USER K
+       WHERE X.PARENT_ID=K.USER_ID AND X.USER_ID=#{userId})
+	</select>
+<!-- 	检验学生号是否存在 -->
+	<select id="checkStuNo" parameterType="pd" resultType="pd">
+		SELECT
+		    s.s_id
+		FROM t_student s
+		WHERE s.s_stu_no = #{s_stu_no}
+	</select>
+	<!--根据手机号查询学生信息   2016/8/31 yc  添加-->
+	<select id="findStudentsByPhone" parameterType="pd" resultType="pd">
+		SELECT s.s_name,
+		    (SELECT Z.z_name 
+		        FROM t_zone Z 
+		     WHERE Z.z_id=S.s_zone_id) AS z_name,u.PHONE
+		 FROM 
+		  sys_user U,
+		  t_user_student UT,
+		  t_student s 
+		WHERE  
+		  U.USER_ID=UT.us_user_id 
+		  AND UT.us_stu_id=s.s_id 
+		  AND (U.PHONE=#{PHONE}
+		  OR U.PHONE2=#{PHONE}
+		   OR U.PHONE3=#{PHONE}
+		  )
+	</select>
+	
+	
+	<!-- 批量删除学生 -->
+	<delete id="deleteAllE" parameterType="String" flushCache="false">
+		delete from t_student
+		where
+		s_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 批量删除请假 -->
+	<delete id="deleteLeave" parameterType="String">
+		delete from t_leave
+		where
+		l_stu_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 批量删除订单权限 -->
+	<delete id="deleteCommodity" parameterType="String">
+		delete from t_commodity_order
+		where
+		co_user_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	
+	<!-- 批量删除订单权限记录 -->
+	<delete id="deleteUserCommodity" parameterType="String">
+		delete from t_user_commodity
+		where
+		uc_user_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 批量删除家长学生关联 -->
+	<delete id="deleteAllEQ" parameterType="String" flushCache="false">
+		delete from t_user_student
+		where
+		us_stu_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 批量删除家长 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from SYS_USER
+		where
+		USER_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 批量删除关联 -->
+	<delete id="deleteRelation" parameterType="String">
+		delete from t_user_student
+		where
+		US_USER_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 批量删除微信关联 -->
+	<delete id="deleteRelationWx" parameterType="String">
+		delete from T_USER_WEIXIN
+		where
+		uw_user_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+</mapper>

@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AttendanceMapper">
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+	SELECT
+			CONCAT(a.ar_date,'-',s.s_id) AS skey,a.*,s.*,u.*,us.*,z.z_name AS classNm,z3.z_name AS schoolNm
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					t_attendance_record
+				WHERE
+					1=1
+					AND ar_stu_id IN (
+						SELECT
+							ifnull(s.s_id,'')
+						FROM
+							t_user_teacher ut
+						  INNER JOIN t_student AS s ON s.s_zone_id = ut_zone_id
+						WHERE
+							<if test="pd.userIdtc !=null and pd.userIdtc != ''">
+							    ut.ut_user_id = #{pd.userIdtc}
+							</if>
+							<if test="pd.userIdtc ==null or pd.userIdtc == ''">
+								<!--学校管理员 -->
+								<if test="pd.userIdsc != null and pd.userIdsc !=''">
+									ut.ut_user_id in (
+									select uf.USER_ID from sys_user uf where 1=1
+									and
+									uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+									and uk.USER_ID=#{pd.userIdsc})  
+									 <![CDATA[  and   uf.u_type!=#{pd.u_types} ]]>
+									)
+								</if>
+								<!--非学校管理员 -->
+								<if test="pd.userIdsc  == null  or pd.userIdsc ==''">
+									<!--区域经理，组长，客户经理 -->
+									ut.ut_user_id in (SELECT
+									ud.USER_ID FROM
+									sys_user ua
+									LEFT JOIN
+									sys_user
+									ub ON ub.parent_id = ua.USER_ID
+									LEFT JOIN
+									sys_user uc ON
+									uc.parent_id
+									= ub.USER_ID
+									LEFT JOIN sys_user ud ON
+									ud.parent_id =
+									uc.USER_ID
+									WHERE 1=1
+									<if test="pd.userIdqy != null and pd.userIdqy !=''">
+										<!--区域经理 -->
+										and ub.parent_id=#{pd.userIdqy}
+									</if>
+									<if test="pd.userIdzz != null and pd.userIdzz !=''">
+										<!--组长 -->
+										and uc.parent_id=#{pd.userIdzz}
+									</if>
+									<if test="pd.userIdkh != null and pd.userIdkh !=''">
+										<!--客户经理 -->
+										and ud.parent_id=#{pd.userIdkh}
+									</if>
+									<if test="pd.u_type != null and pd.u_type !=''">
+										<!--非学校管理员 -->
+								  <![CDATA[ and ud.u_type!=#{pd.u_type} ]]>
+									</if>
+									)
+								</if>
+							</if>
+					)
+				AND ar_type = '0'
+				
+				<if test="pd.time_start != null and pd.time_start != ''">
+					AND ar_date = #{pd.time_start}
+				</if>
+				<if test="pd.time_start == null or pd.time_start == ''">
+					AND ar_date = #{pd.date}
+				</if>
+				ORDER BY
+					ar_time
+			)
+		AS a
+		INNER JOIN t_student AS s ON a.ar_stu_id = s.s_id 
+		<if test="pd.keyword != null and pd.keyword != ''">
+		     AND s.s_name LIKE '%${pd.keyword}%'
+		</if>
+		LEFT JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		LEFT JOIN sys_user AS u ON u.USER_ID = us.us_user_id
+		LEFT JOIN t_zone AS z ON s.s_zone_id = z.z_id
+		LEFT JOIN t_zone AS z2 ON z.z_parent_id = z2.z_id
+		LEFT JOIN t_zone AS z3 ON z2.z_parent_id = z3.z_id
+		GROUP BY
+			a.ar_stu_id,a.ar_date
+
+		UNION ALL
+		SELECT
+				CONCAT(a.ar_date,'-',s.s_id) AS skey,a.*,s.*,u.*,us.*,z.z_name AS classNm,z3.z_name AS schoolNm
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					t_attendance_record
+				WHERE
+					1=1
+					AND ar_stu_id IN (
+						SELECT
+							ifnull(s.s_id,'')
+						FROM
+							t_user_teacher ut
+						  INNER JOIN t_student AS s ON s.s_zone_id = ut_zone_id
+						WHERE
+							<if test="pd.userIdtc !=null and pd.userIdtc != ''">
+							    ut.ut_user_id = #{pd.userIdtc}
+							</if>
+							<if test="pd.userIdtc ==null or pd.userIdtc == ''">
+							<!--学校管理员 -->
+							<if test="pd.userIdsc != null and pd.userIdsc !=''">
+								ut.ut_user_id in (
+								select uf.USER_ID from sys_user uf where 1=1
+								and
+								uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+								and uk.USER_ID=#{pd.userIdsc})  
+								 <![CDATA[  and   uf.u_type!=#{pd.u_types} ]]>
+								)
+							</if>
+							<!--非学校管理员 -->
+							<if test="pd.userIdsc  == null  or pd.userIdsc ==''">
+								<!--区域经理，组长，客户经理 -->
+								ut.ut_user_id in (SELECT
+								ud.USER_ID FROM
+								sys_user ua
+								LEFT JOIN
+								sys_user
+								ub ON ub.parent_id = ua.USER_ID
+								LEFT JOIN
+								sys_user uc ON
+								uc.parent_id
+								= ub.USER_ID
+								LEFT JOIN sys_user ud ON
+								ud.parent_id =
+								uc.USER_ID
+								WHERE 1=1
+								<if test="pd.userIdqy != null and pd.userIdqy !=''">
+									<!--区域经理 -->
+									and ub.parent_id=#{pd.userIdqy}
+								</if>
+								<if test="pd.userIdzz != null and pd.userIdzz !=''">
+									<!--组长 -->
+									and uc.parent_id=#{pd.userIdzz}
+								</if>
+								<if test="pd.userIdkh != null and pd.userIdkh !=''">
+									<!--客户经理 -->
+									and ud.parent_id=#{pd.userIdkh}
+								</if>
+								<if test="pd.u_type != null and pd.u_type !=''">
+									<!--非学校管理员 -->
+							  <![CDATA[ and ud.u_type!=#{pd.u_type} ]]>
+								</if>
+								)
+							</if>
+							</if>
+					)
+				AND ar_type = '1'
+				<if test="pd.time_start != null and pd.time_start != ''">
+					AND ar_date = #{pd.time_start}
+				</if>
+				<if test="pd.time_start == null or pd.time_start == ''">
+					AND ar_date = #{pd.date}
+				</if>
+				ORDER BY
+					ar_time ASC
+			)
+		AS a
+		INNER JOIN t_student AS s ON a.ar_stu_id = s.s_id 
+		<if test="pd.keyword != null and pd.keyword != ''">
+		     AND s.s_name LIKE '%${pd.keyword}%'
+		</if>
+		LEFT JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		LEFT JOIN sys_user AS u ON u.USER_ID = us.us_user_id
+		LEFT JOIN t_zone AS z ON s.s_zone_id = z.z_id
+		LEFT JOIN t_zone AS z2 ON z.z_parent_id = z2.z_id
+		LEFT JOIN t_zone AS z3 ON z2.z_parent_id = z3.z_id
+		GROUP BY
+			a.ar_stu_id,a.ar_date
+		ORDER BY ar_stu_id
+	</select>
+	
+	<select id="daochu" parameterType="pd" resultType="pd">
+	    SELECT
+			CONCAT(a.ar_date,'-',s.s_id) AS skey,a.*,s.*,u.*,us.*,z.z_name AS classNm,z3.z_name AS schoolNm
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					t_attendance_record
+				WHERE
+					ar_stu_id IN (
+						SELECT
+							ifnull(s.s_id,'')
+						FROM
+							t_user_teacher ut
+						  INNER JOIN t_student AS s ON s.s_zone_id = ut_zone_id
+						WHERE
+							<if test="userIdtc !=null and userIdtc != ''">
+							    ut.ut_user_id = #{userIdtc}
+							</if>
+							<if test="userIdtc ==null or userIdtc == ''">
+							<!--学校管理员 -->
+							<if test="userIdsc != null and userIdsc !=''">
+								ut.ut_user_id in (
+								select uf.USER_ID from sys_user uf where 1=1
+								and
+								uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+								and uk.USER_ID=#{userIdsc})  
+								 <![CDATA[  and   uf.u_type!=#{u_types} ]]>
+								)
+							</if>
+							<!--非学校管理员 -->
+							<if test="userIdsc  == null  or userIdsc ==''">
+								<!--区域经理，组长，客户经理 -->
+								ut.ut_user_id in (SELECT
+								ud.USER_ID FROM
+								sys_user ua
+								LEFT JOIN
+								sys_user
+								ub ON ub.parent_id = ua.USER_ID
+								LEFT JOIN
+								sys_user uc ON
+								uc.parent_id
+								= ub.USER_ID
+								LEFT JOIN sys_user ud ON
+								ud.parent_id =
+								uc.USER_ID
+								WHERE 1=1
+								<if test="userIdqy != null and userIdqy !=''">
+									<!--区域经理 -->
+									and ub.parent_id=#{userIdqy}
+								</if>
+								<if test="userIdzz != null and userIdzz !=''">
+									<!--组长 -->
+									and uc.parent_id=#{userIdzz}
+								</if>
+								<if test="userIdkh != null and userIdkh !=''">
+									<!--客户经理 -->
+									and ud.parent_id=#{userIdkh}
+								</if>
+								<if test="u_type != null and u_type !=''">
+									<!--非学校管理员 -->
+							  <![CDATA[ and ud.u_type!=#{u_type} ]]>
+								</if>
+								)
+							</if>
+							</if>
+					)
+				AND ar_type = '0'
+				
+				<if test="time_start != null and time_start != ''">
+					AND ar_date = #{time_start}
+				</if>
+				<if test="time_start == null or time_start == ''">
+					AND ar_date = #{date}
+				</if>
+				ORDER BY
+					ar_time
+			)
+		AS a
+		INNER JOIN t_student AS s ON a.ar_stu_id = s.s_id 
+		<if test="keyword != null and keyword != ''">
+		     AND s.s_name LIKE '%${keyword}%'
+		</if>
+		LEFT JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		LEFT JOIN sys_user AS u ON u.USER_ID = us.us_user_id
+		LEFT JOIN t_zone AS z ON s.s_zone_id = z.z_id
+		LEFT JOIN t_zone AS z2 ON z.z_parent_id = z2.z_id
+		LEFT JOIN t_zone AS z3 ON z2.z_parent_id = z3.z_id
+		GROUP BY
+			a.ar_stu_id,a.ar_date
+
+		UNION ALL
+		SELECT
+				CONCAT(a.ar_date,'-',s.s_id) AS skey,a.*,s.*,u.*,us.*,z.z_name AS classNm,z3.z_name AS schoolNm
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					t_attendance_record
+				WHERE
+					ar_stu_id IN (
+						SELECT
+							ifnull(s.s_id,'')
+						FROM
+							t_user_teacher ut
+						  INNER JOIN t_student AS s ON s.s_zone_id = ut_zone_id
+						WHERE
+							<if test="userIdtc !=null and userIdtc != ''">
+							    ut.ut_user_id = #{userIdtc}
+							</if>
+							<if test="userIdtc ==null or userIdtc == ''">
+							<!--学校管理员 -->
+							<if test="userIdsc != null and userIdsc !=''">
+								ut.ut_user_id in (
+								select uf.USER_ID from sys_user uf where 1=1
+								and
+								uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+								and uk.USER_ID=#{userIdsc})  
+								 <![CDATA[  and   uf.u_type!=#{u_types} ]]>
+								)
+							</if>
+							<!--非学校管理员 -->
+							<if test="userIdsc  == null  or userIdsc ==''">
+								<!--区域经理，组长，客户经理 -->
+								ut.ut_user_id in (SELECT
+								ud.USER_ID FROM
+								sys_user ua
+								LEFT JOIN
+								sys_user
+								ub ON ub.parent_id = ua.USER_ID
+								LEFT JOIN
+								sys_user uc ON
+								uc.parent_id
+								= ub.USER_ID
+								LEFT JOIN sys_user ud ON
+								ud.parent_id =
+								uc.USER_ID
+								WHERE 1=1
+								<if test="userIdqy != null and userIdqy !=''">
+									<!--区域经理 -->
+									and ub.parent_id=#{userIdqy}
+								</if>
+								<if test="userIdzz != null and userIdzz !=''">
+									<!--组长 -->
+									and uc.parent_id=#{userIdzz}
+								</if>
+								<if test="userIdkh != null and userIdkh !=''">
+									<!--客户经理 -->
+									and ud.parent_id=#{userIdkh}
+								</if>
+								<if test="u_type != null and u_type !=''">
+									<!--非学校管理员 -->
+							  <![CDATA[ and ud.u_type!=#{u_type} ]]>
+								</if>
+								)
+							</if>
+							</if>
+					)
+				AND ar_type = '1'
+				<if test="time_start != null and time_start != ''">
+					AND ar_date = #{time_start}
+				</if>
+				<if test="time_start == null or time_start == ''">
+					AND ar_date = #{date}
+				</if>
+				ORDER BY
+					ar_time ASC
+			)
+		AS a
+		INNER JOIN t_student AS s ON a.ar_stu_id = s.s_id 
+		<if test="keyword != null and keyword != ''">
+		     AND s.s_name LIKE '%${keyword}%'
+		</if>
+		LEFT JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		LEFT JOIN sys_user AS u ON u.USER_ID = us.us_user_id
+		LEFT JOIN t_zone AS z ON s.s_zone_id = z.z_id
+		LEFT JOIN t_zone AS z2 ON z.z_parent_id = z2.z_id
+		LEFT JOIN t_zone AS z3 ON z2.z_parent_id = z3.z_id
+		GROUP BY
+			a.ar_stu_id,a.ar_date
+		ORDER BY ar_stu_id
+	</select>
+	
+	<select id="findZoneId" parameterType="String" resultType="String">
+		SELECT
+			ut_zone_id
+		FROM
+			t_user_teacher
+		WHERE
+			ut_user_id = #{user_id}    	
+	</select>
+	
+	<select id="findAll" parameterType="pd" resultType="Integer">
+	    SELECT
+			COUNT(s.s_id)
+		FROM
+			t_user_teacher ut
+		  INNER JOIN t_student AS s ON s.s_zone_id = ut_zone_id
+		WHERE
+			1=1 AND
+			<if test="userIdtc !=null and userIdtc != ''">
+			    ut.ut_user_id = #{userIdtc}
+			</if>
+			<if test="userIdtc ==null or userIdtc == ''">
+			<!--学校管理员 -->
+			<if test="userIdsc != null and userIdsc !=''">
+				ut.ut_user_id in (
+				select uf.USER_ID from sys_user uf where 1=1
+				and
+				uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+				and uk.USER_ID=#{userIdsc})  
+				 <![CDATA[  and   uf.u_type!=#{u_types} ]]>
+				)
+			</if>
+			<!--非学校管理员 -->
+			<if test="userIdsc  == null  or userIdsc ==''">
+				<!--区域经理，组长，客户经理 -->
+				ut.ut_user_id in (SELECT
+				ud.USER_ID FROM
+				sys_user ua
+				LEFT JOIN
+				sys_user
+				ub ON ub.parent_id = ua.USER_ID
+				LEFT JOIN
+				sys_user uc ON
+				uc.parent_id
+				= ub.USER_ID
+				LEFT JOIN sys_user ud ON
+				ud.parent_id =
+				uc.USER_ID
+				WHERE 1=1
+				<if test="userIdqy != null and userIdqy !=''">
+					<!--区域经理 -->
+					and ub.parent_id=#{userIdqy}
+				</if>
+				<if test="userIdzz != null and userIdzz !=''">
+					<!--组长 -->
+					and uc.parent_id=#{userIdzz}
+				</if>
+				<if test="userIdkh != null and userIdkh !=''">
+					<!--客户经理 -->
+					and ud.parent_id=#{userIdkh}
+				</if>
+				<if test="u_type != null and u_type !=''">
+					<!--非学校管理员 -->
+			  <![CDATA[ and ud.u_type!=#{u_type} ]]>
+				</if>
+				)
+			</if>
+			</if>
+	</select>
+	
+	<select id="findIsSign" parameterType="pd" resultType="Integer">
+	    SELECT
+			count(*)
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					t_attendance_record
+				WHERE
+				1=1
+				AND ar_stu_id IN (
+						SELECT
+							ifnull(s.s_id,'')
+						FROM
+							t_student AS s
+						INNER JOIN t_attendance_record AS ar ON ar.ar_stu_id = s.s_id
+						AND ar.ar_type = '0'
+						<if test="time_start != null and time_start != ''">
+							AND ar_date = #{time_start}
+						</if>
+						<if test="time_start == null or time_start == ''">
+							AND ar_date = #{date}
+						</if>
+						WHERE
+							s_zone_id IN (
+								SELECT
+									ifnull(ut_zone_id,'')
+								FROM
+									t_user_teacher
+								  
+								WHERE
+									<if test="userIdtc !=null and userIdtc != ''">
+									    ut_user_id = #{userIdtc}
+									</if>
+									<if test="userIdtc ==null or userIdtc == ''">
+									<!--学校管理员 -->
+									<if test="userIdsc != null and userIdsc !=''">
+										ut_user_id in (
+										select uf.USER_ID from sys_user uf where 1=1
+										and
+										uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+										and uk.USER_ID=#{userIdsc})  
+										 <![CDATA[  and   uf.u_type!=#{u_types} ]]>
+										)
+									</if>
+									<!--非学校管理员 -->
+									<if test="userIdsc  == null  or userIdsc ==''">
+										<!--区域经理，组长，客户经理 -->
+										ut_user_id in (SELECT
+										ud.USER_ID FROM
+										sys_user ua
+										LEFT JOIN
+										sys_user
+										ub ON ub.parent_id = ua.USER_ID
+										LEFT JOIN
+										sys_user uc ON
+										uc.parent_id
+										= ub.USER_ID
+										LEFT JOIN sys_user ud ON
+										ud.parent_id =
+										uc.USER_ID
+										WHERE 1=1
+										<if test="userIdqy != null and userIdqy !=''">
+											<!--区域经理 -->
+											and ub.parent_id=#{userIdqy}
+										</if>
+										<if test="userIdzz != null and userIdzz !=''">
+											<!--组长 -->
+											and uc.parent_id=#{userIdzz}
+										</if>
+										<if test="userIdkh != null and userIdkh !=''">
+											<!--客户经理 -->
+											and ud.parent_id=#{userIdkh}
+										</if>
+										<if test="u_type != null and u_type !=''">
+											<!--非学校管理员 -->
+									  <![CDATA[ and ud.u_type!=#{u_type} ]]>
+										</if>
+										)
+									</if>
+									</if>
+							)
+					)
+				<if test="time_start != null and time_start != ''">
+					AND ar_date = #{time_start}
+				</if>
+				<if test="time_start == null or time_start == ''">
+					AND ar_date = #{date}
+				</if>
+				AND ar_type = '1'
+				GROUP BY
+					ar_stu_id
+			) AS a
+	</select>
+</mapper>

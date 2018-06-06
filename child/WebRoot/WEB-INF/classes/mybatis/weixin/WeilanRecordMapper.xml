@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WeilanRecordMapper">
+
+   <insert id="add_weialnRecord" parameterType="IbabyFenceRecord">
+	insert into 
+		weixin_weilanrecord
+		(
+	      student_id,
+	      record_count,
+	      record_date,
+		)
+		values
+		(
+		#{studentId},
+		#{recordCount},
+		#{recordDate},
+		)
+   </insert>
+<!--删除记录  -->
+    <delete id="delete_WeilanRecord" parameterType="IbabyFenceRecord">
+        
+    
+    </delete>	
+    
+	<!-- 根据时间查询出该学生在该时间有几次进出围栏的记录 -->
+	<select id="select_record_count" parameterType="IbabyFenceRecord" resultType="int">
+	    SELECT
+			record_count
+		FROM
+			weixin_weilanrecord
+		WHERE 
+		   record_date=#{recordDate}
+	</select>
+	
+	
+	
+	
+</mapper>

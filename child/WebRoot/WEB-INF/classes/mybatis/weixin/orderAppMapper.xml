@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orderAppMapper">
+	<!-- 查询商品信息 -->	
+	<select id="findlistPage" parameterType="pd" resultType="pd"
+		useCache="false">
+		SELECT
+		i.ibaby_order_id
+		,CASE WHEN s.`NAME` IS NULL THEN i.ibaby_userId ELSE s.`NAME` END AS ibaby_userId 
+		,i.ibaby_nameInfo
+		,i.ibaby_telInfo
+		,i.ibaby_addressInfo
+		,i.ibaby_postCode
+		,i.ibaby_commodityId
+		,i.ibaby_commodityNam
+		,i.ibaby_commodityNum
+		,i.ibaby_commoditySum
+		,CASE i.ibaby_commodityStat WHEN '0' THEN '支付取消' WHEN '1' THEN '支付成功' WHEN '2' THEN '已下单未支付' WHEN '3' THEN '已发货' 
+		WHEN '4' THEN '订单取消' WHEN '-1' THEN '支付失败' END AS ibaby_commodityStat
+		,i.ibaby_commodityDatetime
+		from
+		ibaby_commodity_order  as i
+		LEFT JOIN sys_user as s on 
+		i.ibaby_userId = s.USER_ID
+		order by ibaby_order_id ASC
+	</select>
+	
+	<!-- 通过id获取订单信息信息 -->
+	<select id="findByorderId" parameterType="pd" resultType="pd">
+		SELECT
+	   	  ibaby_order_id  
+		,ibaby_userId  
+		,ibaby_nameInfo  
+		,ibaby_telInfo  
+		,ibaby_addressInfo 
+		,ibaby_postCode  
+		,ibaby_commodityId  
+		,ibaby_commodityNam  
+		,ibaby_commodityNum  
+		,ibaby_commoditySum  
+		,ibaby_commodityStat 
+		,ibaby_commodityDatetime  
+		from
+		ibaby_commodity_order
+		where ibaby_order_id = #{ibaby_order_id}
+	</select>
+	
+	<!-- 编辑商品信息 -->	
+	<update id="updateOrderApp"  parameterType="pd">
+        UPDATE
+        ibaby_commodity_order
+		SET
+		ibaby_commodityStat = #{ibaby_commodityStat}
+		,ibaby_commodityDatetime = #{ibaby_commodityDatetime}
+		WHERE
+		ibaby_order_id = #{ibaby_order_id}
+	</update>
+	
+	
+		<!-- 添加订单信息 -->
+ 	<insert id="addorder" parameterType="pd">
+		INSERT INTO
+		ibaby_commodity_order
+		(
+		  ibaby_order_id  
+		,ibaby_userId  
+		,ibaby_nameInfo  
+		,ibaby_telInfo  
+		,ibaby_addressInfo 
+		,ibaby_postCode  
+		,ibaby_commodityId  
+		,ibaby_commodityNam  
+		,ibaby_commodityNum  
+		,ibaby_commoditySum  
+		,ibaby_commodityStat 
+		,ibaby_commodityDatetime
+		)  
+		VALUES(
+		#{ibaby_order_id}
+		,#{ibaby_userId}
+		,#{ibaby_nameInfo}
+		,#{ibaby_telInfo}
+		,#{ibaby_addressInfo}
+		,#{ibaby_postCode}
+		,#{ibaby_commodityId}
+		,#{ibaby_commodityNam}
+		,#{ibaby_commodityNum}
+		,#{ibaby_commoditySum}
+		,#{ibaby_commodityStat}
+		,#{ibaby_commodityDatetime}
+		)
+	</insert>
+	
+	
+	<!-- 修改商品信息 -->
+	<update id="editOrderApp" parameterType="pd" flushCache="false">
+		UPDATE
+		ibaby_commodity_order
+		SET
+		ibaby_userId = #{ibaby_userId},
+		ibaby_nameInfo = #{ibaby_nameInfo},
+		ibaby_telInfo = #{ibaby_telInfo},
+		ibaby_addressInfo = #{ibaby_addressInfo},
+		ibaby_postCode = #{ibaby_postCode},
+		ibaby_commodityId = #{ibaby_commodityId},
+		ibaby_commodityNam = #{ibaby_commodityNam},
+		ibaby_commodityNum = #{ibaby_commodityNum},
+		ibaby_commoditySum = #{ibaby_commoditySum},
+		ibaby_commodityStat = #{ibaby_commodityStat},
+		ibaby_commodityDatetime = #{ibaby_commodityDatetime}
+		WHERE
+		ibaby_order_id = #{ibaby_order_id}
+	</update>
+	
+	
+</mapper>

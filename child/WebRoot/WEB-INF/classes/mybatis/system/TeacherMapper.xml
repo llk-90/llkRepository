@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TeacherMapper">
+
+
+	<!-- 新增 -->
+	<insert id="save" parameterType="pd">
+		insert into SYS_USER(
+		USERNAME,
+		PASSWORD,
+		NAME,
+		ROLE_ID,
+		PHONE,
+		EMAIL,
+		BZ,
+		U_TYPE,
+		CREATE_TIME,
+		USER_ID,
+		SEX,
+		parent_id,
+		school_id
+		)
+		values (
+		#{PHONE},
+		#{PASSWORD},
+		#{NAME},
+		#{ROLE_ID},
+		#{PHONE},
+		#{EMAIL},
+		#{BZ},
+		'2',
+		SYSDATE(),
+		#{USER_ID},
+		#{SEX},
+		#{parent_id},
+		#{SCHOOL_ID}
+		)
+	</insert>
+
+
+	<!-- 新增关联 -->
+	<insert id="saveRelation" parameterType="pd">
+		INSERT INTO
+		T_USER_TEACHER(
+		UT_USER_ID,
+		UT_ZONE_ID,
+		CREATE_TIME
+		) VALUES (
+		#{USER_ID},
+		#{classParam},
+		SYSDATE()
+		)
+	</insert>
+
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="pd">
+		delete from SYS_USER
+		where
+		USER_ID = #{USER_ID}
+	</delete>
+
+
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update SYS_USER
+		set
+		NAME = #{NAME},
+		SEX = #{SEX},
+		EMAIL = #{EMAIL},
+		BZ =
+		#{BZ}
+		where
+		USER_ID = #{USER_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="editRelation" parameterType="pd">
+		UPDATE t_user_teacher
+		SET ut_zone_id = #{classParam}
+		WHERE
+		ut_user_id = #{USER_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="editUserPhone" parameterType="pd">
+		update SYS_USER
+		set
+			USERNAME = #{PHONE},
+			PHONE = #{PHONE},
+			PASSWORD = #{PASSWORD}
+		where
+			USER_ID = #{USER_ID}
+	</update>
+
+
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+		A.
+		PASSWORD,
+		A. NAME,
+		A.SEX,
+		A.ROLE_ID,
+		A.PHONE,
+		A.EMAIL,
+		A.BZ,
+		A.CREATE_TIME,
+		A.USER_ID,
+		Z.Z_ID AS CLASS_ID,
+		Z2.Z_ID AS GRADE_ID,
+		Z3.Z_ID AS SCHOOL_ID,
+		Z.Z_NAME AS CLASS_NAME,
+		Z2.Z_NAME AS GRADE_NAME,
+		Z3.Z_NAME AS
+		SCHOOL_NAME
+		FROM
+		SYS_USER A
+		INNER JOIN T_ZONE Z ON Z.Z_ID =
+		(
+		SELECT
+		T.UT_ZONE_ID
+		FROM
+		T_USER_TEACHER T
+		WHERE
+		T.UT_USER_ID = A.USER_ID
+		)
+		INNER
+		JOIN T_ZONE Z2 ON Z2.Z_ID = Z.Z_PARENT_ID
+		INNER JOIN
+		T_ZONE Z3 ON
+		Z3.Z_ID = Z2.Z_PARENT_ID
+		WHERE
+		A.U_TYPE = '2'
+		AND A.USER_ID = #{USER_ID}
+	</select>
+
+
+	<!-- 通过ID获取数据 -->
+	<select id="findJSRole" parameterType="pd" resultType="pd">
+		SELECT
+		r.ROLE_ID,
+		r.ROLE_NAME
+		FROM
+		sys_role r
+		WHERE
+		r.ROLE_CODE = 'JS'
+	</select>
+
+	<!-- 学校  2016/9/5 yc 修改  -->
+	<select id="schoolList" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID,
+		Z.Z_NAME
+		FROM
+		T_ZONE Z
+		WHERE
+		Z.Z_TYPE = '2'
+<!-- 		AND Z.Z_PARENT_ID = -->
+<!-- 		#{Z_ID} -->
+		AND Z.create_id =
+		#{USER_ID}
+		ORDER BY
+		Z.Z_ORDER
+
+	</select>
+
+	<!-- 年级 -->
+	<select id="gradeList" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID,
+		Z.Z_NAME
+		FROM
+		T_ZONE Z
+		WHERE
+		Z.Z_TYPE = '3'
+		AND Z.Z_PARENT_ID =
+		#{Z_ID}
+		ORDER BY
+		Z.Z_ORDER
+	</select>
+
+
+	<!-- 未绑定班级 -->
+	<select id="classList" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID,
+		Z.Z_NAME
+		FROM
+		T_ZONE Z
+		WHERE
+		Z.Z_TYPE = '4'
+		AND Z.Z_PARENT_ID =
+		#{Z_ID}
+		AND z.z_id NOT IN (SELECT z2.ut_zone_id FROM t_user_teacher z2)
+		ORDER BY
+		Z.Z_ORDER
+	</select>
+	<!-- 所有班级 -->
+	<select id="classListAll" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID,
+		Z.Z_NAME
+		FROM
+		T_ZONE Z
+		WHERE
+		Z.Z_TYPE = '4'
+		AND Z.Z_PARENT_ID =
+		#{Z_ID}
+		ORDER BY
+		Z.Z_ORDER
+	</select>
+	<!-- 未绑定班级及当前班级 -->
+	<select id="classListAndNow" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID,
+		Z.Z_NAME
+		FROM
+		T_ZONE Z
+		WHERE
+		Z.Z_TYPE = '4'
+		AND Z.Z_PARENT_ID
+		=
+		#{Z_ID}
+		AND (z.z_id NOT IN (SELECT z2.ut_zone_id FROM t_user_teacher
+		z2) or z.z_id = #{nowClass})
+		ORDER BY
+		Z.Z_ORDER
+	</select>
+
+	<!-- 校验班级是否存在 -->
+	<select id="checkClassId" parameterType="pd" resultType="pd">
+		SELECT
+		z1.z_id
+		FROM
+		t_zone z1
+		INNER JOIN t_zone z2 ON z1.z_parent_id = z2.z_id
+		AND z2.z_name =
+		#{gradeName}
+		INNER JOIN t_zone z3 ON z2.z_parent_id = z3.z_id
+		AND
+		z3.z_id = #{SCHOOL_ID}
+		WHERE
+		z1.z_name = #{className}
+	</select>
+	<!-- 校验班主任是否存在 -->
+	<select id="checkTeacherId" parameterType="pd" resultType="pd">
+		SELECT
+		t.ut_user_id
+		FROM
+		t_user_teacher t
+		WHERE
+		t.ut_zone_id = #{z_id}
+	</select>
+	<!-- 校验手机号是否存在 -->
+	<select id="checkTel" parameterType="pd" resultType="pd">
+		SELECT
+		u.USER_ID,
+		u.`NAME`,
+		u.PHONE
+		FROM
+		sys_user u
+		WHERE
+		u.PHONE = #{PHONE} 
+		AND u.U_TYPE = '2'
+	</select>
+	<!-- 校验学校是否在当前区域下 -->
+	<select id="checkSchool" parameterType="pd" resultType="pd">
+		SELECT
+		z.z_id
+		FROM
+		t_zone z
+		WHERE
+		z.z_parent_id=#{z_id}
+		and z.z_name = #{schoolName}
+		AND z.create_id =
+		#{USER_ID1}
+	</select>
+
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT
+		A. PASSWORD,
+		A. NAME,
+		A.SEX,
+		A.ROLE_ID,
+		A.PHONE,
+		A.EMAIL,
+		A.BZ,
+		A.CREATE_TIME,
+		A.USER_ID,
+		Z.Z_NAME AS CLASS_NAME,
+		Z2.Z_NAME AS GRADE_NAME,
+		Z3.Z_NAME AS SCHOOL_NAME,
+		CASE WHEN w.uw_user_id IS NULL THEN '未绑定' 
+		ELSE '已绑定' 
+		END AS WEIXIN
+		FROM
+		SYS_USER A
+		INNER JOIN T_ZONE Z ON Z.Z_ID = (
+		SELECT
+		T.UT_ZONE_ID
+		FROM
+		T_USER_TEACHER T
+		WHERE
+		T.UT_USER_ID = A.USER_ID
+		) AND z.z_type = '4'
+		INNER JOIN T_ZONE Z2 ON Z2.Z_ID =
+		Z.Z_PARENT_ID AND z2.z_type = '3'
+		INNER JOIN T_ZONE Z3 ON Z3.Z_ID =
+		Z2.Z_PARENT_ID AND z3.z_type = '2'
+		AND Z3.create_id=#{pd.USER_ID}
+	    AND Z3.z_parent_id= #{pd.z_id}
+	    LEFT JOIN
+		t_user_weixin W ON W.uw_user_id = A.user_id
+		WHERE
+		A.U_TYPE = '2'
+		<if test="pd.schoolParam != null and pd.schoolParam !='' and pd.schoolParam !='QB'">
+			AND Z3.Z_ID = #{pd.schoolParam}
+		</if>
+		<if test="pd.gradeParam != null and pd.gradeParam !=''">
+			AND Z2.Z_ID = #{pd.gradeParam}
+		</if>
+		<if test="pd.classParam != null and pd.classParam !=''">
+			AND Z.Z_ID = #{pd.classParam}
+		</if>
+		<if test="pd.nameParam != null and pd.nameParam !=''">
+			AND A.`NAME` LIKE '%${pd.nameParam}%'
+		</if>
+		ORDER BY 
+			Z3.Z_ORDER DESC,
+			Z2.Z_ORDER,
+			Z.Z_ORDER
+	</select>
+
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		a.PASSWORD,
+		a.NAME,
+		a.ROLE_ID,
+		a.PHONE,
+		a.EMAIL,
+		a.BZ,
+		a.CREATE_TIME,
+		a.USER_ID
+		from
+		SYS_USER a
+	</select>
+
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from SYS_USER
+		where
+		USER_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 批量删除关联 -->
+	<delete id="deleteRelation" parameterType="String">
+		delete from T_USER_TEACHER
+		where
+		UT_USER_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 批量删除微信关联 -->
+	<delete id="deleteRelationWx" parameterType="String">
+		delete from T_USER_WEIXIN
+		where
+		uw_user_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 获取登录区域经理用户区域ID -->
+	<select id="getZoneIdByUserId" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID
+		FROM
+		T_ZONE Z
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = Z.Z_ID
+		AND
+		T.UAM_USER_ID =(SELECT K.PARENT_ID
+       FROM SYS_USER X, 
+             SYS_USER K
+       WHERE X.PARENT_ID=K.USER_ID AND X.USER_ID=#{USER_ID})
+	</select>
+	<!-- 获取登录区域经理用户区域ID -->
+	<select id="getZoneIdByUserId1" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID
+		FROM
+		T_ZONE Z
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = Z.Z_ID
+		AND
+		T.UAM_USER_ID =(SELECT K.PARENT_ID
+       FROM SYS_USER X, 
+             SYS_USER K
+       WHERE X.PARENT_ID=K.USER_ID AND X.USER_ID=#{USER_ID1})
+	</select>
+	<!-- 获取登录教师用户区域ID -->
+	<select id="getZoneIdByTeacher" parameterType="pd" resultType="pd">
+		SELECT
+		Z.Z_ID
+		FROM
+		T_ZONE Z
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = Z.Z_ID
+		AND
+		T.UAM_USER_ID = #{USER_ID}
+	</select>
+	<!-- 家长联系列表 -->
+	<select id="contacts" parameterType="pd" resultType="pd">
+		select
+		u.user_id,z.z_name,s.s_name,s.s_addr,us.user_id puser_id,us.name pname,us.phone from
+		sys_user u INNER JOIN t_user_teacher t on u.USER_ID=t.ut_user_id
+		INNER
+		JOIN t_zone z on t.ut_zone_id=z.z_id
+		INNER JOIN t_student s on
+		z.z_id=s.s_zone_id
+		INNER JOIN t_user_student d on s.s_id=d.us_stu_id
+		INNER JOIN sys_user us on d.us_user_id=us.USER_ID
+		where u.USER_ID=
+		#{USER_ID}
+		order by us.create_time
+	</select>
+</mapper>

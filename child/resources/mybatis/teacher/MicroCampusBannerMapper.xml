@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MicroCampusBannerMapper">
+
+	<select id="findSchoolId" parameterType="String" resultType="String">
+		select school_id from sys_user where USER_ID=#{userId}
+	</select>
+
+     <!--查询全部微校园banner-->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+		SELECT
+			*
+		FROM guanai_microcampus_banner_info
+        WHERE SchoolID = #{pd.schoolId}
+	</select>
+	
+	<!-- 新增微校园banner -->
+	<insert id="addmicrocampusbanner" parameterType="pd">
+		insert into guanai_microcampus_banner_info(
+			SchoolID,
+			picture_url,
+			move_url,
+			create_time
+		)
+		values(
+			#{schoolId},
+			#{imageUrl},		
+			#{move_url},
+			SYSDATE()
+		)
+	</insert>
+	
+	<!-- 根据id删除该banner -->
+	<delete id="deletemicrocampusinfo" parameterType="pd" flushCache="false">
+		DELETE FROM 
+        guanai_microcampus_banner_info 
+        WHERE banner_id = #{banner_id}
+	</delete>
+	
+	<!-- 更改迁移url -->
+	<update id="editMoveUrl" parameterType="pd" flushCache="false">
+		update guanai_microcampus_banner_info set move_url=#{moveUrl} where banner_id=#{banner_id}
+	</update>
+	
+	
+</mapper>

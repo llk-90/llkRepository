@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EducationInfoMapper">
+
+	<insert id="addBannerPicture" parameterType="pd">
+		insert into guanai_education_banner_info(
+			picture_url,
+			move_url,
+			create_time,
+			SchoolID
+		)
+		values(
+			#{imageUrl},
+			#{move_url},
+			SYSDATE(),
+			#{schoolId}
+		)
+	</insert>
+
+	<insert id="addInfo" parameterType="pd">
+		insert into guanai_education_info(
+			title,
+			content,
+			openId,
+			create_time,
+			is_top,
+			SchoolID
+		)
+		values(
+			#{title},
+			#{content},
+			#{openId},
+			SYSDATE(),
+			#{is_top},
+			#{schoolId}
+		)
+	</insert>
+	
+	<select id="findInfoId" resultType="Integer">
+		select id from guanai_education_info order by create_time desc limit 1
+	</select>
+	
+	<insert id="addInfoPicture" parameterType="pd">
+		insert into guanai_education_picture_info(
+			info_id,
+			picture_url,
+			create_time,
+			type,
+			is_delete
+		)
+		values(
+			#{infoId},
+			#{imageUrl},
+			SYSDATE(),
+			1,
+			0
+		)
+	</insert>
+	
+	<insert id="addInfoImage" parameterType="pd">
+		insert into guanai_education_picture_info(
+			info_id,
+			picture_url,
+			create_time,
+			type,
+			is_delete
+		)
+		values(
+			#{infoId},
+			#{imageUrl},
+			SYSDATE(),
+			0,
+			0
+		)
+	</insert>
+	
+	<select id="findBannerImage" resultType="pd">
+		select 
+			id,
+			picture_url,
+			move_url,
+			create_time
+		from
+			guanai_education_banner_info
+		where
+			SchoolID =#{schoolId}
+	</select>
+	
+	<!-- 获取资讯列表 -->
+	<select id="findEducationInfoList" parameterType="String" resultType="pd">
+		SELECT
+			guanai_education_info.title,
+			guanai_education_info.content,
+			guanai_education_info.icon,
+			guanai_education_info.is_top,
+			guanai_education_info.create_time,
+			guanai_education_info.id,
+			guanai_education_info.author 
+		FROM
+			guanai_education_info 
+		WHERE
+			info_state = 1 
+			AND SchoolID = #{schoolId}
+		ORDER BY
+			create_time DESC
+			LIMIT #{pageCount},5
+	</select>
+	
+	<!-- 获取资讯列表 -->
+	<select id="checkOpenId" parameterType="String" resultType="pd">
+		SELECT 
+		* 
+		FROM
+		 t_user_weixin 
+		WHERE 
+		 uw_open_id = #{openId}
+	</select>
+	
+	<select id="findEducationInfoById" parameterType="integer" resultType="pd">
+		SELECT 
+		  guanai_education_info.title,
+		  guanai_education_info.content,
+		  guanai_education_info.icon,
+		  guanai_education_info.is_top,
+		  guanai_education_info.create_time,
+		  guanai_education_info.id,
+		  guanai_education_info.author 
+		  FROM 
+		  guanai_education_info 
+		  WHERE id = #{InfoId}
+		  AND (SchoolID =#{schoolId} OR SchoolID =0)
+	</select>
+	
+	<select id="findEducationInfoPictures" parameterType="integer" resultType="string">
+		select
+			picture_url
+		from
+			guanai_education_picture_info
+		where
+			info_id=#{InfoId}
+		and
+			type=0
+	</select>
+
+	<!-- <select id="findPicture" parameterType="pd" resultType="pd">
+		select 
+			p.picture_url
+		from
+			guanai_education_info i,
+			guanai_education_picture_info p
+		where
+			i.openId=p.info_id
+		and
+			p.info_id=#{infoId}
+	</select> -->
+
+<!-- 获取用户IcNo -->
+	<select id="findIcNo" parameterType="pd" resultType="pd">
+	SELECT
+		stu.IcNo,
+		stu.StudentId
+	FROM
+		qry_stuparent_info par,
+		qry_student_info stu,
+		t_user_weixin topen
+	WHERE
+		par.StudentId = stu.StudentId
+	AND topen.uw_parent_id = par.ParentId
+	AND topen.uw_open_id = #{openId}
+	</select>
+</mapper>

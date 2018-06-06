@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserEditMapper">
+	
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>  
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd" flushCache="false">
+		update  SYS_USER
+			set USERNAME				= #{USERNAME},
+				NAME 					= #{NAME},
+				EMAIL					= #{EMAIL},
+				PHONE					= #{PHONE},
+				BZ						= #{BZ}
+			where 
+				USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 通过user_id获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			head_photo,<!-- 头像 -->
+			nickname,<!-- 昵称 -->
+			autograph,<!-- 个性签名 -->
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			clientid,<!-- 设备表示 -->
+			equipment_type,<!-- 设备类别 -->
+			EMAIL,
+			PHONE,
+			BZ,
+			area_id,<!-- 所属农场 -->
+			messagecount,<!-- 信息数量 -->
+			info_state,<!-- 详细提醒状态 -->
+			sms_state,<!-- 短信提醒状态 -->
+			email_state<!-- 邮箱提醒状态 -->
+		from 
+			SYS_USER
+		where 
+			USER_ID = #{USER_ID}
+	</select>
+</mapper>

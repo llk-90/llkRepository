@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="QryInterfaceMapper">
+
+<insert id="InsertTownInfo" parameterType="pd">
+	 INSERT INTO qry_town(
+	 	CityId,
+	 	TownId,
+	 	TownName,
+	 	Code,
+	 	Sequence,
+	 	ModifyTime
+	 ) VALUES (
+	 	#{CityId},
+	 	#{TownId},
+	 	#{TownName},
+	 	#{Code},
+	 	#{Sequence},
+	 	#{ModifyTime}
+	 )
+	 
+	</insert>
+	<select id="findSchoolId" parameterType="pd" resultType="int">
+			SELECT
+				SchoolID
+			FROM
+				qry_batch_school
+	</select>
+	<insert id="insertClassInfo" parameterType="pd">
+
+		INSERT IGNORE INTO
+		qry_batch_class (
+		ClassId,
+		SchoolId,
+		GradeId,
+		GradeName,
+		Bank,
+		ClassName,
+		ClassType,
+		ModifyTime
+		)
+		VALUES
+		( #{ClassID},
+		#{SchoolID},
+		#{GradeID},
+		#{GradeName},
+		#{Bank},
+		#{ClassName},
+		#{ClassType},
+		#{ModifyTime}
+		)
+
+	</insert>
+	<select id="findTownId" parameterType="pd" resultType="int">
+		SELECT
+			TownId
+		FROM
+			qry_town
+	</select>
+	<insert id="insertSchoolInfo" parameterType="pd">
+		INSERT IGNORE INTO
+			qry_batch_school (
+			SchoolID,
+			SchoolName,
+			Section,
+			TownId,
+			TownName,
+			AreaId,
+			AreaName,
+			CityId,
+			ModifyTime
+		)
+		VALUES(
+			#{SchoolID},
+			#{SchoolName},
+			#{Section},
+			#{TownId},
+			#{TownName},
+			#{AreaID},
+			#{AreaName},
+			#{CityId},
+			#{ModifyTime}
+		)
+
+	</insert>
+	
+	<select id="findUserId" resultType="pd">
+		select
+		bs.CityId as cityId, bc.ClassId as classId from qry_batch_class bc,
+		qry_batch_school bs where bc.SchoolId = bs.SchoolId 
+	</select>
+	
+	<insert id="insertStudentsInfo" parameterType="pd">
+	    INSERT INTO qry_student_info (
+			SchoolId,
+			ClassId,
+			StudentId,
+			LoginName,
+			SeqStudent,
+			UserName,
+			IcNo,
+			Sex,
+			ModifyTime
+		)
+		VALUES
+		(	#{schoolId},
+			#{classId}, 
+			#{studentId}, 
+			#{loginName}, 
+			#{studentSeq}, 
+			#{userName}, 
+			#{icNo}, 
+			#{sex},
+			#{ModifyTime}
+		)
+	</insert>
+
+	<select id="findSchoolAddInfo" resultType="pd">
+		SELECT
+		CityId,TownId 
+		FROM qry_town
+	</select>
+	
+	<update id="updateSchoolInfo" parameterType="pd">
+		UPDATE qry_batch_school
+		SET 
+		SchoolName = #{SchoolName},
+		Section = #{Section},
+		TownId = #{TownId},
+		TownName = #{TownName},
+		AreaId = #{AreaID},
+		AreaName = #{AreaName},
+		CityId = #{CityId},
+		ModifyTime = #{ModifyTime}
+		WHERE
+		SchoolID = #{SchoolID}
+		
+	</update>
+	
+	<delete id="deleteSchoolInfo" parameterType="pd">
+		DELETE FROM qry_batch_school WHERE SchoolID = #{SchoolID}
+		
+	</delete>
+	
+	<select id="findClassAddInfo" resultType="pd">
+		SELECT
+		CityId,SchoolId 
+		FROM qry_batch_school
+	</select>
+	
+	<update id="updateClassInfo" parameterType="pd">
+		UPDATE qry_batch_class
+		SET 
+		SchoolId = #{SchoolID},
+		GradeId = #{GradeID},
+		GradeName = #{GradeName},
+		Bank = #{Bank},
+		ClassName = #{ClassName},
+		ClassType = #{ClassType},
+		ModifyTime = #{ModifyTime}
+		WHERE
+		ClassId = #{ClassID}
+		
+	</update>
+	
+	<delete id="deleteClassInfo" parameterType="pd">
+		DELETE FROM qry_batch_class WHERE ClassId = #{ClassID}
+		
+	</delete>
+	
+	<!-- 更新qry_town数据-->
+	<update id="updateTown" parameterType="pd">
+		UPDATE
+		qry_town
+		SET
+		TownId = #{TownId},
+		CityId = #{CityId},
+		Code = #{Code},
+		Sequence = #{Sequence},
+		ModifyTime = #{ModifyTime}
+		WHERE
+		TownId = #{TownId}
+	</update>
+
+	<!-- 删除qry_town数据 -->
+	<delete id="deleteTown" parameterType="pd">
+		DELETE FROM qry_town WHERE TownId = #{TownId}
+	</delete>
+	
+	<!-- 更新qry_Student数据-->
+	<update id="updateStudent" parameterType="pd">
+		UPDATE
+		qry_student_info
+		SET
+		SchoolId = #{schoolId},
+		ClassId = #{classId},
+		StudentId = #{studentId},
+		LoginName = #{loginName},
+		SeqStudent = #{studentSeq},
+		UserName = #{userName},
+		IcNo = #{icNo},
+		Sex = #{sex},
+		ModifyTime = #{ModifyTime}
+		WHERE
+		StudentId = #{studentId}
+	</update>
+
+	<!-- 删除qry_Student数据 -->
+	<delete id="deleteStudent" parameterType="pd">
+		DELETE FROM qry_student_info WHERE StudentId = #{studentId}
+	</delete>
+	<select id="findChticNo"  resultType="int">
+			SELECT
+				ChticNo+1
+			FROM
+				characteristic_num
+			WHERE 
+				ID = 1
+			for update
+	</select>
+	<update id="updateChticNo" parameterType="pd">
+		UPDATE
+		characteristic_num
+		SET
+		ChticNo = #{chiticNo}
+		WHERE
+		ID = 1
+	</update>
+	<select id="findCityIds"  resultType="pd">
+			SELECT
+				CityId
+			FROM
+				qry_city_info
+	</select>
+	
+	<insert id="insertTstudent" parameterType="pd">
+	    INSERT INTO t_student (
+			s_stu_no,
+			s_phone,
+			s_name,
+			s_age,
+			s_sex,
+			s_addr,
+			s_zone_id,
+			s_device_e_id,
+			s_device_u_id,
+			s_birthday,
+			s_status,
+			s_start_time,
+			s_end_time
+		)
+		VALUES
+		(	#{studentId},
+			null,
+			#{userName},
+		    null,
+			#{sex},
+			null,
+			#{classId},
+			#{icNo},
+			#{icNo},
+			null,
+			"1",
+			SYSDATE(),
+			SYSDATE()
+		)
+	</insert>
+	
+	<!-- 查找qry_batch_school学校id-->
+	<select id="findPaSchoolID" resultType="pd">
+		SELECT
+		CityId,
+		SchoolID
+		FROM
+		qry_batch_school
+	</select>
+	
+	<!-- 插入qry_stuparent_info数据-->
+	<insert id="insertParent" parameterType="pd">
+    INSERT INTO qry_stuparent_info (
+			StudentId,
+			ParentId,
+			ParLoginName,
+			ParUserName,
+			ParHeadImage,
+			ParEMail,
+			ParIcNo,
+			AccountId,
+			ModifyTime
+		)
+		VALUES
+		(	#{StuUserId},
+			#{UserId},
+			#{LoginName},
+			#{UserName},
+			#{HeadImage},
+			#{EMail},
+			#{IcNo},
+			#{AccountId},
+			#{ModifyTime}
+		)
+		
+	</insert>
+	
+	<!-- 更新qry_stuparent_info数据 -->
+	<update id="updateParent" parameterType="pd">
+		UPDATE
+			qry_stuparent_info
+		SET
+			StudentId = #{StuUserId},
+	        ParentId = #{UserId},
+	        ParLoginName = #{LoginName},
+	        ParUserName = #{UserName},
+	        ParHeadImage = #{HeadImage},
+	        ParEMail = #{EMail},
+	        ParIcNo = #{IcNo},
+	        AccountId = #{AccountId},
+	        ModifyTime = #{ModifyTime}
+	    WHERE
+	        ParentId = #{UserId}
+	        and
+	        StudentId = #{StuUserId}
+	</update>
+	
+	<!-- 删除qry_stuparent_info数据 -->
+	<delete id="deleteParent" parameterType="pd">
+		DELETE FROM 
+			qry_stuparent_info 
+		WHERE 
+			ParentId = #{UserId}
+			and
+	        StudentId = #{StuUserId}
+	</delete>
+	
+	<!-- 更新qry_stuparent_info数据 -->
+	<update id="updateStudentPar" parameterType="pd">
+		UPDATE
+			qry_stuparent_info
+		SET
+	        StudentSeq = #{studentSeq},
+	        UserName = #{userName},
+	        LoginName = #{loginName},
+	        IcNo = #{icNo},
+	        Sex = #{sex}
+	    WHERE
+	        StudentId = #{studentId}
+	</update>
+</mapper>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DistrictMapper">
+	
+	<!-- 列表 -->
+	<select id="datalist" parameterType="pd" resultType="pd">
+		SELECT
+		*
+		FROM
+		(
+		SELECT
+		a.ClassId id
+		,a.ClassName name
+		,a.SchoolId pId
+		FROM
+		qry_batch_class a
+		UNION ALL
+		SELECT
+		b.SchoolID id
+		,b.SchoolName name
+		,b.TownId pId
+		FROM
+		qry_batch_school b
+		UNION ALL
+		SELECT
+		c.TownId id
+		,c.TownName name
+		,c.CityId pId
+		FROM
+		qry_town c
+		UNION ALL
+		SELECT
+		d.CityId id
+		,d.CityName name
+		,d.ID pId 
+		FROM
+		qry_city_info d
+		) tmp 
+		ORDER BY tmp.`name`
+	</select>
+
+	<!-- 获取登录区域经理用户区域ID -->
+	<select id="getZoneIdByUserId" parameterType="String" resultType="String">   
+		SELECT
+		Z.Z_ID
+		FROM
+		T_ZONE Z
+		INNER JOIN T_USER_AREA_MANAGER T ON
+		T.UAM_ZONE_ID = Z.Z_ID
+		AND
+		T.UAM_USER_ID =(SELECT K.PARENT_ID
+       FROM SYS_USER X, 
+             SYS_USER K
+       WHERE X.PARENT_ID=K.USER_ID AND X.USER_ID=#{USER_ID})
+	</select>
+
+	<!-- 	检验节点名称是否存在    2016/9/2 yc修改(增加z_parent_id条件)-->
+	<select id="checkZname" parameterType="pd" resultType="pd">
+		SELECT
+		    t.z_id,
+		    t.z_name
+		FROM t_zone t
+		WHERE t.z_name = #{z_name}
+		and t.z_parent_id = #{z_parent_id}	
+	</select>
+	
+	<select id="listQuYu" resultType="pd">
+		select
+		a.z_id,
+		a.z_name
+		from
+		t_zone AS a
+		where
+		z_parent_id = #{z_parent_id}
+	</select>
+
+	<select id="listfarm" resultType="pd">
+		select
+		z_id,
+		z_name
+		from
+		t_zone
+		where
+		z_parent_id = '0'
+	</select>
+
+	<select id="findColumnById" parameterType="page" resultType="pd">
+		SELECT
+		a.z_id,
+		a.z_name,
+		a.z_parent_id as parentID,
+		a.column_bm AS
+		population
+		FROM
+		t_zone AS a
+	</select>
+
+	<!-- 通过id查询树数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+		a.z_id,
+		a.z_name,
+		a.z_parent_id,
+		a.z_order,
+		a.z_type
+		FROM
+		t_zone AS a
+		WHERE
+		a.z_id =
+		#{z_id}
+	</select>
+
+	<!-- 查询学生 -->
+	<select id="listid" parameterType="String" resultType="String">
+		SELECT
+		s_id
+		FROM
+		t_student
+		WHERE
+		s_zone_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+    <!-- 查询节点下是否有学生 -->
+	<select id="findStuByZoneId" parameterType="pd" resultType="pd">
+		SELECT
+		    s.s_id
+		FROM
+		    t_student s
+		WHERE
+		    s.s_zone_id IN (
+		        SELECT
+		            class.z_id class_id
+		        FROM
+		            t_zone area
+		        INNER JOIN t_zone school ON school.z_parent_id = area.z_id
+		        INNER JOIN t_zone grade ON grade.z_parent_id = school.z_id
+		        INNER JOIN t_zone class ON class.z_parent_id = grade.z_id
+		        WHERE
+		            1 = 2
+		        <if test="z_type == 2">
+		          OR school.z_id = #{z_id}
+		        </if>
+		        <if test="z_type == 3">
+		          OR grade.z_id = #{z_id}
+		        </if>
+		        <if test="z_type == 4">
+		          OR class.z_id = #{z_id}
+		        </if>
+		    )
+	</select>
+
+
+	<!-- 查询老师 -->
+	<select id="listteacherid" parameterType="String" resultType="String">
+		SELECT
+		ut_user_id
+		FROM
+		t_user_teacher
+		WHERE
+		ut_zone_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<!-- 查询区域经理 -->
+	<select id="listareaid" parameterType="String" resultType="String">
+		SELECT
+		uam_user_id
+		FROM
+		t_user_area_manager
+		WHERE
+		uam_zone_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+</mapper>

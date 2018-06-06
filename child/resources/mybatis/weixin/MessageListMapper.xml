@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MessageListMapper">
+
+	<!-- 留言列表 -->
+	<select id="list" parameterType="pd" resultType="pd">
+		SELECT
+		ml.content lm_content
+		,ml.send_user_id lm_send_user_id
+		,createtime
+		,DATE_FORMAT(createtime,'%H:%i') AS create_time
+		,ml.photo
+	    ,ml.name
+	    ,ml.sname
+		FROM(
+		SELECT
+		 m.lm_id id
+		,m.lm_content content
+		,m.lm_send_user_id send_user_id
+		,m.lm_state state
+		,m.create_time createtime
+		,u.head_photo photo
+	    ,u.NAME name
+	    ,st.s_name sname
+		FROM
+		t_leave_message m  left JOIN sys_user  u  on m.lm_send_user_id=u.user_id
+        left JOIN t_user_student tu on tu.us_user_id=u.USER_ID 
+        left JOIN t_student st on st.s_id=tu.us_stu_id 
+		WHERE
+		m.lm_receive_user_id =#{lm_receive_user_id}
+		) ml
+		WHERE 1=1
+		GROUP BY
+		send_user_id
+		HAVING MAX(createtime)
+
+	</select>
+	<!-- 查询 未读信息数量 -->
+	<select id="listcount" resultType="pd">
+		SELECT
+		IFNULL(COUNT(ml.id),0)
+		msg_count
+		,ml.send_user_id lm_send_user_id
+		FROM(
+		SELECT
+		m.lm_id id
+		,m.lm_content content
+		,m.lm_send_user_id send_user_id
+		,m.lm_receive_user_id receive_user_id
+		,m.lm_state state
+		FROM
+		t_leave_message m
+		WHERE m.lm_receive_user_id = #{lm_receive_user_id}
+		)
+		ml
+		WHERE ml.state = 0
+		GROUP BY ml.send_user_id
+	</select>
+	<!-- 查询用户类型-->
+	<select id="getUserid" parameterType="pd" resultType="pd">
+		select u.user_id,u.u_type,u.head_photo from sys_user  u  where u.USER_ID= #{user_id}
+	</select>
+	
+	<select id="getUseridte"  parameterType="pd" resultType="pd">
+	    select u.user_id,u.u_type,u.head_photo from sys_user  u  LEFT JOIN t_user_weixin w on u.USER_ID=w.uw_user_id  where 1=1 
+	    <if test="openid != null and openid != ''">
+		 and w.uw_open_id=#{openid} 
+		 and w.u_type=3
+		</if>
+	     <if test="user_id != null and user_id != ''">
+	     and u.USER_ID= #{user_id}
+		</if>
+		GROUP BY u.user_id
+	</select>
+	
+	<!-- 查询家长的孩子班主任id-->
+	<select id="getreceiveid" parameterType="pd" resultType="pd">
+	select ts.user_id,ts.name from sys_user  u  
+	left join t_user_student t on u.USER_ID=t.us_user_id
+	left join t_student st on t.us_stu_id=st.s_id
+	LEFT JOIN t_user_teacher tc on st.s_zone_id=tc.ut_zone_id
+	left join sys_user ts on tc.ut_user_id=ts.USER_ID
+	where u.USER_ID=#{user_id}
+	</select>
+	
+
+	<!-- 留言内容新增 -->
+	<insert id="messageSave" parameterType="pd">
+		insert into
+		t_leave_message(
+		lm_send_user_id,
+		lm_receive_user_id,
+		lm_content,
+		lm_state,
+		create_time
+		)
+		values(
+		#{lm_send_user_id},
+		#{lm_receive_user_id},
+		#{lm_content},
+		0,
+		SYSDATE()
+		)
+	</insert>
+
+	<!-- 留言内容列表 -->
+	<select id="contentList" parameterType="pd" resultType="pd">
+		SELECT
+		lm.lm_content,
+		DATE_FORMAT(lm.create_time,'%H:%i') AS create_time
+		,lm.lm_send_user_id
+		,u.head_photo photo
+		FROM t_leave_message lm  LEFT JOIN sys_user   u  on lm.lm_send_user_id=u.user_id
+		WHERE
+		(lm.lm_receive_user_id
+		= #{lm_send_user_id} AND lm.lm_send_user_id = #{lm_receive_user_id})
+		OR
+		(lm.lm_receive_user_id = #{lm_receive_user_id} AND
+		lm.lm_send_user_id = #{lm_send_user_id})
+		ORDER
+		BY lm.create_time
+	</select>
+	<!-- 修改未读信息 -->
+	<update id="messageUpdate" parameterType="pd">
+		UPDATE t_leave_message
+		SET lm_state = 1 WHERE
+		lm_receive_user_id = #{lm_send_user_id}
+		and
+		lm_send_user_id=#{lm_receive_user_id}
+
+	</update>
+
+</mapper>

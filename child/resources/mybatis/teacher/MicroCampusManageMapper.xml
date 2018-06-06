@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MicroCampusManageMapper">
+	
+	<select id="findSchoolId" parameterType="String" resultType="String">
+		select school_id from sys_user where USER_ID=#{userId}
+	</select>
+	
+	<!-- 获取教育资讯列表 -->
+	<select id="findMicroCampuslistPage" parameterType="pd" resultType="pd">
+		select
+			id,
+			title,
+			content,
+			create_time,
+			case type when 0 then '学校介绍' 
+						when 1 then '校园资讯'
+						when 2 then '校园风采'
+						when 3 then '学生活动'
+						when 4 then '教师风采'
+						when 5 then '招生信息'
+						when 6 then '家庭教育'			
+			end as infoType,
+			case is_top when 0 then '否' when 1 then '是' end as isTop,
+			case info_state when 0 then '停用' when 1 then '正常' end as infoState
+		from
+			guanai_microcampus_info
+		where 1=1
+		and SchoolID = #{pd.schoolId}
+		<if test="pd.Title != null and pd.Title !=''">
+			and title LIKE '%${pd.Title}%'
+		</if>
+		<if test="pd.StateTop != null and pd.StateTop !='' and pd.StateTop ==1">
+			and is_top = 1
+		</if>
+		<if test="pd.StateTop != null and pd.StateTop !='' and pd.StateTop ==0">
+			and is_top = 0
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==0">
+			and type = 0
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==1">
+			and type = 1
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==2">
+			and type = 2
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==3">
+			and type = 3
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==4">
+			and type = 4
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==5">
+			and type = 5
+		</if>
+		<if test="pd.Type != null and pd.Type !='' and pd.Type ==6">
+			and type = 6
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='week'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=7]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='month'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=30]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='halfYear'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=183]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='year'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)<=365]]>
+		</if>
+		<if test="pd.Time != null and pd.Time !='' and pd.Time =='overYear'">
+			and <![CDATA[TO_DAYS(now())-TO_DAYS(create_time)>365]]>
+		</if>
+		<if test="pd.InfoState != null and pd.InfoState !='' and pd.InfoState ==1">
+			and info_state = 1
+		</if>
+		<if test="pd.InfoState != null and pd.InfoState !='' and pd.InfoState ==0">
+			and info_state = 0
+		</if>
+	</select>
+	
+	
+	<!-- 根据id找到资讯信息 -->
+	<select id="findByMicroCampusId" parameterType="pd" resultType="pd">
+		select
+			id,
+			title,
+			content,
+			icon,
+			is_top,
+			info_state
+		from
+			guanai_microcampus_info
+		where
+			id=#{id}
+	</select>
+	
+	<!-- 根据id删除该info -->
+	<delete id="deleteById" parameterType="pd" flushCache="false">
+		delete from
+			guanai_microcampus_info
+		where
+			id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 添加新资讯 -->
+	<insert id="newMicroCampus" parameterType="pd">
+		insert into guanai_microcampus_info(
+			SchoolID,
+			title,
+			author,
+			content,
+			icon,
+			type,
+			is_top,
+			info_state,
+			create_time
+		)values(
+			#{schoolId},
+			#{title},
+			#{author},
+			#{content},
+			#{imageUrl},
+			#{Type},
+			#{StateTop},
+			#{InfoState},
+			SYSDATE()
+		)
+	</insert>
+	
+	<!-- 编辑封面 -->
+	<update id="editIcon" parameterType="pd" flushCache="false">
+		update guanai_microcampus_info set icon=#{imageUrl} where id=#{id}
+	</update>
+	
+	<!-- 编辑资讯信息 -->
+	<update id="editMicroCampus" parameterType="pd" flushCache="false">
+		update guanai_microcampus_info set 
+		title=#{title},
+		content=#{content},
+		is_top=#{StateTop},
+		info_state=#{InfoState}
+		 where id=#{id}
+	</update>
+	
+</mapper>

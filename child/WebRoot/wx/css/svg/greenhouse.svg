@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width="30px" height="30px" viewBox="0 0 200 200"><defs><style type="text/css"><![CDATA[
+@font-face {
+  font-family: "ifont";
+  src: url("//at.alicdn.com/t/font_1442373896_4754455.eot?#iefix") format("embedded-opentype"), url("//at.alicdn.com/t/font_1442373896_4754455.woff") format("woff"), url("//at.alicdn.com/t/font_1442373896_4754455.ttf") format("truetype"), url("//at.alicdn.com/t/font_1442373896_4754455.svg#ifont") format("svg");
+}
+
+]]></style></defs><g class="transform-group"><g transform="scale(0.1953125, 0.1953125)"><path d="M544 224l0-64 64 0c17.6 0 32-14.4 32-32 0-17.6-14.4-32-32-32L416 96c-17.6 0-32 14.4-32 32 0 17.6 14.4 32 32 32l64 0c0 0 0 67.2 0 64C212.8 240 0 464 0 736c0 25.6 0 14.4 0 32 0 17.6 14.4 32 32 32l960 0c17.6 0 32-14.4 32-32 0-17.6 0-4.8 0-32C1024 464 811.2 240 544 224zM64 736c0-248 200-448 448-448 248 0 448 200 448 448L64 736zM992 864 32 864c-17.6 0-32 14.4-32 32s14.4 32 32 32l960 0c17.6 0 32-14.4 32-32S1009.6 864 992 864z" fill="#272636"></path></g></g></svg>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PolicyMapper">
+	
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into tb_release(
+		   service_TYPE,
+		    service_NAME,
+			service_content,	
+			state,
+			Create_TIME	
+		) values (
+		    #{service_TYPE},
+			#{service_NAME},	
+			#{service_content},
+			#{state},
+			SYSDATE()
+		)
+</insert> 
+		<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from tb_release
+		where
+		service_ID in
+		<foreach item="service_ID" index="index" collection="array" open="("
+			separator="," close=")">
+			#{service_ID}
+		</foreach>
+	</delete>
+	
+	<!-- 修改 -->
+	<update id="update" parameterType="pd">
+		update  tb_release 
+			set 
+			service_TYPE =#{service_TYPE},
+		    service_NAME = #{service_NAME},
+			service_content = #{service_content},	
+			state = #{state},
+			Create_TIME	=SYSDATE()
+		where 
+			service_ID = #{service_ID}
+	</update>
+	<!-- 修改 -->
+	<update id="updateState" parameterType="pd">
+		update tb_release
+		set
+		state = 0
+		WHERE
+		service_type = 0
+	</update>
+	<update id="updateType" parameterType="pd">
+		update tb_release
+		set
+		state = 0
+		WHERE
+		service_TYPE = #{service_TYPE}
+	</update>
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select  DISTINCT
+		  	a.service_TYPE,
+			a.service_ID,
+			a.service_NAME,
+			a.service_content,	
+			a.state,
+			a.Create_TIME
+		from 
+			tb_release a
+		where
+		       1=1
+		<if test="pd.service_NAME != null and pd.service_NAME != ''">
+			AND a.service_NAME LIKE '%${pd.service_NAME}%'
+		</if>
+		<if test="pd.service_TYPE != null and pd.service_TYPE != ''">
+			AND a.service_TYPE = '${pd.service_TYPE}'
+		</if>
+		order by a.Create_TIME desc
+	</select>
+	<!-- 查询一条数据) -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select DISTINCT
+		   a.service_TYPE,
+			a.service_ID,
+			a.service_NAME,
+			a.service_content,	
+			a.state,
+			a.Create_TIME
+		from 
+			tb_release a
+		where
+		    a.service_ID = #{service_ID}
+		     
+	</select>
+	<!-- 查询发布状态) -->
+	<select id="findstate" parameterType="pd" resultType="pd">
+	select count(state )
+	from
+	tb_release a
+	where
+	state=1 AND
+	a.service_TYPE = 0
+		     
+	</select>
+	
+</mapper>

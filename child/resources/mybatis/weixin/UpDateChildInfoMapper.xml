@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UpDateChildInfoMapper">
+
+<select id="findchild" parameterType="string" resultType="pd">
+	   SELECT
+			i.ibaby_s_img,
+			i.ibaby_s_name,
+			i.ibaby_s_sex,
+			i.ibaby_equ_accout,
+			i.ibaby_equ_password,
+			i.ibaby_phone_num,
+			i.ibaby_imei_code,
+			i.ibaby_ic_code_type,
+			i.ibaby_ic_code,
+			i.ibaby_ic_name
+		FROM
+			ibaby_equipment AS i
+		where
+			i.ibaby_s_id = #{stu_id}
+</select>
+
+ <update id="updeChild" parameterType="pd">
+		UPDATE ibaby_equipment 
+		SET
+		
+			ibaby_s_img = #{imgSrc},
+			ibaby_s_name = #{s_name},
+			ibaby_s_sex = #{sex},
+			ibaby_equ_accout = #{equAccount},
+			ibaby_equ_password = #{equPassword},
+			ibaby_phone_num = #{phoneNum},
+			ibaby_imei_code = #{imeiCode},
+			ibaby_imei_code_old = #{imeiCodeOld},
+			ibaby_ic_code_type = #{icCodeType},
+			ibaby_ic_code = #{icCode},
+			ibaby_ic_code_old = #{icCodeOld},
+			ibaby_ic_name = #{icName},
+			ibaby_update_date = #{update_time}
+		
+		WHERE
+			ibaby_s_id = #{stu_id}
+</update> 
+	
+</mapper>
+	

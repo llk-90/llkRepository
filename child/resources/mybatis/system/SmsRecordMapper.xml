@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SmsRecordMapper">
+	<select id="datalistPage" parameterType="pd" resultType="pd">
+	SELECT
+		s.sms_id,
+		date_format(s.sms_time,'%Y-%m-%d %T') as sms_time,
+		s.sms_content,
+		s.sms_count
+		FROM tb_smsrecord s
+		 WHERE 1=1
+		<if test="pd.sms_time_start != null and pd.sms_time_start != ''">
+			<![CDATA[AND  DATE_FORMAT(s.sms_time, '%Y-%m-%d') >= DATE_FORMAT(#{pd.sms_time_start},'%Y-%m-%d') ]]>     
+		</if>
+		<if test="pd.sms_time_end != null and pd.sms_time_end != ''">
+			<![CDATA[AND  DATE_FORMAT(s.sms_time, '%Y-%m-%d') <= DATE_FORMAT(#{pd.sms_time_end},'%Y-%m-%d')]]>
+		</if>
+		ORDER BY s.sms_time desc
+	</select>
+	
+	
+	<!-- 获取详情 数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+	SELECT
+		f.smsinfo_phone,
+		f.smsinfo_record,
+		date_format(f.smsinfo_time,'%Y-%m-%d %T') as smsinfo_time,
+		date_format(f.smsinfo_endtime,'%Y-%m-%d %T') as smsinfo_endtime,
+		f.smsinfo_id,
+		f.smsrecord_id
+		FROM  tb_smsrecord_info f
+	where smsrecord_id=#{sms_id}	
+		</select>
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from tb_smsrecord
+		where 
+			sms_id in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	<!-- 短信记录主表添加-->
+	<insert id="smsrecordsave" parameterType="pd">
+		insert into tb_smsrecord(
+		sms_time,
+		sms_content,
+		sms_count,
+		create_time
+		)
+		values(
+		SYSDATE(),
+		#{sms_content},
+		#{sms_count},
+		SYSDATE()
+		)
+	</insert>
+	<!-- 短信记录子表添加-->
+	<insert id="smsrecordinfosave" parameterType="pd">
+		insert into tb_smsrecord_info(
+		smsrecord_id,
+		smsinfo_phone,
+		smsinfo_time,
+		smsinfo_endtime
+		)
+		values(
+		#{smsrecord_id},
+		#{smsinfo_phone},
+		SYSDATE(),
+		SYSDATE()
+		)
+	</insert>
+	<!-- 短信主表id查询-->
+	<select id="lastid" resultType="int">
+	select t.sms_id  from tb_smsrecord t where t.create_time=(select max(d.create_time) from tb_smsrecord d)
+	</select>
+	
+</mapper>

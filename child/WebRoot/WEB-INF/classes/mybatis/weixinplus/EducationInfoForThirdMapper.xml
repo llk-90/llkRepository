@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EducationInfoMapperforthird">
+<!-- 获取Banner列表 -->
+	<select id="findBannerImage" resultType="pd">
+		select 
+			id,
+			picture_url,
+			move_url,
+			is_start,
+			create_time
+		from
+			guanai_education_banner_info
+		where
+			is_start=1
+			AND (SchoolID =#{schoolId} OR SchoolID =0)
+	</select>
+	
+	<!-- 获取资讯列表 -->
+	<select id="findEducationInfoList" parameterType="pd" resultType="pd">
+		SELECT 
+		  guanai_education_info.title,
+		  guanai_education_info.content,
+		  guanai_education_info.icon,
+		  guanai_education_info.is_top,
+		  guanai_education_info.create_time,
+		  guanai_education_info.id,
+		  guanai_education_info.author 
+		FROM 
+		guanai_education_info 
+		WHERE 
+		info_state = 1
+		AND (SchoolID =#{schoolId} OR SchoolID =0)
+	</select>
+<!-- 通过id获取资讯详情 -->
+	<select id="findEducationInfoById" parameterType="pd" resultType="pd">
+		SELECT 
+		  guanai_education_info.title,
+		  guanai_education_info.content,
+		  guanai_education_info.icon,
+		  guanai_education_info.is_top,
+		  guanai_education_info.create_time,
+		  guanai_education_info.id,
+		  guanai_education_info.author 
+		  FROM 
+		  guanai_education_info 
+		  WHERE id = #{InfoId}
+		  AND (SchoolID =#{schoolId} OR SchoolID =0)
+	</select>
+	
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BannerManageMapper">
+	
+	<!-- banner列表 -->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+		SELECT
+			*
+		FROM
+			guanai_education_banner_info
+	</select>
+	
+	<!-- 查询schoolId -->
+	<select id="findSchoolId" parameterType="String" resultType="String">
+		select school_id from sys_user where USER_ID=#{userId}
+	</select>
+	
+	<!-- 添加轮播图 -->
+	<insert id="addBannerPicture" parameterType="pd">
+		insert into guanai_education_banner_info(
+			SchoolID,
+			picture_url,
+			move_url,
+			create_time
+		)
+		values(
+			#{schoolId},
+			#{imageUrl},		
+			#{move_url},
+			SYSDATE()
+		)
+	</insert>
+	
+	<!-- 根据id删除该banner -->
+	<delete id="deleteById" parameterType="pd" flushCache="false">
+		delete from
+			guanai_education_banner_info
+		where
+			id=#{id}
+	</delete>
+	
+	<!-- 更改迁移url -->
+	<update id="editMoveUrl" parameterType="pd" flushCache="false">
+		update guanai_education_banner_info set move_url=#{moveUrl} where id=#{id}
+	</update>
+	
+	
+</mapper>

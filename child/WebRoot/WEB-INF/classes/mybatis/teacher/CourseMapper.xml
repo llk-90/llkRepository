@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CourseMapper">
+	
+	<!-- 区域 -->
+	<select id="reginoList" parameterType="page" resultType="pd">
+		SELECT
+		DISTINCT(z_name) AS reginoName
+		FROM
+		t_zone
+		WHERE
+		z_type= '1'
+		ORDER BY z_id DESC
+	</select>
+	
+	<!-- 学校 -->
+	<select id="schoolList" parameterType="page" resultType="pd">
+		SELECT
+		DISTINCT(z_name) AS schoolName
+		FROM
+		t_zone
+		WHERE
+		z_type= '2'
+		ORDER BY z_id DESC
+	</select>
+	
+	<!-- 年级 -->
+	<select id="jibuList" parameterType="page" resultType="pd">
+		SELECT
+		DISTINCT(z_name) AS jibuName
+		FROM
+		t_zone
+		WHERE
+		z_type= '3'
+		ORDER BY z_id DESC
+	</select>
+	
+	<!-- 班级 -->
+	<select id="classList" parameterType="page" resultType="pd">
+		SELECT
+		DISTINCT(z_name) AS className
+		FROM
+		t_zone
+		WHERE
+		z_type= '4'
+		ORDER BY z_id DESC
+	</select>
+
+	<!-- 课程信息 -->
+	<select id="courseList" parameterType="pd" resultType="pd">
+		SELECT
+		c.ibaby_courseNo,
+		c.ibaby_reginoName,
+		c.ibaby_schoolName,
+		c.ibaby_jibuName,
+		c.ibaby_className,
+		c.ibaby_donot_call,		
+		DATE_FORMAT(c.ibaby_startTime_Sun,'%h:%i') as ibaby_startTime_Sun,
+		DATE_FORMAT(c.ibaby_endTime_Sun,'%h:%i') as ibaby_endTime_Sun,
+		DATE_FORMAT(c.ibaby_startTime_Mon,'%h:%i') as ibaby_startTime_Mon,
+		DATE_FORMAT(c.ibaby_endTime_Mon,'%h:%i') as ibaby_endTime_Mon,
+		DATE_FORMAT(c.ibaby_startTime_Tu,'%h:%i') as ibaby_startTime_Tu,
+		DATE_FORMAT(c.ibaby_endTime_Tu,'%h:%i') as ibaby_endTime_Tu,
+		DATE_FORMAT(c.ibaby_startTime_We,'%h:%i') as ibaby_startTime_We,
+		DATE_FORMAT(c.ibaby_endTime_We,'%h:%i') as ibaby_endTime_We,
+		DATE_FORMAT(c.ibaby_startTime_Th,'%h:%i') as ibaby_startTime_Th,
+		DATE_FORMAT(c.ibaby_endTime_Th,'%h:%i') as ibaby_endTime_Th,
+		DATE_FORMAT(c.ibaby_startTime_Fr,'%h:%i') as ibaby_startTime_Fr,
+		DATE_FORMAT(c.ibaby_endTime_Fr,'%h:%i') as ibaby_endTime_Fr,
+		DATE_FORMAT(c.ibaby_startTime_Sa,'%h:%i') as ibaby_startTime_Sa,
+		DATE_FORMAT(c.ibaby_endTime_Sa,'%h:%i') as ibaby_endTime_Sa
+		FROM ibaby_course c
+		WHERE 1=1
+		<if test="pd.reginoType == null or pd.reginoType ==''">
+		and c.ibaby_reginoName = '全部'
+		</if>
+		<if test="pd.schoolType == null or pd.schoolType ==''">
+		and c.ibaby_schoolName = '全部'
+		</if>
+		<if test="pd.jibuType == null or pd.jibuType ==''">
+		and c.ibaby_jibuName = '全部'
+		</if>
+		<if test="pd.classType == null or pd.classType ==''">
+		and c.ibaby_className = '全部'
+		</if>		
+		<if test="pd.reginoType != null and pd.reginoType !=''">
+		and c.ibaby_reginoName = #{pd.reginoType}
+		</if>
+		<if test="pd.schoolType != null and pd.schoolType !=''">
+		and c.ibaby_schoolName = #{pd.schoolType}
+		</if>
+		<if test="pd.jibuType != null and pd.jibuType !=''">
+		and c.ibaby_jibuName = #{pd.jibuType}
+		</if>
+		<if test="pd.classType != null and pd.classType !=''">
+		and c.ibaby_className = #{pd.classType}
+		</if>
+		GROUP BY c.ibaby_courseNo
+	</select>
+	
+	<!-- 通过节次查找课程时间 -->
+	<select id="findByCouId" parameterType="pd" resultType="pd">
+		SELECT 
+		c.ibaby_courseNo,
+		c.ibaby_reginoName,
+		c.ibaby_schoolName,
+		c.ibaby_jibuName,
+		c.ibaby_className,
+		DATE_FORMAT(c.ibaby_startTime_Sun,'%h:%i') as ibaby_startTime_Sun,
+		DATE_FORMAT(c.ibaby_endTime_Sun,'%h:%i') as ibaby_endTime_Sun,
+		DATE_FORMAT(c.ibaby_startTime_Mon,'%h:%i') as ibaby_startTime_Mon,
+		DATE_FORMAT(c.ibaby_endTime_Mon,'%h:%i') as ibaby_endTime_Mon,
+		DATE_FORMAT(c.ibaby_startTime_Tu,'%h:%i') as ibaby_startTime_Tu,
+		DATE_FORMAT(c.ibaby_endTime_Tu,'%h:%i') as ibaby_endTime_Tu,
+		DATE_FORMAT(c.ibaby_startTime_We,'%h:%i') as ibaby_startTime_We,
+		DATE_FORMAT(c.ibaby_endTime_We,'%h:%i') as ibaby_endTime_We,
+		DATE_FORMAT(c.ibaby_startTime_Th,'%h:%i') as ibaby_startTime_Th,
+		DATE_FORMAT(c.ibaby_endTime_Th,'%h:%i') as ibaby_endTime_Th,
+		DATE_FORMAT(c.ibaby_startTime_Fr,'%h:%i') as ibaby_startTime_Fr,
+		DATE_FORMAT(c.ibaby_endTime_Fr,'%h:%i') as ibaby_endTime_Fr,
+		DATE_FORMAT(c.ibaby_startTime_Sa,'%h:%i') as ibaby_startTime_Sa,
+		DATE_FORMAT(c.ibaby_endTime_Sa,'%h:%i') as ibaby_endTime_Sa		
+		FROM ibaby_course c
+		WHERE 
+		c.ibaby_courseNo = #{ibaby_courseNo} and
+		c.ibaby_reginoName = #{reginoType} and
+		c.ibaby_schoolName = #{schoolType} and
+		c.ibaby_jibuName = #{jibuType} and
+		c.ibaby_className = #{classType}
+		
+	</select>
+	
+	<!-- 修改课程时间 -->
+	<update id="editCourse" parameterType="pd" flushCache="false">
+		UPDATE
+		ibaby_course
+		SET
+		ibaby_startTime_Sun = STR_TO_DATE(#{ibaby_startTime_Sun},'%H:%i:%s'),
+		ibaby_endTime_Sun = STR_TO_DATE(#{ibaby_endTime_Sun},'%H:%i:%s'),
+		ibaby_startTime_Mon = STR_TO_DATE(#{ibaby_startTime_Mon},'%H:%i:%s'),
+		ibaby_endTime_Mon = STR_TO_DATE(#{ibaby_endTime_Mon},'%H:%i:%s'),
+		ibaby_startTime_Tu = STR_TO_DATE(#{ibaby_startTime_Tu},'%H:%i:%s'),
+		ibaby_endTime_Tu = STR_TO_DATE(#{ibaby_endTime_Tu},'%H:%i:%s'),
+		ibaby_startTime_We = STR_TO_DATE(#{ibaby_startTime_We},'%H:%i:%s'),
+		ibaby_endTime_We = STR_TO_DATE(#{ibaby_endTime_We},'%H:%i:%s'),
+		ibaby_startTime_Th = STR_TO_DATE(#{ibaby_startTime_Th},'%H:%i:%s'),
+		ibaby_endTime_Th = STR_TO_DATE(#{ibaby_endTime_Th},'%H:%i:%s'),
+		ibaby_startTime_Fr = STR_TO_DATE(#{ibaby_startTime_Fr},'%H:%i:%s'),
+		ibaby_endTime_Fr = STR_TO_DATE(#{ibaby_endTime_Fr},'%H:%i:%s'),
+		ibaby_startTime_Sa = STR_TO_DATE(#{ibaby_startTime_Sa},'%H:%i:%s'),
+		ibaby_endTime_Sa = STR_TO_DATE(#{ibaby_endTime_Sa},'%H:%i:%s'),
+		ibaby_donot_call = #{donotcall},
+		ibaby_update_date = SYSDATE()
+		WHERE 
+		ibaby_courseNo = #{ibaby_courseNo} and
+		ibaby_reginoName = #{reginoType} and
+		ibaby_schoolName = #{schoolType} and
+		ibaby_jibuName = #{jibuType} and
+		ibaby_className = #{classType}	
+	</update>
+	
+	<!-- 新增课程时间 -->
+	<insert id="addCourse" parameterType="pd" >
+		INSERT INTO
+		ibaby_course (
+		ibaby_reginoName,
+		ibaby_schoolName,
+		ibaby_jibuName,
+		ibaby_className,
+		ibaby_courseNo,
+		ibaby_startTime_Sun,
+		ibaby_endTime_Sun,
+		ibaby_startTime_Mon,
+		ibaby_endTime_Mon,
+		ibaby_startTime_Tu,
+		ibaby_endTime_Tu,
+		ibaby_startTime_We,
+		ibaby_endTime_We,
+		ibaby_startTime_Th,
+		ibaby_endTime_Th,
+		ibaby_startTime_Fr,
+		ibaby_endTime_Fr,
+		ibaby_startTime_Sa,
+		ibaby_endTime_Sa,
+		ibaby_donot_call,
+		ibaby_creat_date,
+		ibaby_update_date
+		)
+		VALUES 
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'1',
+		'08:00:00','08:45:00','08:00:00','08:45:00','08:00:00','08:45:00','08:00:00','08:45:00','08:00:00','08:45:00','08:00:00','08:45:00','08:00:00','08:45:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'2',
+		'09:00:00','09:45:00','09:00:00','09:45:00','09:00:00','09:45:00','09:00:00','09:45:00','09:00:00','09:45:00','09:00:00','09:45:00','09:00:00','09:45:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'3',
+		'10:15:00','11:00:00','10:15:00','11:00:00','10:15:00','11:00:00','10:15:00','11:00:00','10:15:00','11:00:00','10:15:00','11:00:00','10:15:00','11:00:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'4',
+		'11:15:00','12:00:00','11:15:00','12:00:00','11:15:00','12:00:00','11:15:00','12:00:00','11:15:00','12:00:00','11:15:00','12:00:00','11:15:00','12:00:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'5',
+		'13:00:00','13:45:00','13:00:00','13:45:00','13:00:00','13:45:00','13:00:00','13:45:00','13:00:00','13:45:00','13:00:00','13:45:00','13:00:00','13:45:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(		
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'6',
+		'14:00:00','14:45:00','14:00:00','14:45:00','14:00:00','14:45:00','14:00:00','14:45:00','14:00:00','14:45:00','14:00:00','14:45:00','14:00:00','14:45:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'7',
+		'15:15:00','16:00:00','15:15:00','16:00:00','15:15:00','16:00:00','15:15:00','16:00:00','15:15:00','16:00:00','15:15:00','16:00:00','15:15:00','16:00:00',
+		#{donotcall},SYSDATE(),SYSDATE()),
+		(
+		CASE #{reginoType} WHEN '' THEN '全部' ELSE #{reginoType} END,
+		CASE #{schoolType} WHEN '' THEN '全部' ELSE #{schoolType} END,
+		CASE #{jibuType} WHEN '' THEN '全部' ELSE #{jibuType} END,
+		CASE #{classType} WHEN '' THEN '全部' ELSE #{classType} END,
+		'8',
+		'16:15:00','17:00:00','16:15:00','17:00:00','16:15:00','17:00:00','16:15:00','17:00:00','16:15:00','17:00:00','16:15:00','17:00:00','16:15:00','17:00:00',
+		#{donotcall},SYSDATE(),SYSDATE());
+		
+	</insert>
+	
+</mapper>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<!--标准mui.css-->
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+		<!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+        <link rel="stylesheet" href="../../css/list-active.css" />
+		<style>
+		
+			.btn {
+				border: 0;
+				background-color: #FF999A;
+				color: #FFFFFF;
+				float: right;
+				margin-right: 5%;
+			}
+			.mui-content ul{
+            	background-color: #3BA05C;
+            }
+            .mui-content h4,label{
+            	font-weight: 500; 
+            	color: #FFFFFF;
+            }
+            .mui-navigate-right:after{
+            	color: #FFFFFF;
+            }
+		</style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<span class="mui-btn-link mui-pull-right" id="add" style="color: #FFFFFF;">新增</span>
+			<h2 class="mui-title">地址管理</h2>
+		</header>
+			<div class="mui-content">
+			<ul class="mui-table-view">
+				 <li class="mui-table-view-cell">
+    				<a class="mui-navigate-right">
+	                    <h4>Sarah Green</h4>
+	                    <h4 style="padding-top: 5px;">13333333333</h4>
+	                    <label style="font-size: larger;">山西省 太原市 小店区 北京路218号</label>
+	               </a>
+				 </li>
+			</ul>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			
+			//打开新增页面
+			document.getElementById('add').addEventListener('tap', function() {
+				mui.openWindow({
+				url: 'add_address.html',
+			    id:'add'
+			  });
+			});
+		</script>
+	</body>
+</html>

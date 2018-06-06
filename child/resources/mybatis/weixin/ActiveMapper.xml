@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ActiveMapper">
+	
+	<!--订单信息  -->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+	    SELECT 
+		 school,
+		 classId,
+		 stuName,
+		 order_num,
+		 phone1,
+		 address,
+		 phone2,
+		 createTime,
+		 send_state
+	    from 
+	    	activity_order
+	    where 1=1
+		<if test="pd.time_start != null and pd.time_start !=''">
+			and createTime=#{pd.time_start}
+		</if>
+		<if test="pd.phone1 != null and pd.phone1 !=''">
+			and phone1=#{pd.phone1}
+		</if>
+	</select>
+	
+	<!--是否开通业务 -->
+	<select id="findSeActive" parameterType="pd" resultType="Integer">
+		SELECT 
+			count(*)
+	    from 
+	    	hjy_order_details h
+				INNER JOIN qry_student_info q
+				ON h.hjy_s_id = q.StudentId
+	    where
+				q.UserName =#{stuName}
+			AND
+				substring(h.hjy_create_phone_num,8,4)=#{phoneNum} 
+	</select>
+	
+	<!--是否参加活动 -->
+	<select id="findOpActive" parameterType="String" resultType="Integer">
+		SELECT COUNT(*)
+		FROM
+		activity_order
+		WHERE
+		phone1 = #{phone1}
+		and pay_state = '1'
+	</select>
+	
+	<!--保存活动信息 -->
+	<insert id="InsertActive" parameterType="pd">
+	 INSERT INTO activity_order(
+		 school,
+		 classId,
+		 stuName,
+		 order_num,
+		 phone1,
+		 address,
+		 phone2,
+		 createTime,
+		 send_state,
+		 pay_state
+	 ) VALUES (
+	 	#{stu_school},
+	 	#{stu_class},
+	 	#{stuName},
+	 	#{order_num},
+	 	#{phone1},
+	 	#{accept_address},
+	 	#{phone2},
+	 	SYSDATE(),
+	 	'0',
+	 	'0'
+	 ) 
+	</insert>
+</mapper>

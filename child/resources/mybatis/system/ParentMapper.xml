@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ParentMapper">
+	<select id="getParentInfolistPage" parameterType="Page"
+		resultType="pd">
+		select
+			tuw.uw_parent_name,
+			tuw.phone_num,
+			tuw.uw_open_id,
+			qsi.UserName,
+			tuw.uw_parent_id
+		from 
+			t_user_weixin tuw
+			INNER JOIN t_user_student tus on tuw.uw_user_id =tus.us_user_id
+			INNER JOIN qry_student_info qsi on tus.us_stu_id = qsi.StudentId
+		where 
+		1=1 and
+			tuw.uw_parent_id is not NULL 
+			
+			<if test="pd.parName != null and pd.parName !=''">
+			  and tuw.uw_parent_name = #{pd.parName}
+			</if>
+			
+			<if test="pd.stuName != null and pd.stuName !=''">
+			  and qsi.UserName = #{pd.stuName}
+			</if>
+			ORDER BY
+			tus.us_stu_id aSC
+	</select>
+	
+	<!--根据OPENID虎获取信息-->
+	<select id="getParInfoById" parameterType="pd" resultType="pd">
+	   select
+			tuw.uw_parent_name,
+			tuw.phone_num,
+			tuw.uw_open_id,
+			qsi.UserName,
+			tuw.uw_parent_id
+		from 
+			t_user_weixin tuw
+			INNER JOIN t_user_student tus on tuw.uw_user_id =tus.us_user_id
+			INNER JOIN qry_student_info qsi on tus.us_stu_id = qsi.StudentId
+		where 
+		1=1 		
+			<if test="parentId != null or parentId !=''">
+			  and tuw.uw_parent_id = #{parentId}
+			</if>
+			   
+			<if test="openId !=null or openId !=''">
+			   and tuw.uw_open_id = #{openId}
+			</if>
+	</select>
+	
+	<!--更新 t_user_weixin-->
+	<update id="updatePar" parameterType="pd">
+	  update t_user_weixin 
+	  set
+	     phone_num = #{phone}
+	    where 
+	      uw_parent_id= #{parId} and 
+	      uw_open_id = #{openId}
+	</update>
+	
+	<!--更新 qry_stuparent_info-->
+	<update id="updateUserName" parameterType="pd">
+	  update qry_stuparent_info 
+	  set
+	     UserName = #{stuName}
+	    where 
+	      ParentId= #{parId} and 
+	      ParUserName = #{parName}
+	</update>
+	
+	<!-- 校验学生姓名是否存在 -->
+	<select id="checkStuName" parameterType="pd" resultType="pd">
+		SELECT
+			StudentId,
+			UserName
+		FROM
+			qry_student_info
+		WHERE
+			UserName = #{stuNameVal} 
+	</select>
+</mapper>

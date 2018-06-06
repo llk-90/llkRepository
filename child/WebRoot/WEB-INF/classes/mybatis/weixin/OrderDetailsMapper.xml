@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OrderDetailsMapper">
+
+	<!-- 订单详细列表 -->
+	<select id="orderDetailslistPage" parameterType="page" resultType="pd">
+		SELECT
+		DISTINCT
+		o.hjy_s_id as hjy_s_id
+		,o.hjy_s_name
+		,o.hjy_create_phone_num
+		,o.hjy_create_time
+		,f.firmName as hjy_firm_name
+		,CASE o.hjy_order_status WHEN '0' THEN '未开通' WHEN '1' THEN '已开通未订阅'
+		WHEN '2' THEN '已下发未验证' WHEN '3' THEN '已订阅' END AS hjy_order_status
+		,CASE o.hjy_order_way WHEN '0' THEN '自主订阅' WHEN '1' THEN '群发订阅' END AS hjy_order_way
+		,CASE WHEN t1.uw_open_id is NULL THEN '否' ELSE '是' END AS hjy_bound_weixin_account
+		FROM hjy_order_details o
+		LEFT JOIN
+		t_user_student t
+		on t.us_stu_id = o.hjy_s_id
+		LEFT JOIN
+		t_user_weixin t1
+		on t1.uw_user_id = t.us_user_id
+		LEFT JOIN
+		hjy_firmoverview f
+		ON o.hjy_firm_name = f.marketingId
+		where 1=1
+		<if test="pd.time_start != null and pd.time_start !=''">
+			and o.hjy_create_time = #{pd.time_start}
+		</if>
+		<if test="pd.keyword != null and pd.keyword !=''">
+			and o.hjy_s_name like '%${pd.keyword}%'
+		</if>
+		order by o.hjy_create_time DESC
+	</select>
+
+</mapper>

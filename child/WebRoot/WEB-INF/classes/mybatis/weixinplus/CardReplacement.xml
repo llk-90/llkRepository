@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CardReplacement">
+<!-- 获取补卡历史信息 -->
+	<select id="selectHistory" parameterType="pd" resultType="pd">
+		SELECT 
+		  replace_status 
+		FROM 
+		  guanai_card_replacement_info 
+		  WHERE openId = #{openId} AND replace_status!=99 ORDER BY submit_time limit #{pageCount},3
+	</select>
+	<!-- 获取对应的id -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT 
+		  id,openId
+		FROM 
+		  guanai_card_replacement_info 
+		  WHERE openId = #{openId}
+		  order by submit_time desc LIMIT 1 
+	</select>
+	
+	<!-- 插入url -->
+	<update id="insertUrl" parameterType="pd">
+		UPDATE guanai_card_replacement_info
+		SET url=#{url}
+		where
+		id=#{id}
+	</update>
+	
+	
+	
+	
+	<insert id="insertReplacement" parameterType="pd">
+	INSERT INTO 
+	  guanai_card_replacement_info 
+	   (openId,
+	   cardType,
+	   SchoolID,
+	   className,
+	   card_num,
+	   contact_person,
+	   phone_num,
+	   address,
+	   replace_status,
+	   submit_time,
+	   url,
+	   stuId)
+	VALUE
+	(
+	#{openId},
+	#{cardType},
+	#{SchoolID},
+	#{className},
+	#{card_num},
+	#{contact_person},
+	#{phone_num},
+	#{address},
+	0,
+	SYSDATE(),
+	#{url},
+	#{stuId}
+	)  
+	</insert> 
+	
+</mapper>

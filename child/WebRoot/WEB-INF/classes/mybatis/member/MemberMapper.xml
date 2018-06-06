@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MemberMapper">
+
+	<!-- 列表 -->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+		SELECT
+		s.s_id,
+		s.s_name,
+		s.s_stu_no,
+		CASE s.s_sex WHEN '0' THEN '女' WHEN
+		'1' THEN '男' END AS s_sex,
+		s.s_zone_id,
+		z.z_name AS className,
+		z2.z_name
+		AS jibuname,
+		z3.z_name AS schoolname,
+		a.user_id,
+		a.name,
+		a.phone,
+		CASE WHEN w.uw_user_id IS NULL THEN '未绑定' 
+		ELSE '已绑定' 
+		END AS weixin,
+		t.ut_zone_id
+		FROM
+		t_student s
+		INNER JOIN
+		t_user_teacher t ON t.ut_zone_id
+		= s.s_zone_id
+		INNER JOIN t_zone z ON
+		z.z_id = s.s_zone_id
+		INNER JOIN
+		t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_zone z3 ON z3.z_id =
+		z2.z_parent_id
+		LEFT JOIN
+		t_user_student p ON p.us_stu_id = s.s_id
+		LEFT
+		JOIN sys_user a ON
+		p.us_user_id = a.user_id
+		LEFT JOIN
+		t_user_weixin w ON w.uw_user_id = a.user_id
+		WHERE 1=1
+		<if test="pd.userIdtc != null and pd.userIdtc !=''">
+			and t.ut_user_id=#{pd.userIdtc}
+		</if>
+		<if test="pd.userIdtc == null or pd.userIdtc ==''">
+			<!--学校管理员 -->
+			<if test="pd.userIdsc != null and pd.userIdsc !=''">
+				and t.ut_user_id in (
+				select uf.USER_ID from sys_user uf where 1=1
+				and
+				uf.school_id in (SELECT uk.school_id FROM sys_user uk where 1=1
+				and uk.USER_ID=#{pd.userIdsc})  
+				 <![CDATA[  and   uf.u_type!=#{pd.u_types} ]]>
+				)
+			</if>
+			<!--非学校管理员 -->
+			<if test="pd.userIdsc  == null  or pd.userIdsc ==''">
+				<!--区域经理，组长，客户经理 -->
+				and t.ut_user_id in (SELECT
+				ud.USER_ID FROM
+				sys_user ua
+				LEFT JOIN
+				sys_user
+				ub ON ub.parent_id = ua.USER_ID
+				LEFT JOIN
+				sys_user uc ON
+				uc.parent_id
+				= ub.USER_ID
+				LEFT JOIN sys_user ud ON
+				ud.parent_id =
+				uc.USER_ID
+				WHERE 1=1
+				<if test="pd.userIdqy != null and pd.userIdqy !=''">
+					<!--区域经理 -->
+					and ub.parent_id=#{pd.userIdqy}
+				</if>
+				<if test="pd.userIdzz != null and pd.userIdzz !=''">
+					<!--组长 -->
+					and uc.parent_id=#{pd.userIdzz}
+				</if>
+				<if test="pd.userIdkh != null and pd.userIdkh !=''">
+					<!--客户经理 -->
+					and ud.parent_id=#{pd.userIdkh}
+				</if>
+				<if test="pd.u_type != null and pd.u_type !=''">
+					<!--非学校管理员 -->
+			  <![CDATA[ and ud.u_type!=#{pd.u_type} ]]>
+				</if>
+				)
+			</if>
+		</if>
+		<if test="pd.Name != null and pd.Nname != ''">
+			and (a.name LIKE '%${pd.Name}%' OR s.s_name LIKE
+			'%${pd.Name}%')
+		</if>
+	</select>
+
+	<!-- <select id="findlistPage" parameterType="page" resultType="pd"> SELECT 
+		s.s_id, s.s_name, s.s_stu_no, CASE s.s_sex WHEN '0' THEN '女' WHEN '1' THEN 
+		'男' END AS s_sex, s.s_zone_id, z.z_name AS className, a.user_id, a.name, 
+		a.phone, t.ut_zone_id FROM t_student s INNER JOIN t_user_teacher t ON t.ut_zone_id 
+		= s.s_zone_id INNER JOIN t_zone z ON z.z_id = s.s_zone_id INNER JOIN t_zone 
+		z2 ON z2.z_id = z.z_parent_id INNER JOIN t_zone z3 ON z3.z_id = z2.z_parent_id 
+		LEFT JOIN t_user_student p ON p.us_stu_id = s.s_id LEFT JOIN sys_user a ON 
+		p.us_user_id = a.user_id WHERE t.ut_user_id = '${pd.userId}' <if test="pd.Name 
+		!= null and pd.Nname != ''"> AND (a.name LIKE '%${pd.Name}%' OR s.s_name 
+		LIKE '%${pd.Name}%') </if> </select> -->
+
+	<!-- 根据老师id查找班级信息 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		SELECT
+		z.z_id,
+		z.z_name AS className,
+		z2.z_name AS gradeName
+		FROM
+		t_zone z
+		INNER
+		JOIN t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_user_teacher t
+		ON t.ut_zone_id = z.z_id
+		WHERE t.ut_user_id = #{userId}
+	</select>
+
+	<!-- 更新班级 -->
+	<update id="updateClass" parameterType="pd">
+		UPDATE
+		t_zone z
+		SET
+		z.z_name = #{z_name}
+		WHERE
+		z.z_id = #{z_id}
+	</update>
+
+	<!-- 查询班级是否存在 -->
+	<select id="findIsExist" parameterType="pd" resultType="Integer">
+		SELECT
+		count(z.z_id)
+		FROM
+		t_zone z
+		INNER JOIN t_zone z1 ON z1.z_type = '3'
+		AND z.z_parent_id = z1.z_id
+		AND z1.z_parent_id = (
+		SELECT
+		z2.z_id
+		FROM
+		t_zone z2
+		INNER JOIN t_zone z3 ON z2.z_id = z3.z_parent_id
+		INNER JOIN
+		t_zone z4 ON z3.z_id = z4.z_parent_id
+		AND z4.z_id = #{z_id}
+		)
+		WHERE
+		z.z_name = #{z_name} AND z.z_name <![CDATA[ <> ]]>
+		#{z_name_old}
+	</select>
+
+	<select id="getTeacherZoneIdById" resultType="pd">
+		SELECT
+		t.ut_zone_id
+		Z_ID
+		FROM t_user_teacher t
+		WHERE t.ut_user_id = #{USER_ID}
+	</select>
+
+	<!-- 根据老师的班级查询本校学生的学号 -->
+	<select id="getStuByTeaZoneId" resultType="pd">
+		SELECT
+		s.s_stu_no
+		stu_no
+		,su.PHONE phone
+		FROM
+		t_student s
+		LEFT JOIN t_user_student us ON
+		us.us_stu_id = s.s_id
+		LEFT JOIN sys_user su on su.USER_ID =
+		us.us_user_id
+		WHERE
+		s.s_zone_id IN (
+		SELECT
+		b.z_id
+		FROM
+		t_zone b
+		INNER JOIN
+		t_zone n ON b.z_parent_id = n.z_id
+		INNER JOIN t_zone c ON n.z_parent_id
+		= c.z_id
+		WHERE
+		c.z_id = (
+		SELECT
+		o.z_parent_id
+		FROM
+		t_zone o
+		WHERE
+		o.z_id = (
+		SELECT
+		z.z_parent_id
+		FROM
+		t_zone z
+		WHERE
+		z.z_id = #{z_id}
+		)
+		)
+		)
+	</select>
+
+	<!-- 查入学生数据 -->
+	<insert id="saveStu" parameterType="pd">
+		<selectKey resultType="Integer" order="AFTER" keyProperty="s_id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_student(
+		s_stu_no
+		,s_name
+		,s_addr
+		,s_birthday
+		,s_sex
+		,s_zone_id
+		,s_device_e_id
+		,s_device_u_id
+		)
+		VALUES(
+		#{s_stu_no}
+		,#{s_name}
+		,#{s_addr}
+		,#{s_birthday}
+		,#{s_sex}
+		,#{s_zone_id}
+		,#{s_device_e_id}
+		,#{s_device_u_id}
+		)
+	</insert>
+	<!-- 插入家长信息 -->
+	<insert id="saveParent" parameterType="pd">
+		INSERT INTO sys_user(
+		USER_ID
+		,`NAME`
+		,u_type
+		,EMAIL
+		,`PASSWORD`
+		,PHONE
+		)
+		VALUES(
+		#{USER_ID}
+		,#{parent_name}
+		,#{u_type}
+		,#{parent_email}
+		,#{parent_password}
+		,#{parent_phone}
+		)
+	</insert>
+	<!-- 学生和家长关联 -->
+	<insert id="stuParent" parameterType="pd">
+		INSERT INTO
+		t_user_student(
+		us_user_id
+		,us_stu_id
+		)
+		VALUES(
+		#{USER_ID}
+		,#{s_id}
+		)
+	</insert>
+
+	<!-- 通过id获取学生和老师信息 -->
+	<select id="findByStuId" parameterType="pd" resultType="pd">
+		SELECT
+		s.s_id,
+		s.s_stu_no
+		,s.s_name
+		,s_sex
+		,u.`NAME`
+		,u.PHONE
+		,s.s_zone_id
+		,u.EMAIL
+		,u.USER_ID
+		,z.z_name AS className
+		FROM
+		t_student s
+		INNER JOIN t_zone z ON
+		z.z_id = s.s_zone_id
+		LEFT JOIN t_user_student us ON us.us_stu_id =
+		s.s_id
+		LEFT JOIN sys_user u
+		ON u.USER_ID = us.us_user_id
+		WHERE
+		s.s_id =
+		#{s_id}
+	</select>
+	<!-- 根据老师的id查询班级 -->
+	<select id="findClassIdByUserId" parameterType="pd" resultType="pd">
+		SELECT
+		ut.ut_zone_id classId
+		,class.z_name className
+		FROM t_user_teacher
+		ut
+		INNER JOIN t_zone class ON class.z_id
+		= ut.ut_zone_id
+		WHERE
+		ut.ut_user_id = #{userId}
+	</select>
+
+
+	<!-- 修改学生 -->
+	<update id="editStu" parameterType="pd" flushCache="false">
+		UPDATE
+		t_student
+		SET
+		s_stu_no = #{s_stu_no},
+		s_name = #{s_name},
+		s_sex =
+		#{s_sex},
+		s_zone_id = #{s_zone_id}
+		WHERE
+		s_id = #{s_id}
+	</update>
+
+	<!-- 修改家长 -->
+	<update id="editUser" parameterType="pd" flushCache="false">
+		UPDATE
+		sys_user
+		SET
+		NAME = #{NAME},
+		PHONE = #{PHONE},
+		PASSWORD = #{PASSWORD},
+		EMAIL = #{EMAIL}
+		WHERE
+		USER_ID = #{USER_ID}
+	</update>
+
+	<!-- 检查手机号是否重复 -->
+	<select id="checkPhone" parameterType="pd" resultType="pd">
+		select
+		USER_ID,
+		NAME,
+		PHONE
+		from
+		sys_user
+		where
+		PHONE = #{PHONE}
+	</select>
+
+
+	<!-- 删除学生信息 -->
+	<delete id="delStu" parameterType="pd">
+		DELETE
+		FROM
+		t_student
+		WHERE
+		s_id =
+		#{s_id}
+	</delete>
+
+	<!-- 删除关联数据 -->
+	<delete id="delUS" parameterType="pd">
+		DELETE
+		FROM
+		t_user_student
+		WHERE
+		us_stu_id = #{s_id}
+	</delete>
+
+	<!-- 删除家长信息 -->
+	<delete id="delUser" parameterType="pd">
+		DELETE
+		FROM
+		sys_user
+		WHERE
+		user_id = (
+		SELECT
+		us_user_id
+		FROM
+		t_user_student
+		WHERE
+		us_stu_id = #{s_id}
+		)
+	</delete>
+
+	<!-- 删除微信关联表 -->
+	<delete id="delUX" parameterType="pd">
+		DELETE
+		FROM
+		t_user_weixin
+		WHERE
+		uw_user_id = (
+		SELECT
+		us_user_id
+		FROM
+		t_user_student
+		WHERE
+		us_stu_id =
+		#{s_id}
+		)
+	</delete>
+
+	<!-- 删除订单关联表 -->
+	<delete id="delCO" parameterType="pd">
+		DELETE
+		FROM
+		t_commodity_order
+		WHERE
+		co_user_id = (
+		SELECT
+		us_user_id
+		FROM
+		t_user_student
+		WHERE
+		us_stu_id =
+		#{s_id}
+		)
+	</delete>
+
+	<!-- 删除会员权限关联表 -->
+	<delete id="delCU" parameterType="pd">
+		DELETE
+		FROM
+		t_user_commodity
+		WHERE
+		uc_user_id = (
+		SELECT
+		us_user_id
+		FROM
+		t_user_student
+		WHERE
+		us_stu_id =
+		#{s_id}
+		)
+
+	</delete>
+
+	<!-- 周追加start -->
+	<select id="check_stuNo" parameterType="pd" resultType="Integer">
+		SELECT
+		COUNT(s.s_stu_no) as rowNum
+		FROM
+		t_student s
+		WHERE
+		s.s_stu_no = #{stu_no}
+	</select>
+	<!-- 2016/8/31 yc 添加 学校，入学年份班级验证 -->
+	<select id="check_zoneNm" parameterType="pd" resultType="pd">
+		<!--  SELECT * FROM t_zone 
+		WHERE
+	    FIND_IN_SET(z_id, queryZoneChildren(#{schoolId})) -->
+	    select * from t_zone where z_id= #{schoolId}
+	</select>
+	<!--年份班级验证-->
+	<select id="check_class_grade" parameterType="String" resultType="pd">
+	  select z_name,z_id from t_zone where z_parent_id = #{schoolId}
+	</select>
+	<!-- 2016/8/31 yc 添加 手机号验证 -->
+	<select id="check_Phone" parameterType="String" resultType="Integer">
+		SELECT
+		COUNT(s.PHONE) as rowNum
+		FROM
+		sys_user s
+		WHERE
+		(s.PHONE = #{s_phone}
+		or s.phone2 = #{s_phone} or s.phone3 = #{s_phone})
+		AND s.u_type = '3'
+	</select>
+	
+	<!-- 2017/01 添加 手机号验证copy -->
+	<select id="check_Phone_All" parameterType="String" resultType="Integer">
+		<!-- SELECT
+		COUNT(s.PHONE) as rowNum
+		FROM
+		sys_user s
+		WHERE
+		(s.PHONE = #{s_phone}
+		or s.phone2 = #{s_phone} or s.phone3 = #{s_phone})
+		AND s.u_type != '0' -->
+		 SELECT
+		COUNT(s.PHONE) as rowNum
+		FROM
+		sys_user s
+		WHERE
+		(s.PHONE = #{s_phone}
+		or s.phone2 = #{s_phone} or s.phone3 = #{s_phone})
+		
+	</select>
+	
+	<!-- 2016/8/31 yc 添加 手机号验证 -->
+	<select id="check_CardId" parameterType="String" resultType="Integer">
+		SELECT
+		COUNT(1) as rowNum
+		FROM
+		t_student s
+		WHERE s_device_e_id=#{s_cardId}
+		
+	</select>
+	<!-- 2016/9/22 yc 添加 cardId验证 -->
+	<select id="check_TeaPhone" parameterType="String" resultType="Integer">
+		SELECT
+		COUNT(s.PHONE) as rowNum
+		FROM
+		sys_user s
+		WHERE
+		s.PHONE = #{s_phone}
+		and s.u_type=2 
+	</select>
+	<select id="check_className" parameterType="String" resultType="String">
+		SELECT
+		t.ut_zone_id as classId
+		FROM
+		t_user_teacher t
+		WHERE
+		t.ut_user_id =
+		#{areaUser_id}
+	</select>
+	<!-- 2016/8/31 yc 修改 -->
+	<insert id="save_student" parameterType="pd">
+		<selectKey resultType="Integer" order="AFTER" keyProperty="s_id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_student(
+		s_stu_no
+		,s_name
+		,s_addr
+		,s_sex
+		,s_zone_id
+		,s_device_e_id
+		,s_device_u_id
+		,s_start_time
+		,s_end_time
+		,s_status
+		,s_phone
+		)
+		VALUES(
+		#{s_stu_no}
+		,#{s_name}
+		,#{s_addr}
+		,#{s_sex}
+		,#{classId}
+		,#{s_cardId}
+		,#{s_cardId}
+		,#{s_start_time}
+		,#{s_end_time}
+		,#{s_status}
+		,#{s_phone1}
+		)
+	</insert>
+	<!-- 2016/8/31 yc 添加 -->
+	<update id="update_student" parameterType="pd" flushCache="false">
+		UPDATE t_student
+		set s_stu_no=#{s_stu_no}
+		,s_name=#{s_name}
+		,s_addr=#{s_addr}
+		,s_sex=#{s_sex}
+		,s_zone_id=#{classId}
+		,s_device_e_id=#{s_cardId}
+		,s_device_u_id=#{s_cardId}
+		,s_start_time=#{s_start_time}
+		,s_end_time=#{s_end_time}
+		,s_status=#{s_status}
+		,s_phone=#{s_phone1}
+		WHERE s_id=
+		(SELECT
+		UT.us_stu_id
+		FROM sys_user U,
+		t_user_student UT
+		WHERE
+		U.USER_ID=UT.us_user_id
+		AND U.PHONE=#{s_phone1}
+		)
+
+	</update>
+
+
+	<insert id="save_parent" parameterType="pd">
+		INSERT INTO sys_user(
+		USER_ID
+		,NAME
+		,u_type
+		,EMAIL
+		,PASSWORD
+		,PHONE
+		,phone2
+		,password2
+		,phone3
+		,password3
+
+		)
+		VALUES(
+		#{USER_ID}
+		,#{parent_name}
+		,'3'
+		,''
+		,#{s_password1}
+		,#{s_phone1}
+		,#{s_phone2}
+		,#{s_password2}
+		,#{s_phone3}
+		,#{s_password3}
+		)
+	</insert>
+
+	<!--修改 2016/8/31 yc 添加 -->
+	<update id="update_parent" parameterType="pd" flushCache="false">
+		UPDATE
+		sys_user
+		set NAME=#{parent_name}
+		,PASSWORD=#{s_password1}
+		,phone2=#{s_phone2}
+		,password2=#{s_password2}
+		,phone3=#{s_phone3}
+		,password3=#{s_password3}
+		WHERE PHONE=#{s_phone1}
+		AND u_type = '3'
+	</update>
+
+
+	<insert id="saveRelation" parameterType="pd">
+		INSERT INTO
+		t_user_student(
+		us_user_id
+		,us_stu_id
+		)
+		VALUES(
+		#{USER_ID}
+		,#{s_id}
+		)
+	</insert>
+	<!-- 周追加end -->
+	
+	<!-- 查询weixin_interval_msg表中手机号是否存在 -->
+	<select id="selectIntervalPhone" parameterType="pd" resultType="pd"> 
+		select * from weixin_interval_msg
+		where phone = #{PHONE}
+	</select>
+	<!--  -->
+	<insert id="saveIntervalPhone" parameterType="pd">
+		insert into weixin_interval_msg(phone,count) VALUES(#{PHONE},#{COUNT})
+	</insert>
+	<update id="updateIntervalPhone" parameterType="pd">
+		update weixin_interval_msg set count = #{COUNT} WHERE phone = #{PHONE}
+	</update>
+</mapper>

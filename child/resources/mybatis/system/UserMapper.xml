@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserMapper">
+	<sql id="userColumns">USERNAME,NAME,PASSWORD,RIGHTS,ROLE_ID</sql>
+
+	<resultMap type="User" id="userAndRoleResultMap">
+		<id column="USER_ID" property="USER_ID"/>
+		<result column="USERNAME" property="USERNAME"/>
+		<result column="PASSWORD" property="PASSWORD"/>
+		<result column="NAME" property="NAME"/>
+		<result column="RIGHTS" property="RIGHTS"/>
+		<result column="LAST_LOGIN" property="LAST_LOGIN"/>
+		<result column="IP" property="IP"/>
+		<result column="SKIN" property="SKIN"/>
+		<association property="role" column="ROLE_ID" javaType="Role">
+			<id column="ROLE_ID" property="ROLE_ID"/>
+			<result column="ROLE_NAME" property="ROLE_NAME"/>
+			<result column="ROLE_RIGHTS" property="RIGHTS"/>
+		</association>
+	</resultMap>
+	<resultMap type="User" id="userResultMap">
+		<id column="USER_ID" property="USER_ID"/>
+		<result column="USERNAME" property="USERNAME"/>
+		<result column="PASSWORD" property="PASSWORD"/>
+		<result column="NAME" property="NAME"/>
+		<result column="RIGHTS" property="RIGHTS"/>
+		<result column="LAST_LOGIN" property="LAST_LOGIN"/>
+		<result column="IP" property="IP"/>
+		<result column="ROLE_ID" property="ROLE_ID"/>
+		<result column="SKIN" property="SKIN"/>
+	</resultMap>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="User" resultMap="userResultMap">
+		select * from SYS_USER 
+		where 1=1
+		<if test="USERNAME!=null and PASSWORD!=null">
+		and USERNAME = #{USERNAME} and PASSWORD=#{PASSWORD}
+		</if>
+		<if test="USER_ID!=null and USER_ID>0">
+		and USER_ID = #{USER_ID}
+		</if>
+	</select>
+	
+	<select id="getUserAndRoleById" parameterType="String" resultMap="userAndRoleResultMap">
+		select  u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.RIGHTS as USER_RIGHTS,
+				u.PASSWORD,
+				u.SKIN,
+				r.ROLE_ID,
+				r.ROLE_NAME,
+				r.RIGHTS as ROLE_RIGHTS 
+		from SYS_USER u 
+		left join SYS_ROLE r 
+		on u.ROLE_ID=r.ROLE_ID 
+		where u.USER_ID=#{USER_ID}
+	</select>
+
+	<update id="updateLastLogin" parameterType="User">
+		update SYS_USER set 
+		LAST_LOGIN=#{LAST_LOGIN} 
+		where USER_ID=#{USER_ID}
+	</update>
+	
+	<select id="findLinJie"  parameterType="pd" resultType="pd">
+	    SELECT *
+		FROM t_key_value kv
+		WHERE kv.`Key` = #{key}
+		<if test="userId!=null and userId != ''">
+		AND kv.createUser = #{userId}
+		</if>
+	</select>
+	
+<!-- 	查询被锁定的用户 -->
+	<select id="findLockUser"  parameterType="pd" resultType="pd">
+	    SELECT
+		    su.*
+		    ,uw.isLock
+		    ,uw.count
+		    ,uw.reportCount
+		FROM t_user_weixin uw
+		LEFT JOIN sys_user su  ON uw.uw_user_id = su.USER_ID
+		WHERE
+		    su.u_type in (2,3)
+		AND uw.isLock = 1
+	</select>
+
+<!--     查询被举报但是没有锁定的老师账号 -->
+	<select id="findReportedUser"  parameterType="pd" resultType="pd">
+	    SELECT
+		    su.*
+		    ,uw.isLock
+		    ,uw.count
+		    ,uw.reportCount
+		FROM t_user_weixin uw
+		LEFT JOIN sys_user su ON su.USER_ID = uw.uw_user_id
+		WHERE
+		    su.u_type in (2,3)
+		AND uw.reportCount > 0
+		AND uw.isLock = 0
+	</select>
+	
+<!-- 	解锁 -->
+	<update id="unlockUser" parameterType="pd">
+        UPDATE t_user_weixin
+		SET isLock = 0,
+		 count = 0,
+		 reportCount = 0
+		WHERE
+		    uw_user_id = #{userId}
+    </update>
+<!--     锁定用户 -->
+	<update id="lockUser" parameterType="pd">
+        UPDATE t_user_weixin
+		SET isLock = 1
+		WHERE
+		    uw_user_id = #{userId}
+    </update>
+<!-- 更新临界值 -->
+	<update id="updateLinJie" parameterType="pd">
+	UPDATE t_key_value
+	SET `Value`=#{value}
+	WHERE `Key`=#{key}
+	AND createUser = #{userId}
+    </update>
+
+	<update id="updateCount" parameterType="pd">
+	UPDATE t_user_weixin 
+	SET count = CAST(IFNULL(count,'0') AS SIGNED)+1
+	WHERE uw_user_id = #{userId}
+    </update>
+	<update id="updateReportCount" parameterType="pd">
+	UPDATE t_user_weixin 
+	SET reportCount = CAST(IFNULL(reportCount,'0') AS SIGNED)+1
+	WHERE uw_user_id = #{userId}
+    </update>
+	<select id="findCountByUserId"  parameterType="pd" resultType="pd">
+    SELECT *
+    FROM t_user_weixin uw
+    WHERE uw_user_id = #{userId}
+    </select>
+	<select id="findTeacherByUserId"  parameterType="pd" resultType="pd">
+    SELECT
+	    ut.ut_user_id userId
+	FROM t_user_teacher ut
+	LEFT JOIN t_student s ON s.s_zone_id = ut.ut_zone_id
+	LEFT JOIN t_user_student us ON us.us_stu_id = s.s_id
+	WHERE us.us_user_id = #{userId}    
+    </select>
+</mapper>

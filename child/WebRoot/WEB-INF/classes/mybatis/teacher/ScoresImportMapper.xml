@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ScoresImportMapper">
+	
+	<!-- 成绩列表查询 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT
+			a.rc_phone,							<!-- 手机号 -->
+			a.rc_name,							<!-- 姓名 -->
+			a.rc_chinese,						<!-- 语文成绩 -->
+			a.rc_math,							<!-- 数学成绩 -->
+			a.rc_english,						<!-- 英语成绩 -->
+			a.rc_biology,						<!-- 生物成绩 -->
+			a.rc_chemistry,						<!-- 化学成绩 -->
+			a.rc_hysics,						<!-- 物理成绩 -->
+			a.rc_geography,						<!-- 地理成绩 -->
+			a.rc_history,						<!-- 历史成绩 -->
+			a.rc_politics,						<!-- 政治成绩 -->
+			a.rc_art,							<!-- 美术成绩 -->
+			a.rc_music,							<!-- 音乐成绩 -->
+			a.rc_sport,							<!-- 体育成绩 -->
+			a.rc_moral,							<!-- 德育考核成绩 -->
+			a.rc_labor,							<!-- 劳动技术成绩 -->
+			a.rc_computer,						<!-- 计算机成绩 -->
+			a.rc_phytest,						<!-- 物理实验 -->
+			a.rc_chetest,						<!-- 化学实验 -->
+			a.rc_biotest,						<!-- 生物实验 -->
+			a.total,                            <!-- 总成绩 -->
+			a.rc_batch,							<!-- 考试批次 -->
+			date_format(a.create_time, '%Y-%m-%d') AS create_time,<!-- 导入时间 -->
+			a.create_time time
+		FROM
+			t_report_card a						<!-- 成绩表 -->
+		WHERE
+			a.rc_phone IN (
+				SELECT
+					stu.s_phone
+				FROM
+					t_student stu
+				WHERE
+					stu.s_zone_id IN (
+						SELECT
+							ut.ut_zone_id
+						FROM
+							t_user_teacher ut
+						WHERE
+							ut.ut_user_id = '${pd.userId}'
+							<if test="pd.rc_name != null and pd.rc_name != ''">
+				                   and   a.rc_name LIKE '%${pd.rc_name}%'
+				            </if> 
+				             <if test="pd.classType != null and pd.classType != ''">
+				                   and   a.rc_batch = #{pd.classType}                  
+				              </if>
+					)
+			)
+			GROUP BY a.rc_phone, a.rc_batch
+		    ORDER BY time DESC, total DESC
+	</select>
+	
+	<!-- 查询学号 -->
+	<select id="picilist" parameterType="page" resultType="pd">
+		SELECT DISTINCT
+			a.rc_batch
+		FROM
+			t_report_card a
+		WHERE
+			a.rc_phone IN (
+				SELECT
+					stu.s_phone
+				FROM
+					t_student stu
+				WHERE
+					stu.s_zone_id IN (
+						SELECT
+							ut.ut_zone_id
+						FROM
+							t_user_teacher ut
+						WHERE
+							ut.ut_user_id = '${pd.userId}'
+					)
+			)
+		ORDER BY
+			create_time ASC
+	</select>
+	
+    <!-- 新增学生成绩 -->
+	<insert id="saveS" parameterType="pd" flushCache="false">
+		insert into t_report_card(  
+		  	rc_phone,
+			rc_name,
+			rc_chinese,
+			rc_math,
+			rc_english,
+			rc_biology,
+			rc_chemistry,
+			rc_hysics,
+			rc_geography,
+			rc_history,
+			rc_politics,
+			rc_art,
+			rc_music,
+			rc_sport,
+			rc_moral,
+			rc_labor,
+			rc_computer,
+			rc_phytest,
+			rc_chetest,
+			rc_biotest,
+			rc_batch,
+			total, 
+			create_time
+		) values (		    
+    		#{RC_PHONE},	
+			#{RC_NAME},	
+			#{RC_CHINESE},	
+			#{RC_MATH},
+			#{RC_ENGLISH},
+			#{RC_BIOLOGY},	
+			#{RC_CHEMISTRY},	
+			#{RC_HYSICS},	
+			#{RC_GEOGRAPHY},	
+			#{RC_HISTORY},
+			#{RC_POLITICS},
+			#{RC_ART},
+			#{RC_MUSIC},	
+			#{RC_SPORT},	
+			#{RC_MORAL},	
+			#{RC_LABOR},
+			#{RC_COMPUTER},
+			#{RC_PHYTEST},
+			#{RC_CHETEST},	
+			#{RC_BIOTEST},	
+			#{RC_BATCH},			
+			#{total},	
+			SYSDATE()	
+		)		
+
+	</insert>
+    
+
+	<!-- 查询是否存在此手机号的学生   2016/9/5 yc  修改  COUNT(stu.s_phone) stu_num 改为 s_phone-->
+	<select id="findBmCount" parameterType="String" resultType="Integer">
+		SELECT
+			COUNT(stu.s_phone) AS stu_num
+		FROM
+			t_student stu
+		WHERE
+			stu.s_phone = #{stu_phone}
+	</select>
+	
+	<!-- 查询此学号的学生是否该老师的学生 -->
+	<!-- <select id="findNmCount" parameterType="page" resultType="pd">
+		SELECT
+			COUNT(stu.s_stu_no) AS stu_num
+		FROM
+			t_student stu
+		WHERE
+			stu.s_zone_id = (
+				SELECT
+					tst.s_zone_id
+				FROM
+					t_student tst
+				WHERE
+					tst.s_stu_no = #{RC_STU_NO}
+			)
+		AND stu.s_zone_id = (
+			SELECT
+				tea.ut_zone_id
+			FROM
+				t_user_teacher tea
+			WHERE
+				tea.ut_user_id = #{userId}
+		)
+	</select> -->
+	
+	<!-- 查询批次 -->
+	<select id="findPmCount" parameterType="page" resultType="pd">		
+			SELECT
+				COUNT(report.rc_batch) AS pici_num
+			FROM
+				t_report_card report
+			WHERE
+				report.rc_batch = #{RC_BATCH}
+			AND report.rc_phone IN (
+			
+			SELECT
+				stu.s_stu_no
+			FROM
+				t_student stu
+			WHERE
+				stu.s_zone_id IN (
+					SELECT
+						ut.ut_zone_id
+					FROM
+						t_user_teacher ut
+					WHERE
+						ut.ut_user_id = #{userId}
+			)
+			  )
+	</select>
+
+	<!-- 批量删除成绩 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from t_report_card		<!-- 成绩表 -->
+		where 
+			rc_phone in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+</mapper>

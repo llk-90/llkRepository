@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xftMapper">
+
+	<!--添加充值记录 -->
+	<insert id="insertRecharge" parameterType="pd">
+		<![CDATA[INSERT INTO xft_recharge]]>
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="schoolId!=null">
+				<![CDATA[schoolId,]]>
+			</if>
+			<if test="IcNo!=null">
+				<![CDATA[IcNo,]]>
+			</if>
+			<if test="accountNo!=null">
+				<![CDATA[accountNo,]]>
+			</if>
+			<if test="open_id!=null">
+				<![CDATA[open_id,]]>
+			</if>
+			<if test="out_trade_no!=null">
+				<![CDATA[out_trade_no,]]>
+			</if>
+			<if test="order_id!=null">
+				<![CDATA[order_id,]]>
+			</if>
+			<if test="token_id!=null">
+				<![CDATA[token_id,]]>
+			</if>
+			<if test="total_fee!=null">
+				<![CDATA[total_fee,]]>
+			</if>
+			<if test="status!=null">
+				<![CDATA[status,]]>
+			</if>
+			<if test="mch_id!=null">
+				<![CDATA[mch_id,]]>
+			</if>
+			<if test="order_time!=null">
+				<![CDATA[order_time,]]>
+			</if>
+		</trim>
+		<![CDATA[VALUES]]>
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="schoolId!=null">
+				<![CDATA[#{schoolId},]]>
+			</if>
+			<if test="IcNo!=null">
+				<![CDATA[#{IcNo},]]>
+			</if>
+			<if test="accountNo!=null">
+				<![CDATA[#{accountNo},]]>
+			</if>
+			<if test="open_id!=null">
+				<![CDATA[#{open_id},]]>
+			</if>
+			<if test="out_trade_no!=null">
+				<![CDATA[#{out_trade_no},]]>
+			</if>
+			<if test="order_id!=null">
+				<![CDATA[#{order_id},]]>
+			</if>
+			<if test="token_id!=null">
+				<![CDATA[#{token_id},]]>
+			</if>
+			<if test="total_fee!=null">
+				<![CDATA[#{total_fee},]]>
+			</if>
+			<if test="status!=null">
+				<![CDATA[#{status},]]>
+			</if>
+			<if test="mch_id!=null">
+				<![CDATA[#{mch_id},]]>
+			</if>
+			<if test="order_time!=null">
+				<![CDATA[#{order_time},]]>
+			</if>
+		</trim>
+	</insert>
+  
+	<!--修改时间(校付通充值成功的设置时间)-->
+	<update id="updateRecharge" parameterType="pd">
+		update 
+			xft_recharge
+		set 
+			status = #{status},
+			order_time = #{order_time}
+		where 
+			out_trade_no = #{out_trade_no}
+		and 
+			updateRecord != '1'
+	</update>
+
+	<!--  添加操作记录-->
+	<insert id="insertxyoper" parameterType="pd">
+		insert into xft_xyoper(
+		      AccountNo,
+		      CustomerNo,
+		      CustomerName,
+		      CardID,
+		      JE,
+		      LeftJE,
+		      LSH,
+		      DevNo,
+		      ItemNo,
+		      schoolId,
+		      PayTime
+	      )values(
+		      #{accountNo},
+		      #{customerNo},
+		      #{customerName},
+		      #{cardId},
+		      #{je},
+		      #{leftJE},
+		      #{lsf},
+		      #{devNo},
+		      #{itemNo},
+		      #{schoolid},
+		      #{payTime}
+	      )
+	</insert>
+	
+    <!--  添加消费记录-->
+	<insert id="addXyinf" parameterType="pd">
+		INSERT INTO xft_xyinf(
+			AccountNo,
+			CustomerNo,
+			CustomerName,
+			CardID,
+			JE,
+			LeftJE,
+			LSH,
+			DevNo,
+			ItemNo,
+			GrpName,
+			SchoolId,
+			PayTime,
+			ColTime
+		)VALUES(
+			#{accountNo},
+			#{customerNo},
+			#{customerName},
+			#{cardId},
+			#{je},
+			#{leftJE},
+			#{lsh},
+			#{devNo},
+			#{itemNo},
+			#{grpName},
+			#{schoolid},
+			#{payTime},
+			#{colTime}
+		)
+	</insert> 
+	
+	<!-- 流水账（记录） -->		 
+	<select id="selectAllxyinf" parameterType="pd" resultType="pd">
+	  select 
+			xft_xyinf.AccountNo,
+			xft_xyinf.CustomerNo,
+			xft_xyinf.CustomerName,
+			xft_xyinf.CardID,
+			xft_xyinf.JE,
+			xft_xyinf.LeftJE,
+			xft_xyinf.LSH,
+			xft_xyinf.DevNo,
+			xft_xyinf.ItemNo,
+			xft_xyinf.GrpName,
+			xft_xyinf.PayTime
+		from xft_xyinf where xft_xyinf.AccountNo= #{accountNo} AND SchoolId = #{schoolid}
+	UNION all
+		select 
+			xft_xyoper.AccountNo,
+			xft_xyoper.CustomerNo,
+			xft_xyoper.CustomerName,
+			xft_xyoper.CardID,
+			xft_xyoper.JE,
+			xft_xyoper.LeftJE,
+			xft_xyoper.LSH,
+			xft_xyoper.DevNo,
+			xft_xyoper.ItemNo, 
+			case xft_xyoper.ItemNo when '11' then '现金充值' when '31' then '终端充值' when '13'
+			then '开户'  when '17' then '挂失'  when '18' then '解挂'  when '21' then '补卡' when '28' then '圈存'
+			end as GrpName,
+			xft_xyoper.PayTime  
+		from xft_xyoper where xft_xyoper.AccountNo= #{accountNo} AND schoolId = #{schoolid}
+		ORDER BY PayTime DESC limit 15
+	</select>
+	
+	<!-- 鑫源从掌上关爱获取充值记录 -->
+	<select id="queryRechargeAll" parameterType="pd" resultType="pd">
+		SELECT
+			xft_recharge.IcNo as cardId
+			,xft_recharge.out_trade_no as dljSeq
+			,xft_recharge.total_fee as money
+			,date_format(order_time,'%Y-%c-%d %h:%i:%s') as rechargeTime
+			,xft_customer.AccountNo as accountNo
+			,xft_customer.CustomerNo as customerNo
+			,xft_customer.CustomerName as customerName
+		FROM
+			xft_recharge 
+	  	LEFT JOIN 
+	  		xft_customer on xft_recharge.accountNo = xft_customer.accountNo
+	  	WHERE 
+	  		xft_recharge.`status`='99'
+	  	AND 
+	  		xft_recharge.updateRecord != '1'
+	  	AND 
+	  		xft_recharge.schoolId = #{schoolId}
+	</select>
+	
+	<!-- 更新充值记录flg -->
+	<update id="updateTerminal" parameterType="pd">
+		UPDATE
+			xft_recharge
+		SET
+			updateRecord = '1'
+		WHERE
+			out_trade_no = #{DljSeq}
+		AND
+			IcNo = #{cardId}
+		AND
+			status = 99
+	</update>
+	
+	<!-- 获取开卡学生基础数据 -->
+	<select id="selUserDateAll" parameterType="pd" resultType="pd">
+		SELECT
+			id,
+			dlj_id as dljId,
+			name,
+			class as className,
+			type,
+			action,
+			user_num as num,
+			CASE user_sex
+			WHEN '男' THEN 0
+			WHEN '女' THEN 1
+			END as sex
+		FROM
+			xft_user_syn
+		WHERE
+			updUserFlg !='1'
+		AND
+			schoolId = #{schoolid}
+	</select> 
+	
+	<!-- 更新基开卡学生础数据flg -->
+	<update id="updUserDataFlg" parameterType="pd">
+		UPDATE
+			xft_user_syn
+		SET
+			updUserFlg = '1'
+		WHERE
+			dlj_id = #{dljId}
+		AND
+			id = #{id}
+		AND 
+			schoolId = #{schoolid}
+	</update>
+	
+	<!-- 更新鑫源基础信息表 -->
+	<update id="updatexycustomer" parameterType="pd">
+		UPDATE
+			xft_customer
+		SET
+			ItemNo = #{itemNo},
+			CardIDH = HEX(#{cardId})
+		WHERE
+			AccountNo = #{accountNo}
+		AND 
+			SchoolId = #{schoolid}
+	</update>
+	
+	<!-- 获取鑫源充值账号 -->
+	<select id="queryXftCustomer" parameterType="string" resultType="pd">
+		SELECT 
+			xft_customer.AccountNo,
+			xft_customer.ItemNo
+		FROM
+			xft_customer 
+		WHERE 
+			xft_customer.CardIDH= #{hexic}
+	</select>
+</mapper>

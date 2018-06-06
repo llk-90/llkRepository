@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AnnouncementMapper">
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT
+			n.n_id,
+			DATE_FORMAT(n.create_time, '%Y-%m-%d') AS create_time,
+			CASE n.n_type
+		WHEN '1' THEN
+			'老师通知'
+		WHEN '2' THEN
+			'学校通知'
+		END AS n_type,
+		 n.n_title,
+		 n.n_content,
+		 n.n_zone_id,
+		 n.n_pic_url
+		FROM
+			t_notice AS n
+		INNER JOIN t_user_teacher AS ut ON ut.ut_user_id = #{pd.user_id}
+		AND ut.ut_zone_id = n.n_zone_id
+		WHERE
+			n.n_type = '1'
+       <if test="pd.time_start != null and pd.time_start != '' and pd.time_end != null and pd.time_end != ''">
+           AND DATE_FORMAT(n.create_time, '%Y-%m-%d') BETWEEN '${pd.time_start}' AND '${pd.time_end}'
+       </if>
+       <if test="pd.keyword != null and pd.keyword != ''">
+           AND n.n_title LIKE '%${pd.keyword}%'
+       </if>
+       ORDER BY n.create_time DESC
+	</select>
+	
+	<select id="schooldatalistPage" parameterType="page" resultType="pd">
+	    SELECT
+			n.n_id,
+			DATE_FORMAT(n.create_time, '%Y-%m-%d') AS create_time,
+			CASE n.n_type
+			WHEN '1' THEN
+				'老师通知'
+			WHEN '2' THEN
+				'学校通知'
+			END AS n_type,
+			 n.n_title,
+			 n.n_content,
+			 n.n_zone_id,
+			 n.n_pic_url
+		FROM
+			t_notice AS n
+			INNER JOIN sys_user AS u ON u.school_id = n.n_zone_id AND u.USER_ID = #{pd.user_id}
+		WHERE
+		n.n_type = '2'
+		<if test="pd.time_start != null and pd.time_start != '' and pd.time_end != null and pd.time_end != ''">
+           AND DATE_FORMAT(n.create_time, '%Y-%m-%d') BETWEEN '${pd.time_start}' AND '${pd.time_end}'
+       </if>
+       <if test="pd.keyword != null and pd.keyword != ''">
+           AND n.n_title LIKE '%${pd.keyword}%'
+       </if>
+       ORDER BY n.create_time DESC
+	</select>
+	
+	<select id="findId" parameterType="pd" resultType="String">
+		SELECT
+			ut_zone_id
+		FROM
+			t_user_teacher
+		WHERE
+			ut_user_id = #{user_id}				
+	</select>
+	
+	<select id="findSchoolId" parameterType="pd" resultType="String">
+	    SELECT
+			school_id
+		FROM
+			sys_user
+		WHERE
+			USER_ID = #{user_id}
+	</select>
+	
+	<insert id="add" parameterType="pd">
+		INSERT INTO t_notice (
+			create_time,
+			n_title,
+			n_type,
+			n_content,
+			n_zone_id,
+			n_pic_url
+		)
+		VALUES
+			(
+			#{create_time},
+			#{title},
+			#{type},
+			#{content},
+			#{zone_id},
+			#{n_pic_url}
+			)	
+	</insert>
+	
+	<select id="getAnno" parameterType="String" resultType="pd">
+	    SELECT
+	    	n_id,
+	    	create_time,
+	    	n_title,
+	    	n_type,
+	    	n_content,
+	    	n_pic_url
+	    FROM
+	    	t_notice
+	    WHERE
+	    	n_id = #{id}
+	</select>
+	
+	<update id="saveEdit" parameterType="pd">
+	    update t_notice set 
+			create_time = #{create_time},
+			n_title = #{title},
+			n_type = #{type},
+			<if test="n_pic_url != null and n_pic_url != ''">
+			n_pic_url = #{n_pic_url},
+			</if>
+			n_content = #{content}
+		where n_id = #{id}
+	</update>
+	
+	<delete id="delAnno" parameterType="String">
+	    DELETE
+		FROM
+			t_notice
+		WHERE
+			n_id = #{id}
+	</delete>
+	
+	<!-- 列出学校管理员下所有班级 -->
+	<select id="findAllClass" parameterType="String" resultType="pd">
+	    SELECT
+			*
+		FROM
+			t_zone
+		WHERE
+			z_parent_id = (
+				SELECT
+					z.z_id
+				FROM
+					t_zone AS z
+					INNER JOIN sys_user AS u ON u.school_id = z.z_parent_id AND u.user_id=#{user_id}
+			)
+	</select>
+</mapper>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HeEduSubscriptMapper">
+
+	<select id="selectCity2" parameterType="pd" resultType="pd">
+		SELECT
+		s.CityId,
+		c.CityName
+		FROM
+		qry_batch_school s,
+		qry_city_info c
+		WHERE
+		s.CityId = c.CityId
+		AND s.SchoolID = (
+		SELECT
+		SchoolID
+		FROM
+		qry_student_info
+		WHERE
+		StudentId = ( SELECT
+		uw_student_id FROM t_user_weixin WHERE uw_open_id = #{openId} ORDER BY
+		create_time DESC LIMIT 1 ) 
+		)
+	</select>
+
+	<select id="selectphonenum" parameterType="pd" resultType="pd">
+		<!-- SELECT
+		uw_user_id,
+		phone_num AS s_phone,
+		uw_open_id,
+		modity_time
+		FROM
+		t_user_weixin u
+		INNER JOIN t_user_student s
+		ON s.us_user_id =
+		u.uw_user_id
+		WHERE
+		u.uw_open_id=CONCAT('',#{openId})
+		ORDER BY
+		modity_time
+		DESC limit 1 -->
+		SELECT
+		uw_parent_id,
+		uw_student_id,
+		phone_num AS s_phone,
+		uw_open_id,
+		create_time
+		FROM
+		t_user_weixin 
+		WHERE
+		uw_open_id=CONCAT('',#{openId})
+		ORDER BY
+		create_time
+		DESC limit 1
+	</select>
+
+	<select id="selectfirmname" parameterType="pd" resultType="pd">
+		select *
+		from hjy_firmoverview
+		where marketingId=#{marketingId}
+	</select>
+
+	<!-- 20171019 01 -->
+	<select id="Arealist" resultType="pd">
+		SELECT area
+		FROM
+		hjy_firmoverview
+	</select>
+
+	<select id="findCity" resultType="string">
+
+		SELECT CityName
+		FROM
+		qry_city_info
+		WHERE CityId=#{cityID}
+
+	</select>
+	<select id="selectYewu" resultType="pd">
+		SELECT DISTINCT
+		marketingId,
+		firmName,
+		pictureURL
+		FROM hjy_firmoverview
+		WHERE
+		area in(
+		select
+		CityName
+		from
+		qry_city_info
+		where
+		CityId=#{CityId}
+		)
+	</select>
+
+	<select id="selectUsername" parameterType="pd" resultType="pd">
+		select s.s_name username
+		from t_user_weixin w,t_user_student
+		us,t_student s
+		where
+		w.uw_user_id=us.us_user_id
+		and
+		us.us_stu_id=s.s_stu_no
+		and w.uw_open_id=#{openId}
+	</select>
+
+
+	<select id="YeWulist" parameterType="pd" resultType="pd">
+		SELECT
+		firmName,
+		area,
+		descript,
+		pictureURL,
+		school,
+		price
+		FROM
+		hjy_firmoverview
+		WHERE
+		marketingId = #{Yewuid}
+	</select>
+
+	<select id="findStuid" parameterType="string"
+		resultType="string">
+		SELECT
+		t.us_stu_id
+		FROM
+		t_user_student AS t
+		where
+		t.us_user_id
+		=#{user_id}
+	</select>
+
+	<select id="selectCodeInfo" parameterType="pd" resultType="pd">
+		<!-- SELECT DISTINCT StudentId, ParentId FROM qry_stuparent_info where 
+			UserName =#{stuName} AND substring(ParLoginName,8,4)=#{phoneNum} -->
+
+		select
+		qsp.ParentId,
+		qsp.StudentId
+		from t_user_weixin tuw,qry_stuparent_info qsp
+		where
+		tuw.uw_parent_id = ParentId and tuw.phone_num=#{phone}
+	</select>
+
+	<select id="selectStuid" parameterType="pd" resultType="string">
+		<!-- SELECT DISTINCT StudentId FROM qry_stuparent_info where UserName =#{stuName} 
+			and substring(ParLoginName,8,4)=#{phoneNum} -->
+		SELECT
+			qsp.StudentId 
+		FROM
+			t_user_weixin tuw,
+			qry_stuparent_info qsp 
+		WHERE
+			tuw.uw_parent_id = qsp.ParentId 
+			AND tuw.phone_num = #{phone} 
+		ORDER BY
+			tuw.create_time DESC 
+			LIMIT 1
+
+	</select>
+
+	<insert id="addInfo" parameterType="pd">
+		INSERT hjy_order_details (
+		hjy_s_id,
+		hjy_create_phone_num,
+		hjy_create_time,
+		hjy_s_name,
+		hjy_firm_name,
+		hjy_order_status,
+		hjy_order_way
+		)
+		VALUES
+		(
+		#{id},
+		#{phone},
+		#{time},
+		#{stuName},
+		#{packageId},
+		#{OrderStaus},
+		#{OrderWay}
+		)
+	</insert>
+	<select id="SelectOrderStaus" parameterType="pd"
+		resultType="string">
+		select
+		DISTINCT
+		hjy_order_status
+		from
+		hjy_order_details
+		where
+		hjy_s_name=#{StudentName}
+		and hjy_create_phone_num=#{phone}
+
+	</select>
+
+	<update id="UpdateOrderStaus" parameterType="pd">
+
+		update
+		hjy_order_details
+		set hjy_order_status= #{OrderStaus}
+		where
+		hjy_s_name=#{stuName}
+		and hjy_create_phone_num=#{phone}
+
+	</update>
+
+	<select id="findUseridByOpenid" parameterType="pd"
+		resultType="String">
+		SELECT
+		uw_user_id
+		FROM
+		t_user_weixin
+		WHERE
+		uw_open_id =
+		#{openid}
+	</select>
+
+	<select id="list" parameterType="String" resultType="pd">
+		SELECT
+		firmName,
+		marketingId
+		FROM
+		hjy_firmoverview
+		WHERE
+		area =#{area}
+	</select>
+
+	<select id="selectUid" parameterType="String"
+		resultType="String">
+
+		SELECT
+		s_device_u_id
+		FROM t_student
+		WHERE
+		s_id = #{stu_id}
+
+	</select>
+
+	<select id="selectStuInfo" parameterType="String"
+		resultType="pd">
+		SELECT
+		ID,
+		SchoolId,
+		ClassId,
+		StudentId,
+		LoginName,
+		SeqStudent,
+		UserName,
+		HeadImage,
+		Email,
+		IcNo,
+		Sex,
+		ModifyTime
+		FROM qry_student_info
+		WHERE
+		qry_student_info.IcNo =#{u_id}
+	</select>
+
+	<select id="selectCity">
+		SELECT
+		CityId
+		FROM
+		qry_batch_school
+		WHERE
+		SchoolID=#{SchoolID}
+	</select>
+
+	<select id="findUserId" resultType="pd">
+		select
+		bs.CityId as cityId,
+		bc.ClassId as classId
+		from qry_batch_class bc,
+		qry_batch_school bs where
+		bc.SchoolId =
+		bs.SchoolId
+	</select>
+
+</mapper>
+	

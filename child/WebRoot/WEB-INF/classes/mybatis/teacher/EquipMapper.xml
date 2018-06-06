@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EquipMapper">
+	
+	<!-- 列表 -->
+	<select id="findlistPage" parameterType="page" resultType="pd">
+		SELECT
+				s.s_id
+				,s.s_name
+				,s.s_zone_id
+				,z.z_name AS className
+				,z2.z_name AS jibuname
+				,z3.z_name AS schoolname
+				,t.ibaby_phone_num AS phone
+				,CASE t.ibaby_equ_status WHEN '0' THEN '正常' WHEN
+				'1' THEN '维修' WHEN '2' THEN '关机' WHEN '3' THEN '-' END AS ibaby_equ_status
+				,CASE t.ibaby_equ_openBusiness WHEN '0' THEN '未开通' WHEN
+				'1' THEN '已开通' END AS ibaby_equ_openBusiness
+				,CASE t.ibaby_equ_buyEquip WHEN '0' THEN '未购买' WHEN
+				'1' THEN '已购买' END AS ibaby_equ_buyEquip
+				,t.ibaby_imei_code
+				,t.ibaby_ic_code
+				,CASE t.ibaby_ic_code_type WHEN '0' THEN '2.4G' WHEN
+				'1' THEN '13.56G' END AS ibaby_ic_code_type
+				,CASE t.ibaby_pay_state WHEN '0' THEN '未支付' WHEN
+				'' THEN '未支付' ELSE '已支付'END AS ibaby_pay_state		
+		FROM
+		        ibaby_equipment t
+		        LEFT JOIN 
+		        t_student s ON s.s_id = t.ibaby_s_id
+				LEFT JOIN
+				t_user_teacher o ON o.ut_zone_id
+				= s.s_zone_id
+				LEFT JOIN t_zone z ON
+				z.z_id = s.s_zone_id
+				LEFT JOIN
+				t_zone z2 ON z2.z_id = z.z_parent_id
+				LEFT JOIN t_zone z3 ON z3.z_id =
+				z2.z_parent_id
+		WHERE 1=1
+		<if test="pd.userIdtc != null and pd.userIdtc !=''">
+			and o.ut_user_id=#{pd.userIdtc}
+		</if>
+		<if test="pd.Name != null and pd.Nname != ''">
+			and (s.s_name LIKE
+			'%${pd.Name}%')
+		</if>
+		<if test="pd.phone != null and pd.phone !=''">
+			and t.ibaby_phone_num=#{pd.phone}
+		</if>
+	</select>
+	
+	<!-- 通过id获取学生和设备信息 -->
+	<select id="findByStuId" parameterType="pd" resultType="pd">
+		SELECT
+		s.s_id
+		,s.s_name
+		,s.s_zone_id
+		,z.z_name AS className
+		,z2.z_name AS jibuname
+		,z3.z_name AS schoolname
+		,a.user_id
+		,a.name
+		,a.phone
+		,u.USER_ID
+		,t.ibaby_equ_status
+		,t.ibaby_equ_openBusiness
+		,t.ibaby_equ_buyEquip
+		,t.ibaby_imei_code
+		,t.ibaby_ic_code
+		,t.ibaby_ic_code_type
+		,t.ibaby_pay_state
+		FROM
+		t_student s
+		INNER JOIN t_zone z ON
+		z.z_id = s.s_zone_id
+		INNER JOIN
+		t_zone z2 ON z2.z_id = z.z_parent_id
+		INNER JOIN t_zone z3 ON z3.z_id =
+		z2.z_parent_id
+		LEFT JOIN t_user_student us ON us.us_stu_id =
+		s.s_id
+		LEFT JOIN sys_user u
+		ON u.USER_ID = us.us_user_id
+		LEFT JOIN sys_user a ON
+		us.us_user_id = a.user_id
+		INNER JOIN
+		ibaby_equipment t ON t.ibaby_s_id = s.s_id
+		WHERE
+		s.s_id =
+		#{s_id}
+	</select>
+	
+	<!-- 修改设备 -->
+	<update id="editEquip" parameterType="pd" flushCache="false">
+		UPDATE
+		ibaby_equipment
+		SET
+		ibaby_equ_status = #{ibaby_equ_status},
+		ibaby_equ_openBusiness = #{ibaby_equ_openBusiness},
+		ibaby_equ_buyEquip = #{ibaby_equ_buyEquip},
+		ibaby_imei_code_old = ibaby_imei_code,
+		ibaby_imei_code = #{ibaby_imei_code},
+		ibaby_ic_code_old = ibaby_ic_code,
+		ibaby_ic_code = #{ibaby_ic_code},
+		ibaby_ic_code_type = #{ibaby_ic_code_type},
+		ibaby_pay_state = #{ibaby_pay_state}
+		WHERE
+		ibaby_s_id = #{s_id}
+	</update>
+	
+</mapper>

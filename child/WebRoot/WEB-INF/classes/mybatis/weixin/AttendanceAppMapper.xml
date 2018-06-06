@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AttendanceAppMapper">
+	<select id="findUserId" parameterType="pd" resultType="String">
+		SELECT
+			uw_user_id
+		FROM
+			t_user_weixin
+		WHERE
+			uw_open_id = #{openid}
+			AND u_type = 3
+	</select>
+	<select id="list" parameterType="pd" resultType="pd">
+	    SELECT * FROM(
+			SELECT
+				*
+				FROM
+					t_attendance_record AS ar
+				INNER JOIN t_user_student AS us ON us.us_user_id = #{user_id}
+				AND us.us_stu_id = ar.ar_stu_id
+				AND ar.ar_date = #{date}
+				AND ar.ar_type = '0'
+				ORDER BY
+					ar_time
+			)
+		AS a
+		GROUP BY a.ar_stu_id
+		UNION ALL
+		SELECT * FROM(
+			SELECT
+				*
+			FROM
+				t_attendance_record AS ar
+			INNER JOIN t_user_student AS us ON us.us_user_id = #{user_id}
+			AND us.us_stu_id = ar.ar_stu_id
+			AND ar.ar_date = #{date}
+			AND ar.ar_type = '1'
+			ORDER BY
+				ar_time DESC
+		)
+		AS a
+		GROUP BY a.ar_stu_id
+	</select>
+	<select id="listAll" parameterType="pd" resultType="pd">
+			SELECT
+				ar_date
+			FROM
+				t_attendance_record
+			WHERE
+				ar_stu_id IN (
+					SELECT
+						us_stu_id
+					FROM
+						t_user_student
+					WHERE
+						us_user_id = #{user_id}
+				)
+			GROUP BY
+				ar_date
+	</select>
+</mapper>

@@ -1,0 +1,105 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<!--标准mui.css-->
+		<link rel="stylesheet" href="../../css/mui.min.css">
+		<link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+		<!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+		<style type="text/css">
+			html,body{
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			.mui-input-group:first-child {
+				margin-top: 2%;
+			}
+			.user-head-pic {
+                height: 80px;
+                width: 80px;
+                margin-top: 10px;
+                border-radius: 50%;
+                background-image: url(../../images/headpic.jpg);
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+            }
+            .mui-table-view-cell{
+            	height: 60px !important;
+            	line-height: 40px;
+            }
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h2 class="mui-title">个人资料</h2>
+		</header>
+		<div class="mui-content" style="padding-bottom:100px;">
+			<form class="mui-input-group">
+				<div class="mui-input-row"  style="height: 100px !important;">
+					<label style="width: 35%; line-height: 80px;">头像</label>
+					<div id="showimg" class="showimg user-head-pic" style="text-align:left;margin-left: 70%;">
+					</div>
+				</div>
+			
+			<br />	
+			<ul class="mui-table-view">
+                <li class="mui-table-view-cell" >
+                    <a class="mui-navigate-right" open-type="common" href="nickname.html">
+                        <span>昵&emsp;&emsp;称</span>
+                        <span style="padding-left: 100px;">Sarah Green</span>
+                    </a>
+                </li>
+                 <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="personal_sign.html">
+                        <span>个性签名</span>
+                        <span style="padding-left: 30px;">你有权要求查阅及改正我们所持有关于你的个人资料</span>
+                    </a>
+                </li>
+                  <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="phone/phone_num.html">
+                        <span>手&nbsp;&nbsp;机&nbsp;&nbsp;号</span>
+                        <span style="padding-left: 90px;">15552363652</span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="../address/address_list.html">
+                        <span>地址管理</span>
+                    </a>
+                </li>
+                <li class="mui-table-view-cell">
+                    <a class="mui-navigate-right" open-type="common" href="E_mail.html">
+                        <span>邮&emsp;&emsp;箱</span>
+                        <span style="padding-left:40px;">SarahGreen@163.com</span>
+                    </a>
+                </li>
+            </ul>
+			</form>
+		</div>
+		<div id="picture" class="mui-popover mui-popover-action mui-popover-bottom">
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a href="#" onclick="cameraimages()">拍照</a>
+				</li>
+				<li class="mui-table-view-cell">
+					<a href="#" onclick="galleryImg()">相册</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a href="#picture"><b>取消</b></a>
+				</li>
+			</ul>
+		</div>
+	</body>
+	<script src="../../js/mui.min.js"></script>
+	<script src="../../js/app.js"></script>
+	<script src="../../js/common.js"></script>
+	</script>
+</html>

@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="visitMapper">
+
+	<!-- 获取资讯列表 -->
+	<select id="findParInfo" parameterType="String" resultType="pd">
+				select 
+				DISTINCT
+			p.UserName,
+			w.phone_num
+		from 
+			t_user_weixin w
+		inner join 
+			qry_stuparent_info p
+		on 
+			p.ParentId=w.uw_parent_id
+		where
+			w.uw_open_id=#{openId}
+	</select>
+	<!-- 插入拜访数据-->
+	<insert id="addInfo" parameterType="pd">
+		insert into guanai_visit(
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			visit_content,
+			reply_content,
+			state,
+			stuName,
+			tea_open_id
+		)
+		values(
+			#{openId},
+			#{beginDay},
+			#{endDay},
+			#{beginTime},
+			#{endTime},
+			#{visitContent},
+			'还未回复，请稍等',
+			'0',
+			#{stuName},
+			#{teaOpenId}
+		)
+	</insert>
+	<!-- 插入请假数据-->
+	<insert id="leaveInfoAdd" parameterType="pd">
+		insert into guanai_askleave(
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			askleave_reason,
+			reply_content,
+			state,
+			stuName,
+			tea_open_id
+		)
+		values(
+			#{openId},
+			#{beginDay},
+			#{endDay},
+			#{beginTime},
+			#{endTime},
+			#{leaveContent},
+			'还未处理，请稍等',
+			'0',
+			#{stuName},
+			#{teaOpenId}
+		)
+	</insert>
+	
+	<!-- 插入作业数据-->
+	<insert id="subHomework" parameterType="pd">
+		insert into guanai_homework(
+			tea_open_id,
+			homework
+		)
+		values(
+			#{openId},
+			#{homework}
+		)
+	</insert>
+	
+	
+	<!-- 老师回复拜访更新ok -->
+	<update id="visitOk" parameterType="pd">
+		UPDATE guanai_visit
+		SET reply_content=#{reply_content},
+		state='1',
+		pass_type='1'
+		where
+		tea_open_id=#{openId}
+		and id=#{id}
+	</update>
+	<!-- 老师回复请假更新ok -->
+	<update id="leaveOk" parameterType="pd">
+		UPDATE guanai_askleave
+		SET reply_content=#{reply_content},
+		state='1',
+		pass_type='1'
+		where
+		tea_open_id=#{openId}
+		and id=#{id}
+	</update>
+	<!-- 老师回复拜访更新refuse -->
+	<update id="visitRefuse" parameterType="pd">
+		UPDATE guanai_visit
+		SET reply_content=#{reply_content},
+		state='1',
+		pass_type='0'
+		where
+		tea_open_id=#{openId}
+		and id=#{id}
+	</update>
+	<!-- 老师回复请假更新refuse -->
+	<update id="leaveRefuse" parameterType="pd">
+		UPDATE guanai_askleave
+		SET reply_content=#{reply_content},
+		state='1',
+		pass_type='0'
+		where
+		tea_open_id=#{openId}
+		and id=#{id}
+	</update>
+	
+	<!-- 获取教师信息 -->
+	<select id="getTeaInfo" parameterType="pd" resultType="pd">
+		select openid,teacherName,phone
+		from teacher_bind_weixin
+		where ClassId=
+			(                                                                                                                                                                                                                                                   
+			select ClassId
+			from qry_student_info
+			where StudentId=
+				(
+			    select us_stu_id
+				from t_user_student
+				where us_user_id = 
+					(
+						SELECT  uw_user_id
+						FROM t_user_weixin
+						where uw_open_id= #{openId}
+                        ORDER BY create_time DESC LIMIT 1 
+					) 
+			)
+		)
+	</select>
+	
+		<!-- 获取教师未处理拜访信息 -->
+	<select id="getHandleInfo" parameterType="pd" resultType="pd">		
+			SELECT
+			id,
+			stuName,
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			visit_content,
+			reply_content,
+			state,
+			creat_time,
+			pass_type,
+			phone,
+			stuName
+			FROM
+			guanai_visit
+			where 
+			tea_open_id=#{openId}  and state="0"
+	</select>
+	
+		<!-- 获取教师未处理请假信息 -->
+	<select id="getNoHandleLeaveInfo" parameterType="pd" resultType="pd">		
+			SELECT
+			id,
+			stuName,
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			askleave_reason,
+			reply_content,
+			state,
+			creat_time,
+			pass_type,
+			phone
+			FROM
+			guanai_askleave
+			where 
+			tea_open_id=#{openId}  and state="0"
+	</select>
+
+    <!-- 获取教师处理的拜访信息 -->
+	<select id="getNoHandleInfo" parameterType="pd" resultType="pd">		
+			SELECT
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			visit_content,
+			reply_content,
+			state,
+			creat_time,
+			pass_type,
+			phone,
+			stuName
+			FROM
+			guanai_visit
+			where 
+			tea_open_id=#{openId}
+			and creat_time>DATE_SUB(CURDATE(), INTERVAL 1 WEEK) and state="1"
+			
+	</select>
+	
+	<!-- 获取教师处理的请假信息 -->
+	<select id="getHandleLeaveInfo" parameterType="pd" resultType="pd">		
+			SELECT
+			OPEN_ID,
+			start_date,
+			end_date,
+			start_time,
+			end_time,
+			askleave_reason,
+			reply_content,
+			state,
+			creat_time,
+			pass_type,
+			phone,
+			stuName
+			FROM
+			guanai_askleave
+			where 
+			tea_open_id=#{openId}
+			and creat_time>DATE_SUB(CURDATE(), INTERVAL 1 WEEK) and state="1"
+			
+	</select>
+	<!-- 获取教师布置的作业 -->
+	<select id="homeworkList" parameterType="pd" resultType="pd">		
+			SELECT
+				*
+			FROM
+			guanai_homework
+			where 
+			tea_open_id=#{openId}
+			order by creat_time desc limit 10	
+	</select>
+	<select id="homeworkList2" parameterType="pd" resultType="pd">		
+			SELECT
+				*
+			FROM
+			guanai_homework
+			where 
+			tea_open_id=#{openid}
+			order by creat_time desc limit 10	
+	</select>
+	<select id="todayHomework" parameterType="pd" resultType="pd">		
+			SELECT
+				*
+			FROM
+			guanai_homework
+			where 
+			tea_open_id=#{openid}
+			AND
+			to_days(creat_time)	= to_days(now())
+			order by creat_time desc limit 1	
+	</select>
+ 
+	
+	<!-- 获取老师拜访处理回馈信息 -->
+	<select id="findRecordInfo" parameterType="String" resultType="pd">
+			SELECT start_date,end_date,visit_content,reply_content,state
+				from guanai_visit
+				where OPEN_ID = #{openId} 
+				order by start_date desc limit 1
+	</select>
+	
+	<!-- 获取老师请假处理回馈信息 -->
+	<select id="leaveRecordInfo" parameterType="String" resultType="pd">
+			SELECT start_date,end_date,askleave_reason,reply_content,state
+				from guanai_askleave
+				where OPEN_ID = #{openId} 
+				order by start_date desc limit 1
+	</select>
+	
+	
+	<!-- 获取老师拜访回馈历史信息 -->
+	<select id="recordListInfo" parameterType="String" resultType="pd">
+			SELECT start_date,end_date,visit_content,reply_content,state
+				from guanai_visit
+				where OPEN_ID = #{openId} AND state = '1'
+				order by start_date desc limit 4
+	</select>
+	
+	<!-- 获取老师请假回馈历史信息 -->
+	<select id="leaveRecordedInfoList" parameterType="String" resultType="pd">
+			SELECT start_date,end_date,askleave_reason,reply_content,state,pass_type
+				from guanai_askleave
+				where OPEN_ID = #{openId} AND state = '1'
+				order by start_date desc limit 4
+	</select>
+	
+	<!-- 回去最新申请的状态 -->
+	<select id="judgeType" parameterType="String" resultType="pd">
+			SELECT teacherId
+				from teacher_bind_weixin
+				where openid = #{openId}
+	</select>
+</mapper>

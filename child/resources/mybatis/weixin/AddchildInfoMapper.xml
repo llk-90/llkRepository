@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AddchildInfoMapper">
+
+<select id="list" parameterType="pd" resultType="pd">
+	    SELECT
+			i.ibaby_s_id,
+			i.ibaby_s_img,
+			i.ibaby_s_name,
+			i.ibaby_s_sex,
+			i.ibaby_equ_accout,
+			i.ibaby_equ_password,
+			i.ibaby_phone_num,
+			i.ibaby_equ_status,
+			i.ibaby_imei_code,
+			i.ibaby_ic_code_type,
+			i.ibaby_ic_code,
+			i.ibaby_ic_name,
+			i.ibaby_create_date,
+			i.ibaby_pay_state
+		FROM
+			ibaby_equipment AS i
+		INNER JOIN t_user_student AS us ON us.us_stu_id = i.ibaby_s_id
+    	WHERE
+			us.us_user_id = #{user_id}
+		ORDER BY 
+			i.ibaby_update_date DESC
+</select>
+
+<!-- <select id="findStuid" parameterType="pd" resultType="string">
+		SELECT
+			s.StudentId
+		FROM
+			qry_student_info AS s
+		WHERE
+			s.StudentId in 
+			(
+			 	SELECT
+			      t.us_stu_id
+				FROM
+			      t_user_student AS t
+				WHERE
+			       t.us_user_id = #{user_id}
+			  
+			) AND s.UserName = #{child_name}
+</select> -->
+
+<select id="findStuid" parameterType="pd" resultType="string">
+  SELECT
+			s.s_id
+		FROM
+			t_student AS s
+		WHERE
+			s.s_id in 
+			(
+			 	SELECT
+			      t.us_stu_id
+				FROM
+			      t_user_student AS t
+				WHERE
+			       t.us_user_id = #{user_id}
+			  
+			) AND s.s_name = #{child_name}
+</select>
+
+
+
+<select id="findUseridByOpenid" parameterType="String" resultType="String">
+	 <!--    SELECT
+			uw_user_id
+		FROM
+			t_user_weixin
+		WHERE
+			uw_open_id = #{openid} -->
+				SELECT
+			u.uw_user_id
+		FROM   
+			t_user_weixin u,
+			sys_user su
+		WHERE 
+		  u.uw_user_id = su.USER_ID AND
+		  u.u_type = '7' and
+			u.uw_open_id = #{OPENID}
+</select>
+
+<select id="findNotCall" parameterType="String" resultType="string">
+	    
+</select>
+
+
+ <insert id="addChild" parameterType="pd">
+		INSERT ibaby_equipment (
+			ibaby_s_id,
+			ibaby_s_img,
+			ibaby_s_name,
+			ibaby_s_sex,
+			ibaby_equ_accout,
+			ibaby_equ_password,
+			ibaby_phone_num,
+			ibaby_imei_code,
+			ibaby_ic_code_type,
+			ibaby_ic_code,
+			ibaby_ic_name,
+			ibaby_equ_status,
+			ibaby_create_date,
+			ibaby_update_date
+		)
+		VALUES
+		(
+			#{stu_id},
+			#{imgSrc},
+			#{child_name},
+			#{sex},
+			#{imeiCode},
+			#{equPassword},
+			#{phoneNum},
+			#{imeiCode},
+			#{icCodeType},
+			#{icCode},
+			#{icName},
+			#{phoneStatus},
+			#{create_time},
+			#{update_time}
+		)
+</insert> 
+
+<update id="updChild" parameterType="pd">
+		UPDATE ibaby_equipment 
+		SET 
+			ibaby_equipment.ibaby_update_date = #{update_time}
+		WHERE
+			ibaby_equipment.ibaby_s_id = #{stu_id}
+
+</update >
+
+<update id="updateChild" parameterType="pd">
+		UPDATE ibaby_equipment 
+	　　   <set>
+	     <if test="imgSrc !=null || imgSrc !=''">
+	       ibaby_s_img =#{imgSrc},
+	     </if>
+	     <if test="child_name !=null || child_name !=''">
+	       ibaby_s_name=#{child_name},
+	     </if>
+	     <if test="sex !=null || sex !=''">
+	     	 ibaby_s_sex =#{sex},
+	     </if>
+	     <if test="imeiCode !=null || imeiCode !=''">
+	         ibaby_equ_accout=#{imeiCode},
+	     </if>
+	     <if test="equPassword !=null || equPassword !=''">
+	         ibaby_equ_password =#{equPassword},
+	     </if>
+	     <if test="phoneNum !=null || phoneNum !=''">
+	         ibaby_phone_num =#{phoneNum},
+	     </if>
+	     <if test="create_date !=null || create_date !=''">
+	         ibaby_create_date =#{create_date},
+	     </if>
+	     <if test="update_date !=null || update_date !=''">
+	         ibaby_update_date =#{update_date},
+	     </if>
+	     <if test="imeiCode !=null || imeiCode !=''">
+	         ibaby_ic_code =#{imeiCode},
+	     </if>
+	     <if test="imeiCode !=null || imeiCode !=''">
+	         ibaby_imei_code =#{imeiCode},
+	     </if>
+	     <if test="imeiCode !=null || imeiCode !=''">
+	         ibaby_ic_code_old =#{imeiCode},
+	     </if>
+	     <if test="imeiCode !=null || imeiCode !=''">
+	         ibaby_imei_code_old =#{imeiCode},
+	     </if>
+	     <if test="icCodeType !=null || icCodeType !=''">
+	         ibaby_ic_code_type =#{icCodeType}
+	     </if>
+    </set>
+		WHERE
+			ibaby_s_id = #{s_id}
+</update >  
+	
+</mapper>
+	

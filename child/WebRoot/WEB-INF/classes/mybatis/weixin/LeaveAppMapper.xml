@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LeaveAppMapper">
+	<select id="list" parameterType="pd" resultType="pd">
+		SELECT
+			l.l_id,
+			l.l_stu_id,
+			l.l_state,
+			l.l_leave_type,
+			l.l_reason,
+			s.s_name,
+			DATE_FORMAT(l.l_start_time, '%Y-%m-%d') AS l_start_time,
+			DATE_FORMAT(l.l_end_time, '%Y-%m-%d') AS l_end_time,
+			TIMESTAMPDIFF(DAY,l_start_time,l_end_time)+1 AS days
+		FROM
+			t_leave AS l
+		INNER JOIN t_student AS s ON s.s_id = l.l_stu_id
+		INNER JOIN t_user_teacher AS ut ON ut.ut_user_id = #{user_id}
+		AND s.s_zone_id = ut.ut_zone_id
+		INNER JOIN t_user_student AS us ON us.us_stu_id = s.s_id
+		ORDER BY l.create_time
+	</select>
+	    	
+	<select id="findLeaveById" parameterType="pd" resultType="pd">
+		SELECT
+			l.l_id,
+			l.l_stu_id,
+			l.l_state,
+			DATE_FORMAT(l.create_time,"%Y-%m-%d") AS create_time,
+			l.l_leave_type, 
+			DATE_FORMAT(l.l_start_time,"%Y-%m-%d") AS l_start_time,
+			DATE_FORMAT(l.l_end_time,"%Y-%m-%d") AS l_end_time,
+			DATE_FORMAT(l.l_approval_time,"%Y-%m-%d") AS l_approval_time,
+			uw.uw_open_id,
+			s.s_name
+		FROM
+			t_leave AS l
+			INNER JOIN t_user_student AS us ON us.us_stu_id = l.l_stu_id
+			INNER JOIN t_student AS s ON s.s_id = l.l_stu_id
+			INNER JOIN t_user_weixin AS uw ON uw.uw_user_id = us.us_user_id
+		WHERE
+			l.l_id = #{id}
+	</select>
+	<select id="findUserNameById" parameterType="pd" resultType="String">
+	    SELECT
+			NAME
+		FROM
+			sys_user
+		WHERE
+			USER_ID = #{user_id}
+	</select>
+	<select id="findSchool" parameterType="String" resultType="String">
+	SELECT
+		z_name
+	FROM
+		t_zone
+	WHERE
+		z_id = (
+			SELECT
+				z_parent_id
+			FROM
+				t_zone
+			WHERE
+				z_id = (
+					SELECT
+						z.z_parent_id
+					FROM
+						t_zone AS z
+					INNER JOIN t_user_teacher AS ut ON ut.ut_zone_id = z.z_id
+					AND ut.ut_user_id = #{user_id}
+				)
+		)
+	</select>
+	<update id="approval" parameterType="pd">
+	    UPDATE t_leave
+		SET l_state = #{approval},
+		    l_replay_reason = #{replay},
+			l_approval_time = SYSDATE()
+		WHERE
+			l_id = #{id}
+	</update>
+	
+	<select id="listNotice" parameterType="pd" resultType="pd">
+		SELECT
+			l.l_id,
+			l.l_stu_id,
+			l.l_state,
+			l.l_leave_type,
+			CASE 
+			WHEN l.l_replay_reason='' THEN '无' 
+			ELSE l.l_replay_reason 
+			END AS l_replay_reason,
+			DATE_FORMAT(l.l_approval_time, '%Y-%m-%d') AS l_approval_time,
+			s.s_name,
+			DATE_FORMAT(l.l_start_time, '%Y-%m-%d') AS l_start_time,
+			DATE_FORMAT(l.l_end_time, '%Y-%m-%d') AS l_end_time,
+			TIMESTAMPDIFF(
+				DAY,
+				l_start_time,
+				l_end_time
+			) + 1 AS days
+		FROM
+			t_leave AS l
+		INNER JOIN t_user_student AS us ON us.us_user_id = #{user_id}
+		AND l.l_stu_id = us.us_stu_id AND l.l_state != 0
+		INNER JOIN t_student AS s ON s.s_id = us.us_stu_id  
+		ORDER BY l.create_time  
+	</select>
+	<select id="findSchoolByParent" parameterType="String" resultType="String">
+	    SELECT
+			z_name
+		FROM
+			t_zone
+		WHERE
+			z_id = (
+				SELECT
+					z_parent_id
+				FROM
+					t_zone
+				WHERE
+					z_id = (
+						SELECT
+							z_parent_id
+						FROM
+							t_zone
+						WHERE
+							z_id = (
+								SELECT
+									s_zone_id
+								FROM
+									t_student
+								WHERE
+									s_id = (
+										SELECT
+											us_stu_id
+										FROM
+											t_user_student
+										WHERE
+											us_user_id = #{user_id}
+									)
+							)
+					)
+			)
+	</select>
+	
+	<select id="findUseridByOpenid" parameterType="String" resultType="String">
+	    SELECT
+			uw_user_id
+		FROM
+			t_user_weixin
+		WHERE
+			uw_user_id = #{openid}
+	</select>
+</mapper>

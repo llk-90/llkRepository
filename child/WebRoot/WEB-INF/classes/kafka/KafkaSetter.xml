@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/aop 
+						http://www.springframework.org/schema/aop/spring-aop.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context.xsd
+	">
+
+	<!-- Setting the Kafka-setter's info. -->
+	<bean id="producerProperties" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+				<entry key="bootstrap.servers" value="${kafka.bootstrap.servers}" />
+				<entry key="acks" value="${kafka.setter.acks}" />
+				<entry key="retries" value="${kafka.retries}" />
+				<entry key="batch.size" value="${kafka.batch.size}" />
+				<entry key="key.serializer"
+					value="org.apache.kafka.common.serialization.StringSerializer" />
+				<entry key="value.serializer"
+					value="org.apache.kafka.common.serialization.StringSerializer" />
+				<entry key="key.deserializer"
+					value="org.apache.kafka.common.serialization.StringDeserializer" />
+				<entry key="value.deserializer"
+					value="org.apache.kafka.common.serialization.StringDeserializer" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- Building a setter factory to contain the basic info of server. -->
+	<bean id="producer" class="org.apache.kafka.clients.producer.KafkaProducer">
+		<constructor-arg>
+			<ref bean="producerProperties" />
+		</constructor-arg>
+
+	</bean>
+</beans>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PinMemberMapper">
+
+	<!-- 添加 城市验证 -->
+	<select id="check_cityNm" parameterType="pd" resultType="pd">
+		SELECT
+		c.CityName
+		,b.TownName
+		,d.ClassName
+		,e.StudentId
+		FROM
+		qry_batch_school a
+		LEFT JOIN qry_town b ON b.TownId = a.TownId
+		LEFT JOIN qry_city_info c ON c.CityId = b.CityId
+		LEFT JOIN qry_batch_class d ON d.SchoolId = a.SchoolID
+		LEFT JOIN qry_student_info e ON e.ClassId = d.ClassId
+		WHERE
+		a.SchoolID = #{schoolId}
+	</select>
+	
+	<!-- 查询学生Id -->
+	<select id="findStuId" parameterType="pd" resultType="string">
+	SELECT
+		StudentId
+	FROM
+		qry_stuparent_info
+	where
+		UserName =#{hjy_s_name}
+		AND substring(ParLoginName,8,4)=#{hjy_p_phone}
+	</select>
+	
+	<!-- 修改验证码发送状态 -->
+	<update id="update_status" parameterType="pd" flushCache="false">
+		UPDATE
+		hjy_order_details
+		SET
+		hjy_order_status = '3'
+		WHERE
+		hjy_s_id = #{hjy_s_id}
+	</update>
+	
+	<!-- 存储验证码 -->
+	<insert id="save_pin_code" parameterType="pd" flushCache="false">
+		INSERT hjy_pin_group_send (
+	         hjy_s_id,
+	         hjy_s_name,
+			 CityName,
+			 TownName,
+			 SchoolName,
+			 ClassName,
+			 hjy_p_phone,
+			 hjy_pin_code,
+			 hjy_firm_name
+		)
+		VALUES
+		(
+		 #{hjy_s_id},
+		 #{hjy_s_name},
+		 #{CityName},
+		 #{TownName},
+		 #{SchoolName},
+		 #{ClassName},
+		 #{hjy_p_phone},
+		 #{hjy_pin_code},
+		 #{hjy_firm_name}
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CoursewareAnalysisMapper">
+	<!--课件浏览日统计 -->
+	<select id="dayList" parameterType="pd" resultType="pd">
+		select
+		case c.c_type when '1' then '图文类' when '2' then '视频类' when '3'
+		then '文档类'
+		end as type_name,
+		c.c_type,SUM(d.bcr_browse_count) count,
+		DATE_FORMAT(d.create_time, '%Y-%m-%d') dt
+		from
+		t_browse_count_record d
+		INNER join t_courseware c on d.bcr_courseware_id=c.c_id
+		where 1=1
+		<if test="time_start != null and time_start != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+		</if>
+		<if test="time_end != null and time_end != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+		</if>
+		group by c.c_type,dt
+		order by c.c_type,dt
+	</select>
+	<!-- 课件浏览周统计 -->
+	<select id="weekList" parameterType="pd" resultType="pd">
+		select
+		case c.c_type when '1' then '图文类' when '2' then '视频类' when '3'
+		then '文档类' end
+		as type_name,
+		c.c_type,
+		SUM(d.bcr_browse_count) count,
+        <!--date_format(d.create_time,'%Y年第%u周') dt -->
+        concat(date_format(d.create_time,'%Y年'),'第',(date_format(d.create_time,'%u')+1),"周") dt
+		from t_browse_count_record d
+		INNER join t_courseware c on d.bcr_courseware_id=c.c_id
+		where 1=1
+		<if test="time_start != null and time_start != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+		</if>
+		<if test="time_end != null and time_end != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+		</if>
+		group by c.c_type,dt
+		order by c.c_type,dt
+	</select>
+	<!-- 课件浏览月统计 -->
+	<select id="monthList" parameterType="pd" resultType="pd">
+		select
+		case c.c_type when '1' then '图文类' when '2' then '视频类' when '3'
+		then '文档类' end
+		as type_name,
+		c.c_type,
+		SUM(d.bcr_browse_count) count,
+		date_format(d.create_time,'%Y-%m') dt
+		from t_browse_count_record d
+		INNER join t_courseware c on d.bcr_courseware_id=c.c_id
+		where 1=1
+		<if test="time_start != null and time_start != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') >=DATE_FORMAT(#{time_start},'%Y-%m-%d') ]]>
+		</if>
+		<if test="time_end != null and time_end != ''">
+	 <![CDATA[AND DATE_FORMAT(d.create_time, '%Y-%m-%d') <=DATE_FORMAT(#{time_end},'%Y-%m-%d')]]>
+		</if>
+		group by c.c_type,dt
+		order by c.c_type,dt
+	</select>
+
+</mapper>

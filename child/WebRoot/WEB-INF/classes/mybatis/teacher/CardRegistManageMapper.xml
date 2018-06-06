@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CardRegistManageMapper">
+	
+	<!-- 查询schoolId -->
+	<select id="findSchoolId" parameterType="String" resultType="String">
+		select school_id from sys_user where USER_ID=#{userId}
+	</select>
+	
+	<!-- 获取补卡列表 -->
+	<select id="findCardRegistlistPage" parameterType="pd" resultType="pd">
+		select
+			i.id,
+			s.SchoolName,
+			c.ClassName,
+			i.contact_person,
+			i.phone_num,
+			i.address,
+			i.card_num,
+			case i.replace_status when 0 then '已提交' when 1 then '制卡中' when 2 then '已发卡' when 99 then '无效'end as replaceStatus,
+			i.submit_time
+		from
+			guanai_card_replacement_info i
+		inner join
+			qry_batch_school s
+		on
+			i.SchoolId=s.SchoolID
+		inner join
+			qry_batch_class c
+		on
+			i.ClassID=c.ClassId
+		where
+			1=1
+		and
+			i.SchoolId=#{pd.schoolId}
+		<if test="pd.SchoolName != null and pd.SchoolName !=''">
+			and s.SchoolName LIKE '%${pd.SchoolName}%'
+		</if>
+		<if test="pd.ContactPerson != null and pd.ContactPerson !=''">
+			and i.contact_person LIKE '%${pd.ContactPerson}%'
+		</if>
+		<if test="pd.phoneNum != null and pd.phoneNum !=''">
+			and i.phone_num LIKE '%${pd.phoneNum}%'
+		</if>
+		<if test="pd.replaceStatus != null and pd.replaceStatus !='' and pd.replaceStatus ==0">
+			and i.replace_status=0
+		</if>
+		<if test="pd.replaceStatus != null and pd.replaceStatus !='' and pd.replaceStatus ==1">
+			and i.replace_status = 1
+		</if>
+		<if test="pd.replaceStatus != null and pd.replaceStatus !='' and pd.replaceStatus ==2">
+			and i.replace_status = 2
+		</if>
+		<if test="pd.replaceStatus != null and pd.replaceStatus !='' and pd.replaceStatus ==99">
+			and i.replace_status = 99
+		</if>
+	</select>
+	
+	<!-- 根据id找到该补卡信息 -->
+	<select id="findByCardRegistId" parameterType="pd" resultType="pd">
+		select
+			i.id,
+			s.SchoolName,
+			c.ClassName,
+			i.contact_person,
+			i.phone_num,
+			i.address,
+			i.card_num,
+			i.replace_status,
+			i.submit_time
+		from
+			guanai_card_replacement_info i
+		inner join
+			qry_batch_school s
+		on
+			i.SchoolId=s.SchoolID
+		inner join
+			qry_batch_class c
+		on
+			i.ClassID=c.ClassId
+		where
+			id=#{id}
+	</select>
+	
+	<!-- 编辑补卡信息 -->
+	<update id="editCardRegist" parameterType="pd" flushCache="false">
+		update guanai_card_replacement_info set 
+			replace_status=#{replaceStatus},
+			modify_person=#{name},
+			modify_time=Now()
+		 where id=#{id}
+	</update>
+</mapper>

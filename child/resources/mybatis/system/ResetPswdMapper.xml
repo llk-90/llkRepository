@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ResetPswdMapper">	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update  SYS_USER
+			set 				
+				PASSWORD = #{passwd}
+			where 
+				USERNAME = #{USERNAME}
+	</update>
+		
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select 
+			USER_ID,	
+			USERNAME,	
+			PASSWORD,	
+			NAME
+		from 
+			SYS_USER
+		where 
+			USERNAME = #{USERNAME}
+	</select>
+</mapper>

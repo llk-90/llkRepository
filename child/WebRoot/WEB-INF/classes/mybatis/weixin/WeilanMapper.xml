@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WeilanMapper">
+<!-- 添加围栏信息-->
+	<insert id="save" parameterType="IbabyFenceMsg">
+		insert into 
+		weixin_weilanmsg
+		(
+		parent_id,
+		student_id,
+		weilan_name,
+		weilan_radius,
+		into_weilan,
+		leave_weilan,
+		East_longitude,
+		North_latitude
+		)
+		values
+		(
+		#{parentId},
+		#{studentId},
+		#{weilanName},
+		#{weilanRadius},
+		#{intoWeilan},
+		#{leaveWeilan},
+		#{eastLongitud},
+		#{northLatitud}
+		)
+	</insert>
+	
+	<!--删除围栏信息  -->
+	<delete id="delete" parameterType="IbabyFenceMsg">
+	 delete from
+	    weixin_weilanmsg
+	 where
+	    student_id=#{studentId}
+	    and
+	    weilan_name =#{weilanName}
+	</delete>
+	
+	<!-- 更新围栏信息 -->
+	<update id="update" parameterType="IbabyFenceMsg">
+		UPDATE 
+			weixin_weilanmsg
+		SET 
+			parent_id = #{parentId},
+			student_id = #{studentId},
+			weilan_name = #{weilanName},
+			weilan_radius = #{weilanRadius},
+			into_weilan = #{intoWeilan},
+			leave_weilan = #{leaveWeilan},
+			East_longitude = #{eastLongitud},
+			North_latitude = #{northLatitud}
+			WHERE
+				student_id=#{studentId}
+				and
+				weilan_name = #{weilanName}
+	</update>
+	
+	<!--根据学生id查询出该学生所有的围栏，获取围栏名称  -->
+	<select id="select_weilanName" parameterType="String" resultType="String">
+	    SELECT
+			weilan_name
+		FROM
+			weixin_weilanmsg
+		WHERE 
+		    student_id=#{student_id}
+	</select>
+	
+</mapper>

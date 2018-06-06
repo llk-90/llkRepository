@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppuserMapper">
+	
+	
+	<!-- 更新登录时间 -->
+	<update id="updateLastLogin" parameterType="pd">
+		update SYS_USER set 
+		LAST_LOGIN = #{LAST_LOGIN} 
+		where USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="pd" resultType="pd">
+		select * from SYS_USER 
+		where 1=1
+		<if test="USERNAME != null and PASSWORD != null">
+	  	and	
+	  		(
+	  		("USERNAME" = #{USERNAME} and "PASSWORD" = #{PASSWORD})
+	  		or
+	  		("EMAIL" = #{USERNAME} and "PASSWORD" = #{PASSWORD})
+	  		
+	  		)
+		</if>
+		<if test="USER_ID != null and USER_ID != ''">
+		and USER_ID = #{USER_ID}
+		</if>
+	</select>
+	
+	<!-- 存入IP -->
+	<update id="saveIP" parameterType="pd">
+		update SYS_USER 
+			set 
+				IP = #{IP}
+			where 
+				USERNAME = #{USERNAME}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="editU" parameterType="pd" flushCache="false">
+		update  SYS_USER  set 
+		        USERNAME				= #{USERNAME},
+				NAME 					= #{NAME},
+				ROLE_ID 				= #{ROLE_ID},
+				area_id                = #{zd_id},
+				BZ						= #{BZ},
+				EMAIL					= #{EMAIL},
+				PHONE					= #{PHONE}
+			<if test="PASSWORD != null and PASSWORD != ''">
+				,PASSWORD				= #{PASSWORD}
+			</if>
+			where 
+				USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 通过user_id获取数据 -->
+	<select id="findByUiId" parameterType="pd" resultType="pd">
+	select 
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			RIGHTS,
+			ROLE_ID,
+			area_id,
+			LAST_LOGIN,
+			IP,
+			BZ,
+			SKIN,
+			EMAIL,
+			PHONE
+		from 
+			SYS_USER
+		where 
+			USER_ID = #{USER_ID}
+			
+	</select>
+	
+	<!-- 邮箱重复获取数据 -->
+	<select id="findByUE" parameterType="pd" resultType="pd">
+	select 
+				u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.EMAIL,
+				u.PHONE,
+				u.BZ,
+				r.ROLE_ID,
+				r.ROLE_NAME,
+        a.`name`  farm_name 
+		from SYS_USER u, SYS_ROLE r,tb_area a 
+		where u.ROLE_ID = r.ROLE_ID 
+  		 	 and u.area_id=a.zd_id
+    		and r.PARENT_ID='2'
+			and	u.EMAIL = #{EMAIL}
+	</select>
+	<!-- 通过手机号获取数据 -->
+	<select id="findByPH" parameterType="pd" resultType="pd">
+			select  
+ 				u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.EMAIL,
+				u.PHONE,
+				u.BZ,
+				r.ROLE_ID,
+				r.ROLE_NAME,
+        a.`name`  farm_name 
+		from SYS_USER u, SYS_ROLE r,
+     tb_area a 
+		where u.ROLE_ID = r.ROLE_ID 
+    and u.area_id=a.zd_id
+    and r.PARENT_ID='2'
+    AND u.PHONE=#{PHONE}
+	</select>
+	
+	<!-- 通过USER_ID获取数据 -->
+	<select id="findByUId" parameterType="pd" resultType="pd">
+		select 
+				u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.EMAIL,
+				u.PHONE,
+				u.BZ,
+				r.ROLE_ID,
+				r.ROLE_NAME,
+        a.`name`  farm_name 
+		from SYS_USER u, SYS_ROLE r,tb_area a 
+		where u.ROLE_ID = r.ROLE_ID 
+  		 	 and u.area_id=a.zd_id
+    		and r.PARENT_ID='2'
+			and	u.USER_ID=#{USER_ID}
+	</select>
+	<!-- 通过USER_NAME获取数据 -->
+	<select id="findByName" parameterType="pd" resultType="pd">
+			select 
+				u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.EMAIL,
+				u.PHONE,
+				u.BZ,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from SYS_USER u, SYS_ROLE r 
+		where u.ROLE_ID = r.ROLE_ID 
+			 and u.USERNAME=#{USERNAME}
+	</select>
+	<!-- 新增app用户 -->
+	<insert id="saveU" parameterType="pd">
+		insert into SYS_USER (
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			ROLE_ID,
+			NAME,
+			area_id,
+			BZ,
+			PHONE,
+			EMAIL,
+			create_time
+			
+		) values (
+			#{USER_ID},
+			#{USERNAME},
+			#{PASSWORD},
+			#{ROLE_ID},
+			#{NAME},
+			#{zd_id},
+			#{BZ},
+			#{PHONE},
+			#{EMAIL},
+			SYSDATE()
+		)
+	</insert>
+	<!-- 用户列表(app用户组) -->
+	<select id="userlistPage" parameterType="page" resultType="pd" >
+			select  
+ 				u.USER_ID,
+				u.USERNAME,
+				u.NAME,
+				u.EMAIL,
+				u.PHONE,
+				u.BZ,
+				u.create_time,
+				r.ROLE_ID,
+				r.ROLE_NAME,
+               a.`name`  farm_name 
+		  from SYS_USER u, SYS_ROLE r,
+     tb_area a 
+		where u.ROLE_ID = r.ROLE_ID 
+    and u.area_id=a.zd_id
+    and r.PARENT_ID=#{pd.PARENT_ID}
+		<if test="pd.USERNAME != null and pd.USERNAME != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.USERNAME LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+					 or 
+					 u.EMAIL LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%') 
+					 or
+					 u.NAME LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+					 or
+					 u.PHONE LIKE CONCAT(CONCAT('%', #{pd.USERNAME}),'%')
+				)
+		</if>
+		<if test="pd.ROLE_ID != null and pd.ROLE_ID != ''"><!-- 角色检索 -->
+			and u.ROLE_ID=#{pd.ROLE_ID} 
+		</if>
+		<if test="pd.zd_id != null and pd.zd_id != ''"><!-- 农场检索检索 -->
+			and a.zd_id=#{pd.zd_id} 
+		</if>
+		order by u.create_time desc
+	</select>
+	<!-- 删除用户 -->
+	<delete id="deleteU" parameterType="pd">
+		delete from SYS_USER 
+		where 
+			USER_ID = #{USER_ID}
+	</delete>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteAllU" parameterType="String">
+		delete from SYS_USER
+		where 
+			USER_ID in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+</mapper>

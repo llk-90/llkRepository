@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MessageEditMapper">
+	<!-- 查找学生和家长信息 -->
+	<select id="findInfoList"  parameterType="pd" resultType="pd">
+		SELECT
+		    users.head_photo AS HEAD_PHOTO,
+			stu1.s_name AS NAME,
+			stu1.s_addr AS ADDRESS,
+			zon.z_name  AS ZCLASS,
+			users.PHONE AS PHONE,
+			CASE
+	   WHEN stu1.s_sex = '0' THEN '女'
+			ELSE '男'  END AS SEX,			
+			 date_format(stu1.s_birthday, '%Y-%m-%d') AS BIRTHDAY
+		FROM
+			sys_user users
+			INNER JOIN t_user_student stu ON stu.us_user_id = users.USER_ID
+			INNER JOIN t_student stu1 ON stu1.s_id = stu.us_stu_id
+			INNER JOIN t_zone zon ON zon.z_id = stu1.s_zone_id
+			WHERE
+				users.USER_ID = #{userId}
+	</select>
+	
+	<!-- 更新学生信息 -->
+	<update id="updateStuInfo" parameterType="pd">
+		UPDATE 
+			t_student s
+		SET 
+		<if test="name != null and name != ''">
+			s.s_name = #{name}
+		</if>
+		<if test="sex != null and sex != ''">
+			s.s_sex = #{sex}
+		</if>
+		<if test="address != null and address != ''">
+			s.s_addr = #{address}
+		</if>
+		<if test="birthday !=null and birthday != ''">
+			s.s_birthday = #{birthday}
+		</if>
+			WHERE
+				s.s_id = (
+					SELECT
+						us.us_stu_id
+					FROM
+						sys_user u
+					INNER JOIN 
+						t_user_student us 
+					ON 
+						us.us_user_id = u.user_id
+					WHERE
+						u.user_id = #{user_id}
+				)
+	</update>
+	
+	<!-- 更新家长联系电话 -->
+	<update id="updateParentInfo"  parameterType="pd">
+		UPDATE 
+			sys_user
+		SET
+		<if test="head_photo != null and head_photo != ''">
+			head_photo = #{head_photo}
+		</if>
+		<if test="phone != null and phone != ''">
+			phone = #{phone}
+		</if>
+		WHERE
+			user_id = #{user_id}
+	</update>
+	
+	<!-- 查找老师信息 -->
+	<select id="findTeachInfo"  parameterType="pd" resultType="pd">
+	SELECT
+		    s.head_photo AS HEAD_PHOTO,
+			s.name AS NAME,
+			s.phone AS PHONE,
+			CASE WHEN s.sex = '0' THEN '女' ELSE '男'  END AS SEX,
+			date_format(ut.ut_birthday, '%Y-%m-%d') AS BIRTHDAY,	
+			ut.ut_address AS ADDRESS,
+			zon.z_name  AS ZCLASS
+	FROM
+		sys_user s
+		INNER JOIN t_user_teacher ut ON ut.ut_user_id = s.USER_ID
+		INNER JOIN t_zone zon ON zon.z_id = ut.ut_zone_id
+	WHERE
+		s.USER_ID = #{user_id}
+	
+	</select>
+	
+	<!-- 更新老师信息 -->
+	<update id="updateTeachInfo" parameterType="pd">
+		UPDATE 
+			sys_user
+		SET
+			<if test="head_photo != null and head_photo != ''">
+				head_photo = #{head_photo}
+			</if>
+			<if test="name != null and name != ''">
+				name = #{name}
+			</if>
+			<if test="sex != null and sex != ''">
+				sex = #{sex}
+			</if>
+			<if test="phone != null and phone != ''">
+				phone = #{phone}
+			</if>
+		WHERE
+			user_id = #{user_id}
+	</update>
+	
+	<!-- 更新老师信息 -->
+	<update id="updateTeacher" parameterType="pd">
+		UPDATE 
+			t_user_teacher
+		SET
+			<if test="address != null and address != ''">
+				ut_address = #{address}
+			</if>
+			<if test="birthday != null and birthday != ''">
+				ut_birthday = #{birthday}
+			</if>
+		WHERE
+			ut_user_id = #{user_id}
+	</update>
+	
+</mapper>

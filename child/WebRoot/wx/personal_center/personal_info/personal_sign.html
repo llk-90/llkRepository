@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html class="ui-page-login">
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<!--标准mui.css-->
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+		<!--App自定义的css-->
+        <link rel="stylesheet" type="text/css" href="../../css/header.css" />
+		<style>
+			html,
+			body{
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			.mui-input-row{
+				height: 50px !important;
+			}
+			.mui-content-padded {
+				margin-left:5px;
+				margin-right:5px;
+			}
+			.btn{
+				width: 98%;
+				height: 50px;
+				border: 0;
+				background-color:#F45250;
+				color: #FFFFFF;
+				font-size: larger;
+				border-radius: 0;
+				margin-top:40px;
+				margin-left: 1%;
+			}
+			.mui-input-group {
+				background: none;
+				display: table;
+			}
+			.mui-input-group:before,
+			.mui-input-group:after {
+				height: 0;
+			}
+			.mui-input-group .mui-input-row {
+				display: table-cell;
+				width: 100%;
+				vertical-align: middle;
+				background-color: #fff;
+			}
+			.mui-input-group .mui-input-row:after {
+				height: 0;
+			}
+			
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-self">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h2 class="mui-title">个性签名</h2>
+		</header>
+		<div class="mui-content mui-fullscreen">
+			<div class="mui-content-padded">
+				<div class="mui-input-group">
+				<div class="mui-input-row">
+					<textarea id="sign" rows="8" placeholder="个性签名" ></textarea>
+				</div>
+				</div>
+			</div>
+		
+			<button id='next' class="btn">保存</button>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/app.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	</body>
+</html>
