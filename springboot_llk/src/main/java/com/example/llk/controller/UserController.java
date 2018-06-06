@@ -15,7 +15,7 @@ import io.swagger.annotations.ApiResponses;
 public class UserController {
 	@ApiResponses({
      	@ApiResponse(code = 404, message = "服务器内部异常"),
-		@ApiResponse(code = 401, message = "权限不足") })
+		})
 	@ApiOperation(value="第一个")
 	@ApiImplicitParam(name = "name",value="需要输入的内容",required =false,paramType ="path",dataType= "String")
 	@RequestMapping("/hello/{name}")
