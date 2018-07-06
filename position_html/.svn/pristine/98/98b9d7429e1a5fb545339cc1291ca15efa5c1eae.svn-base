@@ -1,0 +1,290 @@
+// var classId=102176751;
+// var key=""
+var classId;
+var key = "";
+var uid;
+var pageSize = 5;
+var pageCount = 0;
+var usertype;
+var userInfo;
+//get screen width
+var width;
+var openid;
+var SchoolId;
+var username;
+
+/**
+ * The Function which be enactive when this page load
+ */
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+mui.init({
+    pullRefresh: {
+        container: '#pullrefresh',
+        down: {
+            callback: pulldownRefresh
+        },
+        up: {
+            auto: true,
+            contentrefresh: '正在加载...',
+            callback: pullupRefresh
+        }
+    },
+    gestureConfig: {
+        tap: true,
+        longtap: true
+    }
+});
+
+
+$(function () {
+    var height = $(window).height();
+    width = $(window).width();
+    $("#addMoment").css({"width": height / 15});
+
+    mui('body').on('longtap', '.bjq-list', function (thingsHappen) {
+        deleteAMoment(thingsHappen.srcElement);
+    });
+    mui('body').on('tap', '#addMoment', function () {
+            window.location.href = 'tongzhiadd.html?openid=' + openid + '&uid=' + uid + '&classId=' + classId + '&usertype=' + usertype + '&SchoolId=' + SchoolId;
+    });
+    mui('body').on('tap', 'a', function () {
+        var pointedLocation='';
+        if(this.href.animVal==undefined){
+            pointedLocation=this.href;
+        }else {
+            pointedLocation=this.href.animVal;
+        }
+        window.location.href = pointedLocation + "?openid=" + openid;
+    });
+    getBasicInfo();  
+    // 根据点击通知按钮判断是学生还是老师来显示图标
+    if(usertype == 2){
+    	document.getElementById("tongzhicontent").style.display = "block";
+    }else{
+    	document.getElementById("tongzhicontent").style.display = "none";
+    }
+})
+
+
+/**
+ * 下拉刷新具体业务实现
+ */
+function pulldownRefresh() {
+    setTimeout(function () {
+        key = "";
+        pageCount = 1;
+        location.reload();
+        mui('#pullrefresh').pullRefresh().endPulldownToRefresh();//refresh completed
+    }, 1500);
+}
+
+var count = 0;
+
+/**
+ * 上拉加载具体业务实现
+ */
+function pullupRefresh() {
+    loadListData();
+}
+
+
+//获取url传递参数
+function getBasicInfo() {
+    var url = location.search; //获取url中含"?"符后的字串
+    if (url.indexOf("?") != -1) {
+        var str = url.substr(1);
+        var strs = str.split("&");
+        $.each(strs, function (index, obj) {
+            var key = obj.split("=")[0];
+            var value = obj.split("=")[1];
+            if (key == "openid") {
+                openid = value;
+            } else if (key == "uid") {
+                uid = value;
+            } else if (key == "classId") {
+                classId = value;
+            } else if (key == "usertype") {
+                usertype = value;
+            } else if(key == "SchoolId"){
+            	SchoolId = value;
+            }
+        })
+    }
+    getInfoByOpenId(openid);
+}
+
+function getInfoByOpenId(catchedOpenId) {
+    $.ajax({
+        type: "POST",
+        url: '/noticeMoment/getInfoByOpenId.webapp',
+        data: {
+            openid: catchedOpenId,
+        },
+        dataType: 'json',
+        cache: false,
+        async: false,
+        success: function (data) {
+            if (data.errMsg == "OK") {
+                uid = data.uid;
+                usertype = data.usertype;
+                classId = data.classId;
+                SchoolId = data.SchoolId;
+                username = data.username;
+  /*              getUserInfo();*/
+            }
+        }
+    });
+}
+
+/*function getUserInfo() {
+    $.ajax({
+        type: "POST",
+        url: '/noticeMoment/getUserInfo.webapp',
+        data: {
+            uid: uid,
+            usertype: usertype
+        },
+        dataType: 'json',
+        cache: false,
+        async: false,
+        success: function (data) {
+            if (data.errMsg == "OK") {
+                userInfo = data.userInfo;
+                getSchoolInfo();
+            }
+        }
+    });
+}
+
+function getSchoolInfo() {
+     $.ajax({
+        type: "POST",
+        url: '/noticeMoment/getSchoolInfo.webapp',
+        data: {
+            openid: catchedOpenId,
+        },
+        dataType: 'json',
+        cache: false,
+        async: false,
+        success: function (data) {
+            if (data.errMsg == "OK") {
+                SchoolId = data.SchoolId;
+            }
+        }
+    });
+}
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function getHtmlContent(data) {
+    var allNews = "";
+    $.each(data, function (index, obj) {
+    	var objstr = JSON.stringify(obj)
+        var title = obj.title;
+        var create_time = obj.create_time;
+        var content = obj.content;
+        var notice_id = obj.notice_id;
+//         		 var reg = new RegExp("\r\n","g");//g,表示全部替换。
+//        		 content.replace(reg,"<br/>");
+        var image = obj.picture;
+        var commentsList = obj.commentList;
+        var imageli = "";
+        var sign = "";
+       /* var commentsText = "";*/
+        // if(user_type==2){
+        //     sign = '<div class="right_icon">老师</div>';
+        // }
+        if (image.length != 0) {
+            $.each(image, function (index, ob) {
+                var url = ob;
+                imageli = imageli + '<img src="' + url + '">';
+            })
+        }
+        allNews = allNews +
+            '<div class="tongzhiquan delete_' + index + '" param="' + index + '"  data-noticeid="' + obj.notice_id + '" data-pid="' + obj.userId + '" dataid="' + obj.id + '">' +
+                '<div style="display: none">' + objstr + '</div>' +
+                '<div class="bjq-list">' +
+                    '<div class="bjq-list-header">' +
+                        '<span>' + create_time + '</span>' +   //发布时间显示
+                        '<h1>' + title + '</h1>' +          //标题显示
+                    '</div>' +
+                    //style="text-indent: 2em;"
+                    '<div class="bjq-list-content classMomentContent" >' + content +
+                    '</div>' +
+                    '<div class="bjq-list-pic">' + imageli +
+                    '</div>' +
+                '</div>' +
+            '</div>'
+    });
+    return allNews;
+}
+
+//删除一条班级圈
+function deleteAMoment(pointedToTheMoment) {
+    var delete_Moment = $(pointedToTheMoment).parent().parent();
+    var param = $(delete_Moment).attr('param');
+    var user_id = $(delete_Moment).attr("data-pid");
+    var that = $(delete_Moment);
+    if (uid == user_id) {
+        var jsonstr = delete_Moment.children().eq(0).text();
+        var cjson = JSON.parse(jsonstr);
+        var flag = confirm("确认删除该动态 ?");
+        if (flag == true) {
+            cjson["is_delete"] = 1;
+            jsonstr = JSON.stringify(cjson);
+            $.ajax({
+                type: "POST",
+                url: '/noticeMoment/updateStatus.webapp',
+                data: {"jsonstr": jsonstr},
+                dataType: 'json',
+                cache: false,
+                async: true,
+                success: function (data) {
+                    if (data.errMsg == "OK") {
+                        that.remove();
+                        mui.toast("删除成功！");
+                    } else {
+                        mui.toast(data.errMsg);
+                    }
+                }
+            })
+        }
+    }
+}
+
+function loadListData() {
+    var getKeyFrom = document.getElementById("bjqcontent");
+    if (getKeyFrom.lastElementChild != null) {
+        key = getKeyFrom.lastElementChild.getAttribute("data-key");
+    }
+    mui.ajax("/noticeMoment/getMsg.webapp", {
+        data: {
+            classId: classId,
+            pageSize: pageSize,
+            pageCount: pageCount,
+            SchoolId: SchoolId				
+        },
+        //async: true,
+        dataType: 'json', //服务器返回json格式数据
+        type: 'post', //HTTP请求类型
+        timeout: 100000, //超时时间设置为10秒；
+        crossDomain: true,
+        success: function (data) {
+            pageCount++;
+            mui('#pullrefresh').pullRefresh().endPullupToRefresh();
+            if (data.errMsg == "OK" || data.length < 5) {
+                mui('#pullrefresh').pullRefresh().endPullupToRefresh(true);
+            }
+            $("#bjqcontent").append(getHtmlContent(data.data));
+
+        },
+        error: function (e,xhr) {
+            console.log(xhr);
+            console.log(e);
+            mui.toast("暂无最新动态！");
+        }
+
+    });
+}

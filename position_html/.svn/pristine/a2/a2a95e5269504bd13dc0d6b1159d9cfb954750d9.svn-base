@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <style type="text/css">
+            .yuan {
+                height: 200px;
+                width: 200px;
+                border: 6px solid rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+            }
+        </style>
+    </head>
+
+    <body background="images/cbd.jpg">
+        <div class="yuan">
+            
+        </div>
+    </body>
+
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>页面1</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <link href="./css/Universal.css"rel="stylesheet"></link>
+    <link href="./css/pageOne.css" rel="stylesheet"></link>
+</head>
+<script type="text/javascript">
+    $(function () {
+        var htmlStr="      <div class=\"bBodySpanStyle1 column-center\">\n" +
+            "                    <div class=\"bBodySpanStyle2 row-flex-start\">\n" +
+            "                        <div class=\"bBodySpanStyle3 row-space-around\">\n" +
+            "                         孙乾\n" +
+            "                         <input type=\"checkBox\">\n" +
+            "                        </div>\n" +
+            "                        <div class=\"bBodySpanStyle3 row-center\">\n" +
+            "                            本周共计迟到：\n" +
+            "                        </div>\n" +
+            "                        <div class=\"bBodySpanStyle3 row-center\">\n" +
+            "                            3次\n" +
+            "                        </div>\n" +
+            "                    </div>"
+        for(var i=0;i<10;i++){
+            $("#late").append(htmlStr);
+        }
+        for(var i=0;i<2;i++){
+            $("#leaveEarly").append(htmlStr);
+        }
+        for(var i=0;i<3;i++){
+            $("#leave").append(htmlStr);
+        }
+        $("#absenteeism").append(htmlStr);
+    })
+function  changePage(str,e){
+    switch (str)
+    {
+        case "late":
+            console.log("late");
+            $("#controllerSpan").children().attr("class","bTopSpanStyle3_1 row-center");
+            $(e).attr("class","bTopSpanStyle3 row-center");
+
+            $("#showContent").children().attr("class","bBodyContent");
+            $("#late").attr("class","bBodyContent1");
+
+            break;
+        case "leaveEarly":
+            console.log("leaveEarly");
+            $("#controllerSpan").children().attr("class","bTopSpanStyle3_1 row-center");
+            $(e).attr("class","bTopSpanStyle3 row-center")
+            $("#showContent").children().attr("class","bBodyContent");
+            $("#leaveEarly").attr("class","bBodyContent1");
+            break;
+        case "leave":
+            console.log("leave");
+            $("#controllerSpan").children().attr("class","bTopSpanStyle3_1 row-center");
+            $(e).attr("class","bTopSpanStyle3 row-center")
+            $("#showContent").children().attr("class","bBodyContent");
+            $("#leave").attr("class","bBodyContent1");
+            break;
+        case "absenteeism":
+            console.log("absenteeism");
+            $("#controllerSpan").children().attr("class","bTopSpanStyle3_1 row-center");
+            $(e).attr("class","bTopSpanStyle3 row-center")
+            $("#showContent").children().attr("class","bBodyContent");
+            $("#absenteeism").attr("class","bBodyContent1");
+            break;
+
+    }
+}
+var rot=360;
+    function begin(){
+        document.getElementById("circleShow").style.transform="rotatez("+rot+"deg)";
+        rot+=360;
+    }
+
+</script>
+
+<body>
+<div class="content">
+    <div class="top column-end">
+        <div class="topSpan row-space-around">
+            <div>
+                <img src="./img/tz.png" class="imgStyle1">
+            </div>
+            <div>本周</div>
+            <div class="row-flex-start-end ">
+                <div class="spanStyle1">本月</div>
+                <img src="./img/rl.png" class="imgStyle1">
+            </div>
+        </div>
+    </div>
+    <div class="bottom column-start-center">
+        <div class="bTop column-start-center">
+            <div class="bTopSpanStyle1 row-center">
+                <div class="bTopSpanStyle4 row-center">
+                    <img src="./img/tx.png" class="imgStyle2">
+                </div>
+                <div class="bTopSpanStyle5 column-space-around">
+                    <div class="bTopSpanStyle6 row-flex-start">
+                        <div class="bTopSpanStyle8 row-flex-start">
+                            <img src="./img/tx1.png" class="imgStyle3">
+                            李老师,班主任
+
+                        </div>
+                        <div class="bTopSpanStyle8 row-flex-start">
+                            <img src="./img/rl1.png" class="imgStyle3">
+                            五年三班
+
+                        </div>
+
+                    </div>
+                    <div class="bTopSpanStyle6 row-flex-start">
+                        <img src="./img/rl1.png" class="imgStyle3">
+                        2017年12月1日-2017年12月7日</div>
+
+                </div>
+            </div>
+            <div class="bTopSpanStyle2 row-space-between"id="controllerSpan">
+                <div class="bTopSpanStyle3_1 row-center" onclick="changePage('late',this)"  >迟到</div>
+                <div class="bTopSpanStyle3_1 row-center" onclick="changePage('leaveEarly',this)">早退</div>
+                <div class="bTopSpanStyle3_1 row-center" onclick="changePage('leave',this)">请假</div>
+                <div class="bTopSpanStyle3_1 row-center" onclick="changePage('absenteeism',this)">旷课</div>
+
+            </div>
+        </div>
+        <div class="bBody column-center"id="showContent">
+            <div id="late" class="bBodyContent1" > </div>
+
+            <div id="leaveEarly" class="bBodyContent"></div>
+            <div id="leave" class="bBodyContent"></div>
+            <div id="absenteeism" class="bBodyContent"></div>
+            </div>
+
+        <div class="bBottom">
+            <div class="bBottomDivStyle1 column-end">
+
+                <div class="bBottomDivStyle2 row-center">
+
+                    <div class="bBottomDivStyle3 row-flex-start">
+                        本周共计：
+                    </div>
+
+                    <div class="bBottomDivStyle3 row-flex-end">
+                        3人
+                    </div>
+                </div>
+            </div>
+            <div class="bBottomDivStyle1 column-end">
+                <div class="bBottomDivStyle4 row-flex-start">
+                    <div class="bBottomDivStyle5 column-center">
+                        <img src="./img/zy.png" class="imgStyle4">
+                        主页
+                    </div>
+                    <div class="bBottomDivStyle5 column-center">
+                        <img src="./img/jxht.png" class="imgStyle4">
+                        家校互通
+                    </div>
+                    <div class="bBottomDivStyle5 column-center">
+                        <div class="circle column-center">
+                            <div class="circle1 row-center">
+                                <img class="imgStyle5 img1"src="./img/123.png" id="circleShow"  onclick="begin()" >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="bBottomDivStyle5 column-center">
+                        <img src="./img/pyq.png" class="imgStyle4">
+                        朋友圈
+                    </div>
+                    <div class="bBottomDivStyle5 column-center">
+                        <img src="./img/gr.png" class="imgStyle4">
+                        个人
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        </div>
+
+
+    </div>
+</div>
+</body>
+</html>

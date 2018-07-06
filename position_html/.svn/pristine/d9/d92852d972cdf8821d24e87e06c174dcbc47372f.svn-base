@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.js"
+            integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+            crossorigin="anonymous"></script>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <link href="../../css/app/jiaxiaohutong/Universal.css" rel="stylesheet">
+    <script src="../../js/app/jiaxiaohutong/jquery.cookie.js"></script>
+    <script src="../../js/app/common/Common.js"></script>
+    <style type="text/css">
+        #chat-top {
+            height: 10%;
+            width: 100%;
+            background-color: #54c069;
+            position: fixed;
+            top: 0px;
+            z-index: 10
+        }
+
+        .ccontent {
+            height: 190%;
+            width: 100%;
+            position: fixed;
+            top: 10%;
+            overflow: auto
+        }
+
+        #chat-content {
+            z-index: 1;
+            position: fixed;
+            top: 10%;
+            padding-top: 10px;
+            height: 65%;
+            width: 100%;
+            overflow: auto /*  border:solid 2px white;
+border-bottom-color: #BDBDBD; */
+        }
+
+        #chat-bottom {
+            z-index: 1;
+            position: fixed;
+            bottom: 0;
+            height: 15%;
+            width: 100%;
+            background-color: #f7f7f7;
+            border-top: 1px solid #ddd;
+        }
+
+        #fri-info {
+            height: 70%;
+            width: 30%
+        }
+
+        .chat-top-img {
+            height: 35px;
+            width: 35px;
+            margin-right: 10px;
+        }
+
+        .font-style-1 {
+            font-weight: bold;
+            color: white
+        }
+
+        #input-box {
+            height: 100%;
+            width: 68%;
+        }
+
+        #send {
+            height: 35%;
+            width: 100%;
+        }
+
+        .send-button {
+            position: absolute;
+            z-index: 99999;
+            right: 20px;
+            bottom: 20px;
+            height: 50px;
+            width: 100px;
+            border: 0;
+            margin-right: 0px;
+            border-radius: 5px;
+            color: white;
+            background-color: #54c069;
+        }
+
+        .input-text {
+            outline: none;
+            border-radius: 0;
+            background-color: #f7f7f7;
+            border: 0;
+            width: 100%;
+            height: 100%;
+            bottom: 0;
+            padding: 20px;
+        }
+
+        .chat-show {
+            min-height: 40px;
+            width: 100%;
+        }
+
+        .chat-show-img {
+            height: 35px;
+            width: 35px;
+            margin-right: 13px;
+            margin-left: 13px;
+        }
+
+        .chat-show-span {
+            background-color: #54c069;
+            height: 80%;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 20px;
+        }
+    </style>
+    <script>
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * Needed by message history. The three parameter below.
+         * pagecount
+         * pagesize
+         * topicid
+         * senderid
+         * selfname
+         */
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        var pagecount = 1;
+        var pagesize = 5;
+        var topicid;
+        var senderid;
+        var topicname;
+        var selfname;
+        var timestamp;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is the Function which will be used at the time of this page loading.
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        window.onload = function () {
+            setInterval(getMessageOnTime, 3000);
+        }
+        $(function () {
+            topicid = sessionStorage.getItem("topicid").toString();
+            senderid = sessionStorage.getItem("senderid").toString();
+            topicname = sessionStorage.getItem("topicname").toString();
+            selfname = sessionStorage.getItem("selfname").toString();
+            $("#rname").text(topicname);
+            $.ajax({
+                url: "/mutipleChat/extendHistoryMessage.webapp",
+                data: {
+                    topicid: topicid,
+                    pagecount: pagecount,
+                    pagesize: pagesize
+                },
+                dataType: "json",
+                type: "post",
+                success: function (msg) {
+                    console.log(msg);
+                    if (msg.msg == "OK") {
+                        extendHistoryMessage(msg.msgList)
+                    } else {
+                        console.log(msg.errmsg);
+                    }
+                },
+                error: function (msg) {
+                    if (msg.msg == undefined) {
+                        console.log("失去连接");
+                    } else {
+                        console.log(msg.errmsg);
+                    }
+                }
+            })
+        })
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This function is using to send message
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function send() {
+            $.ajax({
+                url: "/mutipleChat/sendMessage.webapp",
+                type: "post",
+                dataType: "json",
+                data: {
+                    senderid: senderid,
+                    topicid: topicid,
+                    msg: $("#input-text").val()
+                },
+                success: function (msg) {
+                    if (msg.msg == "OK") {
+                        var sendMsg = {msg: $("#input-text").val()};
+                        $("#chat-content").append(extendedMessageYourself(sendMsg));
+                    } else {
+                        console.log(msg.errmsg);
+                    }
+                    var myDate = new Date();
+                    timestamp=myDate.getTime();
+                },
+                error: function (msg) {
+                    console.log(msg.errmsg);
+                }
+            })
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is get message per 10 seconds
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function getMessageOnTime() {
+            $.ajax({
+                url: "/mutipleChat/extendNewMessage.webapp",
+                type: "post",
+                dataType: "json",
+                data: {
+                    topicid: topicid,
+                    timestamp: timestamp
+                },
+                success: function (msg) {
+                    if (msg.msg == "OK") {
+                        extendMessage(msg.msgList);
+                    } else {
+                        console.log(msg.errmsg);
+                    }
+                    var myDate = new Date();
+                    timestamp=myDate.getTime();
+                },
+                error: function (msg) {
+                    console.log(msg.errmsg);
+                }
+            })
+        }
+
+        function extendMessage(msgList) {
+            $.each(msgList, function (index, msgDetail) {
+                var text = "";
+                if (msgDetail.senderid == senderid) {
+                    text = extendedMessageYourself(msgDetail);
+                } else {
+                    text = extendedMessageOthers(msgDetail);
+                }
+                $("#chat-content").append(text);
+            })
+        }
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is about the message extended
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function extendHistoryMessage(msgList) {
+            $.each(msgList, function (index, msgDetail) {
+                var text = "";
+                if (msgDetail.senderid == senderid) {
+                    text = extendedMessageYourself(msgDetail);
+                } else {
+                    text = extendedMessageOthers(msgDetail);
+                }
+                $("#chat-content").prepend(text);
+            })
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is about the extended message from yourself
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function extendedMessageYourself(msgDetail) {
+            var text = "<div class='chat-show row-flex-end'>"
+                + "<span class='chat-show-span row-center'>"
+                + msgDetail.msg
+                + "</span>"
+                + "<span style='writing-mode: tb-rl;' class='chat-show-img'  >"
+                + selfname
+                + "</span>"
+                + " </div>";
+            $("#input-text").val("");
+            return text;
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is about the extended message from others
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function extendedMessageOthers(msgDetail) {
+            var text = "<div class='chat-show row-flex-start'>"
+                + "<span style='writing-mode: tb-rl;' class='chat-show-img'>"
+                + msgDetail.UserName
+                + "</span>"
+                + "<span class='chat-show-span row-center'>"
+                + msgDetail.msg
+                + "</span>"
+                + " </div>";
+            $("#input-text").val("");
+            return text;
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * This part is scrollbar auto scroll
+         */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        function scrollToTheButton() {
+            $("#chat-content").scrollTo($("#chat-content").offset().top);
+        }
+
+
+    </script>
+    <title id="stuname">chat page</title>
+</head>
+<body>
+<div id="chat-top" class="row-center">
+    <div id="fri-info" class="row-center">
+        <!--<img src="" id="img" class="chat-top-img">-->
+        <div class="row-center font-style-1" id="rname"></div>
+    </div>
+</div>
+<div class="ccontent ">
+
+
+    <div id="chat-content"></div>
+    <div id="chat-bottom" class="colum-center">
+        <form onsubmit="return false">
+            <div id="input-box">
+                <textarea class="input-text" id="input-text"></textarea>
+            </div>
+            <input type="submit" class="send-button" onclick="send()" value="发送">
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

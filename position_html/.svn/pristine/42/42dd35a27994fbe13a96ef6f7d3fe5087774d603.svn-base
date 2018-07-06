@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加群聊</title>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <link href="../../css/mui.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../css/app/common/member_home.css">
+    <link href="../../css/app/jiaxiaohutong/imStyle.css" rel="stylesheet">
+    <link href="../../css/app/jiaxiaohutong/Universal.css" rel="stylesheet">
+    <link href="../../css/mui.min.css">
+    <script src="../../js/app/jiaxiaohutong/jquery.js"></script>
+    <script src="../../js/app/jiaxiaohutong/zepto.js"></script>
+    <script src="../../js/app/jiaxiaohutong/popup.js"></script>
+    <script src="../../js/app/jiaxiaohutong/jquery.cookie.js"></script>
+    <script src="../../js/app/common/Common.js"></script>
+    <script src="../../js/mui.min.js"></script>
+</head>
+<body style="background-color: white">
+<div class="mui-content"
+     style="width: 100%;border-radius: 6px;padding-bottom: 10px;padding-top: 10px;align-items: center;padding-bottom: 0px">
+    <div class="mui-card">
+        <label style="color: gainsboro;width: 100%;display: flex;justify-content: center">添加群聊</label>
+        <ul class="mui-table-view" id="mainUl">
+
+        </ul>
+        <div style="display: flex;flex-direction: row;justify-content: center">
+            <button type="button" class="mui-btn mui-btn-primary mui-btn-outlined"
+                    style="border: 1px solid white;width: 100%" onclick="addChat()">确定
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var domianURL = "http://localhost:8080/child/";
+    //获取学生list
+    $(function () {
+        studentList()
+    })
+
+    function studentList() {
+        var openid = GetQueryString("openid");
+
+        $.ajax({
+            type: "POST",
+//				url: "http://localhost:8080/child/equipment2/selectClassStus.webapp",
+            url: domianURL + "/equipment2/selectClassStus.webapp",
+            data: {
+                openId: "oCBdZw-GZdUA6QU4D0DLj1yECN1Q"
+//					openId: openid
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                console.log(123)
+                console.log(data)
+                for (var i = 0; i < data.teachers.length; i++) {
+                    var li = "<li class='mui-table-view-cell mui-checkbox mui-left'>" +
+                        "<input id='" + data.teachers[i].UserName + "' name='checkbox' type='checkbox' value='" + data.teachers[i].StudentId + "'>" + data.teachers[i].UserName +
+                        "</li>"
+                    $("#mainUl").append(li);
+                }
+                for (var i = 0; i < data.students.length; i++) {
+                    var li = "<li  class='mui-table-view-cell mui-checkbox mui-left'>" +
+                        "<input id='" + data.students[i].UserName + "' name='checkbox' type='checkbox' value='" + data.students[i].StudentId + "'>" + data.students[i].UserName +
+                        "</li>"
+                    $("#mainUl").append(li);
+                }
+//                sendid = data.StudentId
+//                fname = data.UserName;
+            }
+        })
+    }
+
+    //添加群聊
+    function addChat() {
+        var sendid = sessionStorage.getItem("senderid").toString();
+        var selfname = sessionStorage.getItem("selfname").toString();
+        var involveid = sendid + ",";
+        var topicname = selfname + ",";
+        $("input:checkbox[name='checkbox']:checked").each(function () { // 遍历name=test的多选框
+            involveid = involveid + $(this).val() + ",";  // 每一个被选中项的值
+            topicname = selfname + $(this).attr('id');
+        });
+        $.ajax({
+            type: "POST",
+//				url: "http://localhost:8080/child/mutipleChat/addMutipleChat.webapp",
+            url: domianURL + "/mutipleChat/addMutipleChat.webapp",
+            data: {
+                involveid: involveid,
+                topicname: topicname
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                alert("添加成功");
+                var openid = GetQueryString("openid");
+                window.location.href = "interflow.html?openid=" + openid;
+            }
+        })
+    }
+
+</script>
+</html>

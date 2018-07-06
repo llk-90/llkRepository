@@ -1,0 +1,10 @@
+ $(function () {
+    FrameBodyClick();
+    $('.plus_icon').on('click', function () {
+    	window.location.href  = "../../html/shouye/index.html?openid=" + userInfo.openid;
+    });
+     mui('nav').on('tap','a',function() {
+         var openid = GetQueryString("openid")
+         window.location.href = this.href+"?openid="+openid;
+     })
+});
