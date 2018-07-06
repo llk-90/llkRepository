@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.dao.UserMapper">
+
+<!--返回结果封装对象-->
+<resultMap id="userPosition" type="userPositionInfo">
+  <result property="keyId" column="keyId"/>
+  <result property="lnglat" column="lnglat"/>
+  <result property="sign_count" column="sign_count"/>
+  <result property="notes" column="notes"/>
+</resultMap>
+
+   <insert id="addUserPosition" parameterType="userPositionInfo">
+       insert into
+       user_lnglat_info
+       (keyId,
+       lnglat,
+       sign_count,
+       notes
+       )
+       values
+       (
+       #{keyId},
+       #{lnglat},
+       #{sign_count},
+       #{notes}
+       )
+   </insert>
+   
+   <select id="getPosition" parameterType="String" resultType="String"> 
+       select lnglat from user_lnglat_info where keyId = #{openId}
+   </select>
+</mapper>
