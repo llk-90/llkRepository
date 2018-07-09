@@ -50,7 +50,11 @@ public class UserController {
 			@ApiImplicitParam(name = "notes",value="语音内容",required =false,paramType ="query",dataType= "String")})
 	@RequestMapping(value="/uploadPosition")
 	@ResponseBody
-	public Map<Object,Object> uploadPosition(String keyId,String lnglat,String sign_count,String notes) {
+	public Map<Object,Object> uploadPosition(String keyId,String lnglat,String sign_count,String notes,HttpServletRequest res) {
+		String url = res.getRequestURI();
+		String path = res.getContextPath();
+		System.out.println(url);
+		System.out.println(path);
 		Map<Object,Object> map = new HashMap<>();
 		UserPositionInfo user = new UserPositionInfo();
 		user.setKeyId(keyId);user.setLnglat(lnglat);user.setNotes(notes);user.setSign_count(sign_count);
