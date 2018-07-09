@@ -52,9 +52,7 @@ public class UserController {
 	@ResponseBody
 	public Map<Object,Object> uploadPosition(String keyId,String lnglat,String sign_count,String notes,HttpServletRequest res) {
 		String url = res.getRequestURI();
-		String path = res.getContextPath();
 		System.out.println(url);
-		System.out.println(path);
 		Map<Object,Object> map = new HashMap<>();
 		UserPositionInfo user = new UserPositionInfo();
 		user.setKeyId(keyId);user.setLnglat(lnglat);user.setNotes(notes);user.setSign_count(sign_count);
