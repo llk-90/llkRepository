@@ -1,17 +1,15 @@
 package com.example.controler;
 
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +30,7 @@ public class UserController {
 	private UserService userService;
 	
 	/**
-	 * 上传定位
+	 * 上传客户信息
 	 * @param keyId openId
 	 * @param lnglat 坐标
 	 * @param sign_count 被定位的次数
@@ -42,22 +40,29 @@ public class UserController {
 	@ApiResponses({
      	@ApiResponse(code = 404, message = "服务器内部异常"),
 		})
-	@ApiOperation(value="上传定位")
+	@ApiOperation(value="上传客户信息")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "keyId",value="openId",required =true,paramType ="query",dataType= "String"),
-			@ApiImplicitParam(name = "lnglat",value="坐标",required =true,paramType ="query",dataType= "String"),
-			@ApiImplicitParam(name = "sign_count",value="标记次数",required =true,paramType ="query",dataType= "String"),
-			@ApiImplicitParam(name = "notes",value="语音内容",required =false,paramType ="query",dataType= "String")})
+			@ApiImplicitParam(name = "keyId",value="openId",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "lng",value="经度",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "lat",value="纬度",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "visits_count",value="标记次数",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "cus_name",value="客户姓名",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "address",value="客户地址",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "date",value="预约时间",required =true,paramType ="body",dataType= "String"),
+			@ApiImplicitParam(name = "phone",value="联系方式",required =true,paramType ="body",dataType= "String")
+	})
 	@RequestMapping(value="/uploadPosition")
 	@ResponseBody
-	public Map<Object,Object> uploadPosition(String keyId,String lnglat,String sign_count,String notes,HttpServletRequest res) {
-		String url = res.getRequestURI();
-		System.out.println(url);
-		Map<Object,Object> map = new HashMap<>();
-		UserPositionInfo user = new UserPositionInfo();
-		user.setKeyId(keyId);user.setLnglat(lnglat);user.setNotes(notes);user.setSign_count(sign_count);
-		userService.addPosition(user); 
-		map.put("code", "200");
+	public Map<Object,Object> uploadPosition(@RequestBody UserPositionInfo user) {
+	Map<Object,Object> map = new HashMap<>();
+		user.setCreateTime(new Date());
+		try {
+			userService.addPosition(user);
+			map.put("code", "200");
+		} catch (Exception e) {
+			e.printStackTrace();
+			map.put("code", "201");
+		} 
 		return map;
 	}
 	
@@ -67,17 +72,95 @@ public class UserController {
 	 * @param keyId
 	 * @return
 	 */
-	@ApiOperation(value="上传定位")
+	@ApiOperation(value="获取拜访客户记录")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "keyId",value="openId",required =true,paramType ="query",dataType= "String")})
 	@RequestMapping(value="/queryPosition")
 	@ResponseBody
 	public Map<Object,Object> getPosition(String keyId) {
 		Map<Object,Object> map = new HashMap<>();
-		ArrayList<String> positions= userService.getPosition(keyId); 
-		map.put("positions", positions);
-		map.put("code", "200");
+		
+		List<UserPositionInfo> positions = null;
+		try {
+			positions = userService.getPosition(keyId);
+			map.put("code", "200");
+			map.put("positions", positions);
+		} catch (Exception e) {
+			e.printStackTrace();
+			map.put("code", "201");
+		} 
 		return map;
 	}
+	
+	
+	/**
+	 * 
+	 * @param lng
+	 * @param lat
+	 * @param notes
+	 * @return
+	 */
+	@ApiOperation(value="编辑客户备注")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "lng",value="经度",required =true,paramType ="body",dataType= "String"),
+		@ApiImplicitParam(name = "lat",value="纬度",required =true,paramType ="body",dataType= "String"),
+		@ApiImplicitParam(name = "notes",value="备注",required =true,paramType ="body",dataType= "String"),
+		@ApiImplicitParam(name = "visits_count",value="拜访次数",required =true,paramType ="body",dataType= "String")
+	})
+	@RequestMapping(value="/updateInfo")
+	@ResponseBody
+	public Map<Object,Object> updateUserInfo(@RequestBody UserPositionInfo user) {
+		Map<Object,Object> map = new HashMap<>();
+		try {
+			userService.updateInfo(user);
+			map.put("code", "200");
+		} catch (Exception e) {
+			e.printStackTrace();
+			map.put("code", "201");
+		}; 
+		return map;
+	}
+	
+	
+	
+	
+	/**
+	 * 微信用，查询拜访信息
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/fingBaifangYuyue")
+	public Map<Object,Object> fingBaifangYuyue(int pageCount) throws Exception {
+		
+		int newPageCount = pageCount*3;
+		Map<Object,Object> map = new HashMap<>();
+		List<UserPositionInfo> cusInfoList= userService.fingBaifangYuyue(newPageCount);
+		map.put("infoList", cusInfoList);
+		map.put("errcode", 0);
+		
+		return map;
+	}
+	
+	/**
+	 * 获取客户具体信息
+	 * @return 用户所有信息
+	 * @throws IOException 
+	 */
+	@RequestMapping(value = "/findBaifangYuyueDetail")
+	public UserPositionInfo findBaifangYuyueDetail(int id) throws Exception {
+		UserPositionInfo userPositionInfo = userService.findBaifangYuyueDetail(id);
+		return userPositionInfo;		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }
