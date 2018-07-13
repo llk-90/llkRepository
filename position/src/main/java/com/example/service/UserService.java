@@ -1,7 +1,5 @@
 package com.example.service;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,25 +18,52 @@ public class UserService {
 	private UserMapper userMapper;
 	
 	/**
-	 * 添加定位坐标
+	 * 添加客户信息
 	 * @param up
 	 */
-	public void addPosition(UserPositionInfo up) {
-		userMapper.addUserPosition(up);
+	public void addPosition(UserPositionInfo up) throws Exception{
+			userMapper.addUserInfo(up);
 	}
 	
 	/**
-	 * 查找历史坐标
+	 * 拜访历史
 	 * @param openId
 	 * @return
 	 */
-	public ArrayList<String> getPosition(String openId) {
+	public List<UserPositionInfo> getPosition(String openId) throws Exception{
 		return  userMapper.getPosition(openId);
 	}
 	
 	
+	/**
+	 * 编辑客户信息
+	 * @param openId
+	 */
+	public void updateInfo(UserPositionInfo up) throws Exception{
+		  userMapper.updateInfo(up);
+	}
 	
 	
 	
- 
+	/**
+	 * 查询拜访信息
+	 * @param openId
+	 * @return
+	 */
+	public List<UserPositionInfo> fingBaifangYuyue(int pageCount){
+		return  userMapper.fingBaifangYuyue(pageCount);
+	}
+	
+	/**
+	 * 查询客户具体信息
+	 * @param openId
+	 * @return
+	 */
+	public UserPositionInfo findBaifangYuyueDetail(int id) {
+		return userMapper.findBaifangYuyueDetail(id);
+	}
+	
+	
+	
+	
 }
