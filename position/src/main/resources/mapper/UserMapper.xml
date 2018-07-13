@@ -2,32 +2,106 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.dao.UserMapper">
 
-<!--返回结果封装对象-->
-<resultMap id="userPosition" type="userPositionInfo">
-  <result property="keyId" column="keyId"/>
-  <result property="lnglat" column="lnglat"/>
-  <result property="sign_count" column="sign_count"/>
-  <result property="notes" column="notes"/>
-</resultMap>
+	<!--返回结果封装对象 -->
+	<resultMap id="userPosition" type="userPositionInfo">
+		<result property="id" column="id" />
+		<result property="keyId" column="key_id" />
+		<result property="lng" column="lng" />
+		<result property="lat" column="lat" />
+		<result property="cusName" column="cus_name" />
+		<result property="address" column="address" />
+		<result property="icon" column="icon" />
+		<result property="visitsCount" column="visits_count" />
+		<result property="notes" column="notes" />
+		<result property="phone" column="phone" />
+		<result property="createTime" column="create_time" />
+	</resultMap>
 
-   <insert id="addUserPosition" parameterType="userPositionInfo">
-       insert into
-       user_lnglat_info
-       (keyId,
-       lnglat,
-       sign_count,
-       notes
-       )
-       values
-       (
-       #{keyId},
-       #{lnglat},
-       #{sign_count},
-       #{notes}
-       )
-   </insert>
-   
-   <select id="getPosition" parameterType="String" resultType="String"> 
-       select lnglat from user_lnglat_info where keyId = #{openId}
-   </select>
+
+	<insert id="addUserInfo" parameterType="userPositionInfo">
+		insert into
+		customerInfo
+		(
+		key_id,
+		lng,
+		lat,
+		visits_count,
+		address,
+		baifang_time,
+		phone,
+		cus_name,
+		create_time
+		)
+		values
+		(
+		#{keyId},
+		#{lng},
+		#{lat},
+		#{visitsCount},
+		#{address},
+		#{baifangTime},
+		#{phone},
+		#{cusName},
+		#{createTime}
+		)
+	</insert>
+
+	<select id="getPosition" parameterType="String" resultMap="userPosition">
+		select
+		lng,
+		lat,
+		cus_name,
+		phone,
+		visits_count
+		from customerInfo
+		where key_Id = #{openId}
+	</select>
+
+	<update id="updateInfo" parameterType="userPositionInfo">
+		update customerInfo
+		set 
+		notes = #{notes},
+		visits_count = #{visitsCount}
+		where lng = #{lng} and lat =#{lat}
+	</update>
+
+
+	<select id="fingBaifangYuyue" parameterType="int" resultMap="userPosition">
+		SELECT
+		id,
+		case visits_count when '0' then '已预约'
+		when '1' then '拜访一次' when '2' then '拜访两次' when '3' then '拜访多次' when '4'
+		then '成单' end as visits_count,
+		cus_name,
+		address,
+		icon,
+		notes,
+		create_time,
+		baifang_time
+		FROM
+		customerInfo
+		ORDER BY
+		create_time DESC
+		LIMIT #{pageCount},3
+	</select>
+
+	<select id="findBaifangYuyueDetail" parameterType="int"
+		resultMap="userPosition">
+		SELECT
+		case visits_count when '0' then '已预约'
+		when '1' then '拜访一次' when '2' then '拜访两次' when '3' then '拜访多次' when '4'
+		then '成单' end as visits_count,
+		cus_name,
+		address,
+		icon,
+		key_id,
+		phone,
+		notes,
+		create_time,
+		baifang_time
+		FROM
+		customerInfo
+		WHERE
+		id = #{id}
+	</select>
 </mapper>
