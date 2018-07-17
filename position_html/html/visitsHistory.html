@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.6&key=2aeefdd18496c0acc8d53057a83e09e7"></script>
+<script src="../js/jquery-3.3.1.js"></script>
+ <script type="text/javascript" src="../js/mui.js"></script>
+<script type="text/javascript" src="../js/visitHistory.js"></script>
+<link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+<link rel="stylesheet" href="../css/mui.css"/>
+<link rel="stylesheet" href="../css/addInfo.css"/>
+<link rel="stylesheet" href="../css/visitHistory.css"/>
+<title>拜访轨迹</title>
+<script type="text/javascript">
+$(function() {
+	mapInit();
+	getHistoryPosition();
+});
+</script>
+</head>
+<body>
+<div id='container'></div>
+<button id="upload" onclick="updateInfo()">提交客户信息</button>
+</body>
+</html>

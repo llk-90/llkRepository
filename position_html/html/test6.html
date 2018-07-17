@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script
+	src="//webapi.amap.com/maps?v=1.3&key=2aeefdd18496c0acc8d53057a83e09e7"></script>
+<!--引入UI组件库（1.0版本） -->
+<script src="../js/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="../js/mapUtil.js"></script>
+<!-- <script type="text/javascript"
+	src="http://webapi.amap.com/demos/js/liteToolbar.js"></script> -->
+<!-- <script type="text/javascript"
+	src="http://cache.amap.com/lbs/static/addToolbar.js"></script> -->
+<link rel="stylesheet"
+	href="http://cache.amap.com/lbs/static/main1119.css" />
+<script type="text/javascript">
+		$(function() {
+			mapInit();	//地图初始化
+			//搜索列表选中事件
+		     $("#panel").on("click","li",function(){
+		            var point = $(this).find(".point").text();
+		            var strs= new Array(); //定义一数组
+		            strs=point.split(","); //字符分割 
+		            $("#latitude").val(strs[2]);//纬度赋值
+		            $("#longitude").val(strs[0]);//经度赋值
+					
+		            var addr =  $(this).find(".rout").text();
+		            $("#address_detail").val(addr);//详细地址赋值
+ 
+		            var poi = $(this).find(".poi").text();
+		            $("#poi").val(poi);//poi赋值
+ 
+		            var position=[strs[0],strs[2]];
+		            addMarker(position);//标记
+		            $("#panel li").css("background-color","#fff");
+		            $(this).css("background-color","#f0f0f0");
+		        });
+		});
+		</script>
+
+<style type="text/css">
+#tip {
+	background-color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+	position: absolute;
+	font-size: 15px;
+	right: 10%%;
+	top: 8%;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	line-height: 31px;
+}
+.amap-marker-label {
+	position: absolute;
+	/* z-index: 2;
+	/* border: 1px solid #00f; */
+	/* background-color: #00f; */
+	/* white-space: nowrap; */
+	/* cursor: default; */
+	 padding-left:4px; 
+	border:none;
+	font-size: 5px;
+	line-height: 5px;
+	margin-top: 5px;
+	background-color: #318EF1;
+	border-color: #318EF1;
+	color:white;
+}
+</style>
+</head>
+<body>
+	<div id="container" onload="">
+	</div>
+	<input id="tip" placeholder="请输入搜索地址" name="tip" class="inp260"
+			maxlength="20" /> <input type="button" id="tip" value="搜索"
+			onclick="mapsearch()" />
+	<div id="panel"></div>
+</body>
+</html>
+
