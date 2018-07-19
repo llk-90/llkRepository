@@ -1,0 +1,91 @@
+@charset "UTF-8";
+#upload{
+    background-color: #fff;
+    padding-left: 10px;
+    padding-right: 10px;
+    position: absolute;
+    font-size: 15px;
+    right:40%;
+    top: 89%;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    line-height: 31px;
+    color:graytext;
+}
+#in{
+    background-color: #fff;
+    padding-left: 10px;
+    padding-right: 10px;
+    position: absolute;
+    font-size: 12px;
+    right: 10%;
+    top: 89%;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    line-height: 20px;
+    color:graytext;
+}
+
+#tip {
+	background-color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+	position: absolute;
+	font-size: 15px;
+	right: 22%;
+	top: 1%;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	line-height: 30px;
+	color:graytext;
+	width: 45%;
+	height: 30px;
+}
+#tip1 {
+	background-color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+	position: absolute;
+	font-size: 15px;
+	right: 3%;
+	top: 1%;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	line-height: 20px;
+	color:graytext;
+}
+.amap-marker-label {
+	position: absolute;
+	padding-left:4px; 
+	border:none;
+	font-size: 5px;
+	line-height: 5px;
+	margin-top: 5px;
+	background-color: #318EF1;
+	border-color: #318EF1;
+	color:white; 
+	font-style: normal;
+	margin-top: 0px;
+}
+
+.amap-touch-toolbar .amap-zoomcontrol {
+    bottom: 50px;
+}
+
+.input{
+	border:none;
+}  
+
+#search_but{
+    width: 50px;
+    height: 30px;
+    float: left;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 0 2px 2px 0;
+    background: url("../imgs/search3.png") no-repeat  10px 0px  #3385ff;
+    right: 3%;
+	top: 1%;
+	margin-left: 80%;
+}

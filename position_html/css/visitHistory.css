@@ -1,0 +1,62 @@
+@charset "UTF-8";
+#upload{
+    background-color: #fff;
+    padding-left: 10px;
+    padding-right: 10px;
+    position: absolute;
+    font-size: 15px;
+    right:40%;
+    top: 89%;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    line-height: 31px;
+    color:graytext;
+}
+#in{
+    background-color: #fff;
+    padding-left: 10px;
+    padding-right: 10px;
+    position: absolute;
+    font-size: 12px;
+    right: 10%;
+    top: 89%;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    line-height: 20px;
+    color:graytext;
+}
+
+#tip {
+	background-color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+	position: absolute;
+	font-size: 15px;
+	right: 10%%;
+	top: 1%;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	line-height: 31px;
+	color:graytext;
+}
+.amap-marker-label {
+	position: absolute;
+	padding-left:3px; 
+	border:none;
+	font-size: 5px;
+	line-height: 10px;
+	margin-top: 5px;
+	background-color: #318EF1;
+	border-color: red/* #318EF1 */;
+	color:white; 
+	font-style: normal;
+	margin-top: 0px;
+	border-radius: 20px;;
+}
+
+
+textarea{
+vertical-align:top;
+border: 0.5px solid graytext;	
+	
+}
