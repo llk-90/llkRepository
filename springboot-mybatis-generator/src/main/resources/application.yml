@@ -1,0 +1,12 @@
+
+spring:
+  application:
+    name: llk
+  datasource:
+      url: jdbc:mysql://localhost:3306/world?useUnicode=true&characterEncoding=utf8&characterSetResults=utf8&zeroDateTimeBehavior=convertToNull
+      username: root
+      password: root
+      driver-class-name: com.mysql.jdbc.Driver
+mybatis:
+   mapper-locations: mapper/*.xml
+   type-aliases-package: com.example.llk.entity
